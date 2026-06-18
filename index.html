@@ -1340,30 +1340,34 @@
       
       try {
         let base64Data;
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const originalSizeKB = Math.round(file.size/1024);
+        const maxSize = 1.8 * 1024 * 1024; // 1.8MB untuk buffer aman
         
-        if (file.size > maxSize) {
-          // Auto kompres jika file > 2MB
-          base64Data = await kompresGambar(file, 1800);
+        // Selalu kompres untuk memastikan ukuran aman
+        base64Data = await kompresGambar(file, 1500); // Target 1.5MB setelah kompresi
+        const base64Only = base64Data.split(',')[1];
+        
+        // Cek ukuran setelah kompresi
+        const sizeAfterCompressKB = Math.round((base64Only.length * 3/4) / 1024);
+        
+        if (sizeAfterCompressKB > 1800) {
+          // Jika masih terlalu besar, kompres lagi dengan target lebih kecil
+          base64Data = await kompresGambar(file, 1000);
           base64Data = base64Data.split(',')[1];
-          // Konversi dataURL ke blob untuk mendapatkan mime type
-          const response = await fetch(base64Data);
-          const blob = await response.blob();
-          file.type = 'image/jpeg';
-          
+        } else {
+          base64Data = base64Only;
+        }
+        
+        // Konversi dataURL ke blob untuk mendapatkan mime type
+        const response = await fetch('data:image/jpeg;base64,' + base64Data);
+        const blob = await response.blob();
+        
+        if (originalSizeKB > 1800) {
           Swal.fire({
             icon: 'info',
             title: 'Foto Dikompres',
-            text: `Foto asli ${Math.round(file.size/1024)}KB terlalu besar, otomatis dikompres agar bisa diupload.`,
-            timer: 3000
-          });
-        } else {
-          // File sudah < 2MB, gunakan langsung
-          base64Data = await new Promise((res,rej) => {
-            const reader = new FileReader();
-            reader.onload = e => res(e.target.result.split(',')[1]);
-            reader.onerror = rej;
-            reader.readAsDataURL(file);
+            text: `Foto asli ${originalSizeKB}KB (${sizeAfterCompressKB}KB setelah kompres)`,
+            timer: 2500
           });
         }
         

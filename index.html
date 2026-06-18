@@ -523,9 +523,9 @@
       setTimeout(()=>{ const e3=document.getElementById('syncStatus'); if(e3) updateSyncStatus(); }, 2000);
     }
 
-    // ── AUTO SYNC 30 MENIT ──
+    // ── AUTO SYNC 5 MENIT ──
     let _autoSyncTimer = null;
-    const AUTO_SYNC_INTERVAL = 30 * 60 * 1000; // 30 menit
+    const AUTO_SYNC_INTERVAL = 5 * 60 * 1000; // 5 menit
     let _nextSyncTime = null;
 
     function updateSyncStatus() {

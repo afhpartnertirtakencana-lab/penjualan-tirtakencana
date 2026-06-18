@@ -304,6 +304,111 @@
     let masterStockHistory = {};
 
     function saveLocalData() { localStorage.setItem('tirtaFullData', JSON.stringify({ products, pelanggan, allTrxList, allCustomers, stockInHistory, setoranHistory, drivers, settings, allUsers, masterStockHistory })); }
+    
+    // [FIX] Fungsi syncMasterStockToSheet yang sebelumnya tidak terdefinisi
+    async function syncMasterStockToSheet() {
+      try {
+        await gasCall('syncMasterStockToSheet', [masterStockHistory]);
+        console.log('Master stock synced successfully');
+      } catch(e) {
+        console.warn('Gagal sync master stock:', e);
+      }
+    }
+    
+    // [NEW] Fungsi untuk refresh data dari server dengan retry
+    async function refreshDataFromServer(showToast = true) {
+      try {
+        if (showToast) {
+          Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1000, icon: 'info', title: 'Mengambil data terbaru...' });
+        }
+        const data = await gasCall('getAllData', []);
+        if (data) {
+          products = data.products || [];
+          pelanggan = data.pelanggan || [];
+          allTrxList = data.allTrxList || [];
+          allCustomers = data.allCustomers || [];
+          stockInHistory = data.stockInHistory || [];
+          setoranHistory = data.setoranHistory || [];
+          drivers = data.drivers || ['oji','padong','said','dedi','zehpudin'];
+          settings = { ...settings, ...(data.settings || {}) };
+          allUsers = data.allUsers || [];
+          masterStockHistory = data.masterStockHistory || {};
+          saveLocalData();
+          if (showToast) {
+            Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Data diperbarui' });
+          }
+          return true;
+        }
+      } catch(e) {
+        console.warn('Gagal refresh dari server:', e);
+        if (showToast) {
+          Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'warning', title: 'Gagal ambil data server, menggunakan data lokal' });
+        }
+        return false;
+      }
+    }
+    
+    // [NEW] Auto-sync interval yang lebih cepat (15 detik)
+    let _syncInterval = null;
+    function startAutoSync(intervalSeconds = 15) {
+      if (_syncInterval) clearInterval(_syncInterval);
+      _syncInterval = setInterval(async () => {
+        await refreshDataFromServer(false);
+      }, intervalSeconds * 1000);
+    }
+    
+    // [NEW] Pull-to-refresh handler
+    let _pullStartY = 0, _pullCurrentY = 0, _pulling = false;
+    function initPullToRefresh() {
+      const content = document.querySelector('.content-area');
+      if (!content) return;
+      content.addEventListener('touchstart', e => {
+        if (content.scrollTop === 0) {
+          _pullStartY = e.touches[0].clientY;
+          _pulling = true;
+        }
+      }, { passive: true });
+      content.addEventListener('touchmove', e => {
+        if (!_pulling) return;
+        _pullCurrentY = e.touches[0].clientY;
+        const diff = _pullCurrentY - _pullStartY;
+        if (diff > 0 && diff < 150) {
+          e.preventDefault();
+          let indicator = document.getElementById('pull-indicator');
+          if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'pull-indicator';
+            indicator.style.cssText = 'text-align:center;padding:10px;color:var(--biru);font-size:12px;font-weight:600;';
+            indicator.innerHTML = '<i class="fas fa-arrow-down"></i> Tarik untuk refresh';
+            content.insertBefore(indicator, content.firstChild);
+          }
+          indicator.innerHTML = diff > 80 ? '<i class="fas fa-check"></i> Lepas untuk refresh' : '<i class="fas fa-arrow-down"></i> Tarik untuk refresh';
+        }
+      }, { passive: false });
+      content.addEventListener('touchend', async () => {
+        if (!_pulling) return;
+        _pulling = false;
+        const diff = _pullCurrentY - _pullStartY;
+        let indicator = document.getElementById('pull-indicator');
+        if (indicator) {
+          indicator.remove();
+          indicator = null;
+        }
+        if (diff > 80) {
+          await refreshDataFromServer(true);
+          if (currentPage === 'rekap') loadRekap();
+          else if (currentPage === 'dashboard') loadDashboard();
+          else if (currentPage === 'penjualan') loadPenjualan();
+          else if (currentPage === 'transaksi') loadTransaksi();
+          else if (currentPage === 'stockbarang') loadStockBarang();
+          else if (currentPage === 'produk') loadProduk();
+          else if (currentPage === 'pelanggan') loadPelanggan();
+          else if (currentPage === 'piutang') loadPiutang();
+        }
+        _pullStartY = 0;
+        _pullCurrentY = 0;
+      });
+    }
     function loadLocalData() {
       const s = localStorage.getItem('tirtaFullData');
       if (s) { try { const d = JSON.parse(s); products = d.products || []; pelanggan = d.pelanggan || []; allTrxList = d.allTrxList || []; allCustomers = d.allCustomers || []; stockInHistory = d.stockInHistory || []; setoranHistory = d.setoranHistory || []; drivers = d.drivers || ['oji','padong','said','dedi','zehpudin']; settings = { ...settings, ...(d.settings || {}) }; allUsers = d.allUsers || []; masterStockHistory = d.masterStockHistory || {}; } catch(e) {} }
@@ -446,6 +551,7 @@
 
     function stopAutoSync() {
       if (_autoSyncTimer) { clearInterval(_autoSyncTimer); _autoSyncTimer = null; }
+      if (_syncInterval) { clearInterval(_syncInterval); _syncInterval = null; }
       const el = document.getElementById('syncStatus');
       if (el) el.textContent = 'Manual';
     }
@@ -497,7 +603,8 @@
       initDarkMode(); renderMenuTabs();
       // Sync sekali saat login
       try { await syncFromGAS(); } catch(e) {}
-      startAutoSync();
+      startAutoSync(15); // Auto-sync setiap 15 detik
+      initPullToRefresh(); // Aktifkan pull-to-refresh
       navigateTo('dashboard');
     }
 
@@ -545,6 +652,10 @@
       const role = currentUser?.role;
       let h = '';
 
+      // [NEW] Cek stok rendah untuk notifikasi
+      const lowStockProducts = products.filter(p => (p.stokAwal || 0) < 5);
+      const hasLowStock = lowStockProducts.length > 0;
+
       if (role === 'driver') {
         const myStock = stockInHistory.filter(s => 
           (s.date||s.tgl||'').substring(0,10) === today && 
@@ -559,6 +670,7 @@
         const totalKeseluruhan = totalKiriman + totalTitipan;
 
         h = `
+          ${hasLowStock ? `<div class="card" style="background:#FEF3C7;border-color:#F59E0B;"><div class="card-title" style="color:#92400E;"><i class="fas fa-exclamation-triangle"></i> Stok Rendah (${lowStockProducts.length} produk)</div><div class="tag-list">${lowStockProducts.slice(0,5).map(p => `<span class="tag" style="background:#FFF8E1;color:#92400E;">${esc(p.nama)}: ${p.stokAwal}</span>`).join('')}</div></div>` : ''}
           <div class="summary-shape">
             <div class="summary-title">🚚 Input Hari Ini - ${esc(currentUser.name)}</div>
             <div class="summary-items" style="grid-template-columns:1fr 1fr;">
@@ -576,6 +688,7 @@
         const belum = todayTx.filter(t=>t.status==='belumTransfer').reduce((s,t)=>s+(t.nett||0),0);
         const total = cod+transfer+qris+belum;
         h = `
+          ${hasLowStock ? `<div class="card" style="background:#FEF3C7;border-color:#F59E0B;"><div class="card-title" style="color:#92400E;"><i class="fas fa-exclamation-triangle"></i> Stok Rendah (${lowStockProducts.length} produk)</div><div class="tag-list">${lowStockProducts.slice(0,5).map(p => `<span class="tag" style="background:#FFF8E1;color:#92400E;">${esc(p.nama)}: ${p.stokAwal}</span>`).join('')}</div></div>` : ''}
           <div class="summary-shape">
             <div class="summary-title">💰 Total Penjualan Hari Ini</div>
             <div class="summary-items">
@@ -588,6 +701,22 @@
           </div>
         `;
       }
+
+      // [NEW] Quick Actions
+      h += `<div style="font-weight:700;font-size:0.9rem;color:var(--biru);margin:16px 0 12px 0;">⚡ Quick Actions</div>`;
+      h += `<div class="menu-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">`;
+      if (role === 'admin' || role === 'sales') {
+        h += `<div class="action-card" onclick="navigateTo('penjualan');document.getElementById('trxCustomer').focus();" style="padding:12px 8px;"><i class="fas fa-cash-register" style="font-size:20px;color:var(--biru);"></i><div style="font-size:11px;font-weight:600;margin-top:6px;">Jual Cepat</div></div>`;
+        h += `<div class="action-card" onclick="openScanner('trx');" style="padding:12px 8px;"><i class="fas fa-barcode" style="font-size:20px;color:var(--teal);"></i><div style="font-size:11px;font-weight:600;margin-top:6px;">Scan</div></div>`;
+      }
+      if (role === 'admin') {
+        h += `<div class="action-card" onclick="navigateTo('produk');openProdukForm(-1);" style="padding:12px 8px;"><i class="fas fa-plus-circle" style="font-size:20px;color:var(--hijau);"></i><div style="font-size:11px;font-weight:600;margin-top:6px;">+ Produk</div></div>`;
+        h += `<div class="action-card" onclick="navigateTo('inputbarang');" style="padding:12px 8px;"><i class="fas fa-boxes" style="font-size:20px;color:var(--kuning);"></i><div style="font-size:11px;font-weight:600;margin-top:6px;">Input</div></div>`;
+      } else if (role === 'driver') {
+        h += `<div class="action-card" onclick="navigateTo('inputbarang');" style="padding:12px 8px;"><i class="fas fa-boxes" style="font-size:20px;color:var(--kuning);"></i><div style="font-size:11px;font-weight:600;margin-top:6px;">Input</div></div>`;
+        h += `<div class="action-card" onclick="openScanner('stock');" style="padding:12px 8px;"><i class="fas fa-barcode" style="font-size:20px;color:var(--teal);"></i><div style="font-size:11px;font-weight:600;margin-top:6px;">Scan</div></div>`;
+      }
+      h += `</div>`;
 
       h += `<div style="font-weight:700;font-size:0.9rem;color:var(--biru);margin-bottom:12px;">📌 Menu Utama</div>`;
 
@@ -1494,13 +1623,13 @@
       if (jenisButuhItems.includes(jenis) && !adaItems) {
         document.getElementById('rekapContent').innerHTML = `<div class="loading">Mengambil detail item (0/${filtered.length})...</div>`;
         try {
-          // Fetch detail satu per satu (paralel tapi dibatasi agar tidak overload)
-          const batchSize = 5;
+          // [FIX] Fetch detail dengan batch lebih besar (15 instead of 5) untuk mempercepat
+          const batchSize = 15;
           for (let i = 0; i < filtered.length; i += batchSize) {
             const batch = filtered.slice(i, i + batchSize);
             const el = document.getElementById('rekapContent');
             if (el) el.innerHTML = `<div class="loading">Mengambil detail item (${Math.min(i+batchSize, filtered.length)}/${filtered.length})...</div>`;
-            await Promise.all(batch.map(async trx => {
+            await Promise.allSettled(batch.map(async trx => {
               if (Array.isArray(trx.items) && trx.items.length > 0) return;
               try {
                 const detail = await gasCall('getTrxDetail', [trx.id]);

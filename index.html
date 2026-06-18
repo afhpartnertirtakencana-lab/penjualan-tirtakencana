@@ -648,15 +648,18 @@
 
     // ========== PENJUALAN (sama seperti sebelumnya) ==========
     let _itemIdx = 0;
+    let _currentTrxId = ''; // Untuk menyimpan ID transaksi saat ini (untuk upload foto)
     function loadPenjualan() {
       let datalistOptions = products.map(p => `<option value="${p.sku}">${p.nama}</option>`).join('');
       let cDatalist = allCustomers.map(c => `<option value="${esc(c)}">`).join('');
       let sOpts = '<option value="">Pilih Sales</option>';
       (settings.salesList||[]).forEach(s => { sOpts += `<option value="${esc(s)}">${esc(s)}</option>`; });
+      const trxIdVal = genId();
+      _currentTrxId = trxIdVal;
       document.getElementById('contentArea').innerHTML = `
         <datalist id="productDatalist">${datalistOptions}</datalist>
         <div class="card"><div class="card-title"><i class="fas fa-cash-register"></i> Buat Invoice</div>
-        <div class="form-group"><label>ID Transaksi</label><input id="trxId" readonly style="font-family:var(--mono)"></div>
+        <div class="form-group"><label>ID Transaksi</label><input id="trxId" readonly style="font-family:var(--mono)" value="${trxIdVal}"></div>
         <div class="flex-row"><div class="form-group col-1"><label>Tanggal</label><input type="date" id="trxTgl"></div><div class="form-group col-1"><label>Pelanggan *</label><input id="trxCust" placeholder="Nama pelanggan" list="custDatalist" autocomplete="off"><datalist id="custDatalist">${cDatalist}</datalist></div></div>
         <div class="flex-row"><div class="form-group col-1"><label>Sales *</label><select id="trxSales">${sOpts}</select></div><div class="form-group col-1"><label>Status</label><select id="trxStatus"><option value="">-- Pilih --</option><option value="belumTransfer">Belum Transfer</option><option value="cod">COD</option><option value="transfer">Transfer</option><option value="qris">QRIS</option></select></div></div>
         <div class="form-group"><label>Diskon Global (Rp)</label><input type="number" id="trxDiscGlobal" value="0" min="0" oninput="recalcTotals()"></div>
@@ -676,9 +679,20 @@
           </div>
         </div>
         <div class="total-box"><div class="flex-between"><span>Gross</span><span id="sumGross" style="font-family:var(--mono)">Rp 0</span></div><div class="flex-between"><span>Diskon</span><span id="sumDisc" style="font-family:var(--mono);color:var(--merah)">Rp 0</span></div><div class="flex-between" id="sumBiayaRow" style="display:none"><span id="sumBiayaLabel">Biaya Tambahan</span><span id="sumBiaya" style="font-family:var(--mono);color:var(--hijau)">Rp 0</span></div><div class="flex-between" style="font-size:1.1rem;font-weight:800"><span>TOTAL NETT</span><span id="sumNett" style="font-family:var(--mono);color:var(--biru)">Rp 0</span></div></div>
+        <div class="card" style="margin-top:8px;padding:12px 14px;background:var(--surface2);border:1px solid var(--border)">
+          <div style="font-size:0.75rem;font-weight:700;color:var(--text2);margin-bottom:8px">📸 FOTO KIRIMAN (Opsional)</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;background:var(--biru-muda);color:var(--biru);padding:8px 14px;border-radius:10px;font-size:0.75rem;font-weight:700;transition:0.2s" onmouseover="this.style.background='rgba(26,109,181,0.15)'" onmouseout="this.style.background='var(--biru-muda)'">
+              <i class="fas fa-camera"></i> Upload Foto Kiriman
+              <input type="file" accept="image/*" capture="environment" style="display:none" onchange="uploadFotoKiriman(this)">
+            </label>
+            <button class="btn btn-sm btn-ghost" style="font-size:0.7rem" onclick="showFotoBukti(_currentTrxId,'Foto Kiriman '+_currentTrxId)">🖼 Lihat Foto</button>
+            <span id="fotoKirimanStatus" style="font-size:0.7rem;color:var(--text3);margin-left:auto"></span>
+          </div>
+        </div>
         <div style="display:flex;gap:8px"><button class="btn btn-secondary" style="flex:1" onclick="resetTrx()">Reset</button><button class="btn btn-primary" style="flex:2" id="btnSubmitTrx" onclick="submitTrx()">💾 Simpan & Struk</button></div></div>`;
       _itemIdx = 0;
-      document.getElementById('trxId').value = genId(); document.getElementById('trxTgl').value = localDateStr();
+      document.getElementById('trxTgl').value = localDateStr();
       document.getElementById('trxCust').value = ''; document.getElementById('trxDiscGlobal').value = '0'; document.getElementById('trxStatus').value = '';
       document.getElementById('itemsContainer').innerHTML = ''; addItemRow();
       const _bk = document.getElementById('biayaKet'); if (_bk) _bk.value = '';
@@ -1298,6 +1312,24 @@
       } catch(e) {
         Swal.close();
         Swal.fire('Error','Gagal upload foto: '+e.message,'error');
+      }
+    }
+
+    // Fungsi khusus untuk upload foto kiriman transaksi
+    async function uploadFotoKiriman(inputEl) {
+      if (!_currentTrxId) return Swal.fire('Error', 'ID Transaksi belum tersedia', 'error');
+      await uploadFotoBukti(_currentTrxId, 'foto_kiriman', inputEl);
+      // Update status setelah upload
+      const fotoKey = 'foto_'+_currentTrxId;
+      let fotoList = []; try { fotoList=JSON.parse(localStorage.getItem(fotoKey)||'[]'); } catch(e){}
+      const statusEl = document.getElementById('fotoKirimanStatus');
+      if (statusEl) {
+        if (fotoList.length > 0) {
+          statusEl.textContent = `✓ ${fotoList.length} foto terupload`;
+          statusEl.style.color = 'var(--hijau)';
+        } else {
+          statusEl.textContent = '';
+        }
       }
     }
 

@@ -1813,9 +1813,16 @@
 
       } else if (jenis === 'cod' || jenis === 'transfer' || jenis === 'qris' || jenis === 'belum_transfer') {
         // COD / Transfer / QRIS / Belum Transfer → Customer | Total (dari header, selalu ada)
-        const statusKey = jenis === 'belum_transfer' ? 'belumTransfer' : jenis;
+        // [FIX] Gunakan paymentMethod dan statusBayar yang benar
+        const statusFiltered = filtered.filter(t => {
+          const pm = (t.paymentMethod||'').toLowerCase().trim();
+          const sb = (t.statusBayar||'Lunas').toLowerCase().trim();
+          if (jenis === 'cod') return pm === 'cod';
+          if (jenis === 'transfer' || jenis === 'qris') return (pm === 'transfer' || pm === 'qris') && (sb === 'lunas' || sb === 'paid');
+          if (jenis === 'belum_transfer') return (sb !== 'lunas' && sb !== 'paid') || pm === '';
+          return false;
+        });
         const statusLabel = jenis==='cod'?'COD':jenis==='transfer'?'Transfer':jenis==='qris'?'QRIS':'Belum Transfer';
-        const statusFiltered = filtered.filter(t => (t.status||'').toLowerCase().replace(/\s/g,'') === statusKey.toLowerCase().replace(/\s/g,''));
         const custAgg = {};
         statusFiltered.forEach(t => {
           if (!custAgg[t.customer]) custAgg[t.customer]=0;

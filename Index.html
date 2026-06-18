@@ -660,6 +660,7 @@
         <div class="flex-row"><div class="form-group col-1"><label>Tanggal</label><input type="date" id="trxTgl"></div><div class="form-group col-1"><label>Pelanggan *</label><input id="trxCust" placeholder="Nama pelanggan" list="custDatalist" autocomplete="off"><datalist id="custDatalist">${cDatalist}</datalist></div></div>
         <div class="flex-row"><div class="form-group col-1"><label>Sales *</label><select id="trxSales">${sOpts}</select></div><div class="form-group col-1"><label>Status</label><select id="trxStatus"><option value="">-- Pilih --</option><option value="belumTransfer">Belum Transfer</option><option value="cod">COD</option><option value="transfer">Transfer</option><option value="qris">QRIS</option></select></div></div>
         <div class="form-group"><label>Diskon Global (Rp)</label><input type="number" id="trxDiscGlobal" value="0" min="0" oninput="recalcTotals()"></div>
+        <div class="form-group"><label>Foto Kiriman (Opsional)</label><div class="img-upload-box" onclick="document.getElementById('fotoKirimanInput').click()"><input type="file" id="fotoKirimanInput" accept="image/*" capture="environment" style="display:none" onchange="previewFotoKiriman(event)"><div id="fotoKirimanPreview"><div class="img-placeholder">📸 Klik untuk upload foto kiriman (opsional)</div></div></div></div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-size:0.8rem">📦 Item</strong><div style="display:flex;gap:4px"><button class="btn btn-scan btn-sm" onclick="openScanner('trx')">📷 Scan</button><button class="btn btn-outline btn-sm" onclick="addItemRow()">+ Item</button></div></div>
         <div id="itemsContainer"></div>
         <div class="card" style="margin-top:8px;padding:10px 14px;background:var(--biru-muda)">
@@ -716,7 +717,14 @@
     function getItems() { const rows = document.querySelectorAll('#itemsContainer .cart-item-row'); const items = []; rows.forEach(row => { const sku = row.querySelector('[data-field="sku"]')?.value.trim() || ''; const qty = parseInt(row.querySelector('[data-field="qty"]')?.value) || 1; const harga = parseFloat(row.querySelector('[data-field="harga"]')?.value) || 0; const disc = parseFloat(row.querySelector('[data-field="disc"]')?.value) || 0; const p = products.find(x => x.sku === sku); const modal = p ? (p.modal || 0) : 0; const nettPer = harga - disc; if (sku || p) items.push({ sku, nama: p?.nama || sku, qty, harga, discRpPer: disc, modal, nettPer, subtotal: nettPer * qty }); }); return items; }
     function setBiayaTambahan(ket, jml) { const elKet = document.getElementById('biayaKet'); const elJml = document.getElementById('biayaJml'); if (elKet) elKet.value = ket; if (elJml) elJml.value = jml; recalcTotals(); }
     function recalcTotals() { const items = getItems(); const gross = items.reduce((s,it) => s + it.harga * it.qty, 0); const iDisc = items.reduce((s,it) => s + it.discRpPer * it.qty, 0); const gDisc = parseFloat(document.getElementById('trxDiscGlobal')?.value) || 0; const biayaJml = parseFloat(document.getElementById('biayaJml')?.value) || 0; const biayaKet = document.getElementById('biayaKet')?.value.trim() || ''; document.getElementById('sumGross').textContent = fmtRp(gross); document.getElementById('sumDisc').textContent = fmtRp(iDisc + gDisc); const rowBiaya = document.getElementById('sumBiayaRow'); if (rowBiaya) { if (biayaJml > 0) { rowBiaya.style.display = ''; if (document.getElementById('sumBiayaLabel')) document.getElementById('sumBiayaLabel').textContent = biayaKet || 'Biaya Tambahan'; if (document.getElementById('sumBiaya')) document.getElementById('sumBiaya').textContent = fmtRp(biayaJml); } else { rowBiaya.style.display = 'none'; } } document.getElementById('sumNett').textContent = fmtRp(gross - iDisc - gDisc + biayaJml); }
-    function resetTrx() { loadPenjualan(); }
+    function resetTrx() { 
+      // Reset foto kiriman jika ada
+      const fotoInput = document.getElementById('fotoKirimanInput');
+      const fotoPreview = document.getElementById('fotoKirimanPreview');
+      if (fotoInput) fotoInput.value = '';
+      if (fotoPreview) fotoPreview.innerHTML = '<div class="img-placeholder">📸 Klik untuk upload foto kiriman (opsional)</div>';
+      loadPenjualan(); 
+    }
     async function submitTrx() {
       const id = document.getElementById('trxId').value.trim(), tgl = document.getElementById('trxTgl').value, customer = document.getElementById('trxCust').value.trim(), sales = document.getElementById('trxSales').value, status = document.getElementById('trxStatus').value, gDisc = parseFloat(document.getElementById('trxDiscGlobal').value) || 0, items = getItems();
       if (!customer) return Swal.fire('Error', 'Nama pelanggan wajib diisi!', 'error');
@@ -725,7 +733,15 @@
       if (!items.length) return Swal.fire('Error', 'Tambahkan minimal 1 item!', 'error');
       for (let it of items) { if (!products.find(p => p.sku === it.sku)) { return Swal.fire('Error', `SKU "${it.sku}" tidak dikenal dalam database!`, 'error'); } }
       const gross = items.reduce((s,it) => s + it.harga * it.qty, 0), iDisc = items.reduce((s,it) => s + it.discRpPer * it.qty, 0), diskon = iDisc + gDisc, biayaJml = parseFloat(document.getElementById('biayaJml')?.value) || 0, biayaKet = document.getElementById('biayaKet')?.value.trim() || '', nett = gross - diskon + biayaJml;
-      const trx = { id, tgl, customer, sales, gross, diskon, nett, status, items, biayaKet, biayaJml };
+      
+      // Cek apakah ada foto kiriman yang sudah diupload
+      const fotoKirimanPreview = document.getElementById('fotoKirimanPreview');
+      let fotoKirimanUrl = null;
+      if (fotoKirimanPreview && fotoKirimanPreview.querySelector('img')) {
+        fotoKirimanUrl = fotoKirimanPreview.querySelector('img').src;
+      }
+      
+      const trx = { id, tgl, customer, sales, gross, diskon, nett, status, items, biayaKet, biayaJml, fotoKiriman: fotoKirimanUrl };
       allTrxList.unshift(trx);
       if (!allCustomers.includes(customer)) { allCustomers.push(customer); pelanggan = allCustomers.slice(); }
       saveLocalData();
@@ -2061,6 +2077,24 @@
 
     function uploadLogo(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { _logoUrl = ev.target.result; localStorage.setItem('tirtaLogo', _logoUrl); document.getElementById('logoImg').src = _logoUrl; if (document.getElementById('logoPrev')) document.getElementById('logoPrev').innerHTML = `<img src="${_logoUrl}" style="max-height:80px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; saveLocalData(); Swal.fire({ toast:true, position:'top-end', showConfirmButton:false, timer:1500, icon:'success', title:'Logo diperbarui!' }); }; r.readAsDataURL(f); }
     function uploadQris(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { _qrisUrl = ev.target.result; localStorage.setItem('sp_qris', _qrisUrl); settings.qris = _qrisUrl; if (document.getElementById('qrisPrev')) document.getElementById('qrisPrev').innerHTML = `<img src="${_qrisUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; saveLocalData(); }; r.readAsDataURL(f); }
+    function previewFotoKiriman(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (file.size > maxSize) {
+        Swal.fire('Error', 'Foto maksimal 2MB. Gunakan foto yang lebih kecil.', 'error');
+        e.target.value = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const previewDiv = document.getElementById('fotoKirimanPreview');
+        if (previewDiv) {
+          previewDiv.innerHTML = `<img src="${ev.target.result}" style="max-height:150px;max-width:100%;border-radius:8px;display:block;margin:8px auto 0"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti foto</div>`;
+        }
+      };
+      reader.readAsDataURL(file);
+    }
     function renderSalesTags() { const el = document.getElementById('salesTagList'); if (!el) return; const list = settings.salesList||[]; el.innerHTML = list.length ? list.map((s,i) => `<span class="tag">${esc(s)} <button class="tag-remove" onclick="removeSalesName(${i})">✕</button></span>`).join('') : '<span style="color:var(--text3);font-size:13px">Belum ada sales</span>'; }
     function addSalesName() { const v = document.getElementById('newSalesName').value.trim(); if (!v) return; if (!settings.salesList) settings.salesList = []; if (!settings.salesList.includes(v)) settings.salesList.push(v); document.getElementById('newSalesName').value = ''; renderSalesTags(); }
     function removeSalesName(i) { settings.salesList.splice(i,1); renderSalesTags(); }

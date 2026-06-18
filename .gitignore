@@ -17,19 +17,17 @@ venv/
 __pycache__/
 dist/
 build/
-.mypy_cache/
-.pytest_cache/
 target/
 .gradle/
 
-# Editor/IDE files
+# Editors/IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *.tmp
 
-# System files
+# System/Environment
 .DS_Store
 Thumbs.db
 .env
@@ -41,6 +39,10 @@ Thumbs.db
 coverage/
 htmlcov/
 .coverage
+
+# Cache directories
+.mypy_cache/
+.pytest_cache/
 
 # Compressed files
 *.zip
@@ -61,8 +63,4 @@ htmlcov/
 *.Z
 *.lz
 *.lzo
-*.tar.gz
-*.tar.bz2
-*.tar.xz
-*.tar.zst
 ```

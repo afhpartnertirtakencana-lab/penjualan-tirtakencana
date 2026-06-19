@@ -1625,6 +1625,14 @@
       _rekapJenis = jenis;
       if (!tgl) return Swal.fire('Error','Pilih tanggal!','error');
 
+      // [FIX] Selalu ambil data terbaru dari Google Sheets sebelum rekap
+      document.getElementById('rekapContent').innerHTML = '<div class="loading">Mengambil data dari server...</div>';
+      try {
+        await loadTrxFromGAS();
+      } catch(e) {
+        console.warn('Gagal load dari GAS, pakai data lokal:', e);
+      }
+
       let filtered = allTrxList.filter(t => (t.tgl||'').substring(0,10) === tgl);
       if (salesFilter) filtered = filtered.filter(t => (t.sales||'').toLowerCase().trim() === salesFilter.toLowerCase().trim());
 
@@ -1640,8 +1648,8 @@
       if (jenisButuhItems.includes(jenis) && !adaItems) {
         document.getElementById('rekapContent').innerHTML = `<div class="loading">Mengambil detail item (0/${filtered.length})...</div>`;
         try {
-          // [FIX] Fetch detail dengan batch lebih besar (15 instead of 5) untuk mempercepat
-          const batchSize = 15;
+          // [FIX] Fetch detail dengan batch lebih besar (50 instead of 15) untuk mempercepat
+          const batchSize = 50;
           for (let i = 0; i < filtered.length; i += batchSize) {
             const batch = filtered.slice(i, i + batchSize);
             const el = document.getElementById('rekapContent');

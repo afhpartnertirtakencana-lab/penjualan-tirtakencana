@@ -268,7 +268,7 @@
       <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
         <button class="btn-install" id="installBtn" onclick="installApp()" title="Install App">📲</button>
         <button class="btn-darkmode" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
-        <span id="syncStatus" style="font-size:0.6rem;color:var(--text3);padding:2px 6px;background:var(--biru-muda);border-radius:8px">Manual</span><button class="btn-refresh" onclick="_nextSyncTime=Date.now()+AUTO_SYNC_INTERVAL;syncFromGAS(true)" title="Sinkron Manual">🔄</button>
+        <span id="syncStatus" style="font-size:0.6rem;color:var(--text3);padding:2px 6px;background:var(--biru-muda);border-radius:8px">Manual</span><button class="btn-refresh" onclick="_nextSyncTime=Date.now()+AUTO_SYNC_INTERVAL;syncFromGAS()" title="Sinkron Manual">🔄</button>
         <button class="btn-logout" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i></button>
       </div>
     </div>
@@ -330,7 +330,21 @@
     let products = [], pelanggan = [], allTrxList = [], allCustomers = [], stockInHistory = [], setoranHistory = [];
     let drivers = ['oji','padong','said','dedi','zehpudin'];
     let settings = { namaToko:'Tirta Kencana', alamat:'WTC Mangga 2 Lt UG A/53', tagline:'DO GOOD AND GOOD WILL COME TO YOU', bottomLine:'Terima kasih sudah berbelanja', logo:'', qris:'', telepon:'088211058000', bank1:{ nama:'BCA', norek:'6930099099', penerima:'Hendri' }, bank2:{ nama:'bluBCA', norek:'002283588888', penerima:'Hendri' }, salesList:[] };
-    let allUsers = [];
+    
+    // DEFINISI USER DEFAULT (HARDCODED AGAR LOGIN PASTI BISA)
+    const DEFAULT_USERS = [
+      { name:'admin',  role:'admin',  password:'020730' },
+      { name:'hasan',  role:'sales',  password:'1234'   },
+      { name:'ujang',  role:'sales',  password:'1234'   },
+      { name:'oji',    role:'driver', password:'1234'   },
+      { name:'padong', role:'driver', password:'1234'   },
+      { name:'said',   role:'driver', password:'1234'   },
+      { name:'dedi',   role:'driver', password:'1234'   },
+      { name:'zehpudin', role:'driver', password:'1234'   }
+    ];
+
+    let allUsers = JSON.parse(JSON.stringify(DEFAULT_USERS)); // Clone array
+    
     let _logoUrl = localStorage.getItem('tirtaLogo') || '';
     let _qrisUrl = '';
     let _scannerMode = null, _scanTargetIdx = null, _scanResult = '', _scanStream = null, _scanTimer = null, _scannerActive = false;
@@ -350,19 +364,11 @@
       try { await gasCall('syncMasterStockToSheet', [masterStockHistory]); } catch(e) { console.warn('Gagal sync master stock:', e); }
     }
     
-    // Fungsi Sinkronisasi Utama - DIPAKSA AMBIL DARI SERVER
-    async function refreshDataFromServer(showToast = true, force = false) {
-      // Jika force=true, abaikan cache lokal dan ambil fresh dari GAS
-      if (force) {
-         if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1000, icon: 'info', title: 'Mengambil data TERBARU dari Server...' });
-      } else {
-         if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1000, icon: 'info', title: 'Memeriksa data...' });
-      }
-
+    async function refreshDataFromServer(showToast = true) {
       try {
+        if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1000, icon: 'info', title: 'Mengambil data terbaru...' });
         const data = await gasCall('getAllData', []);
         if (data) {
-          // TIMPA DATA LOKAL DENGAN DATA DARI SERVER
           products = data.products || [];
           pelanggan = data.pelanggan || [];
           allTrxList = data.allTrxList || [];
@@ -371,22 +377,24 @@
           setoranHistory = data.setoranHistory || [];
           drivers = data.drivers || ['oji','padong','said','dedi','zehpudin'];
           settings = { ...settings, ...(data.settings || {}) };
-          allUsers = data.allUsers || [];
-          masterStockHistory = data.masterStockHistory || {};
-          
-          // Simpan data fresh ke localstorage
-          saveLocalData();
-          
-          if (showToast) {
-            Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Data Server Diperbarui' });
+          // Gabungkan user dari server dengan default user jika ada yang kurang
+          if (Array.isArray(data.allUsers)) {
+             const serverMap = new Map(data.allUsers.map(u => [u.name, u]));
+             DEFAULT_USERS.forEach(def => {
+                if (!serverMap.has(def.name)) allUsers.push(def);
+                else allUsers.find(u => u.name === def.name).role = serverMap.get(def.name).role;
+             });
+             // Tambahkan user baru dari server yang tidak ada di default
+             data.allUsers.forEach(u => { if (!allUsers.find(x => x.name === u.name)) allUsers.push(u); });
           }
+          masterStockHistory = data.masterStockHistory || {};
+          saveLocalData();
+          if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Data diperbarui' });
           return true;
         }
       } catch(e) {
         console.warn('Gagal refresh dari server:', e);
-        if (showToast) {
-          Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'warning', title: 'Gagal ambil data server, menggunakan data lokal' });
-        }
+        if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'warning', title: 'Gagal ambil data server, menggunakan data lokal' });
         return false;
       }
     }
@@ -394,21 +402,14 @@
     let _syncInterval = null;
     function startAutoSync(intervalSeconds = 15) {
       if (_syncInterval) clearInterval(_syncInterval);
-      _syncInterval = setInterval(async () => {
-        await refreshDataFromServer(false);
-      }, intervalSeconds * 1000);
+      _syncInterval = setInterval(async () => { await refreshDataFromServer(false); }, intervalSeconds * 1000);
     }
     
     let _pullStartY = 0, _pullCurrentY = 0, _pulling = false;
     function initPullToRefresh() {
       const content = document.querySelector('.content-area');
       if (!content) return;
-      content.addEventListener('touchstart', e => {
-        if (content.scrollTop === 0) {
-          _pullStartY = e.touches[0].clientY;
-          _pulling = true;
-        }
-      }, { passive: true });
+      content.addEventListener('touchstart', e => { if (content.scrollTop === 0) { _pullStartY = e.touches[0].clientY; _pulling = true; } }, { passive: true });
       content.addEventListener('touchmove', e => {
         if (!_pulling) return;
         _pullCurrentY = e.touches[0].clientY;
@@ -431,123 +432,123 @@
         _pulling = false;
         const diff = _pullCurrentY - _pullStartY;
         let indicator = document.getElementById('pull-indicator');
-        if (indicator) {
-          indicator.remove();
-          indicator = null;
-        }
+        if (indicator) { indicator.remove(); indicator = null; }
         if (diff > 80) {
-          await refreshDataFromServer(true, true); // Force refresh on pull
-          if (currentPage === 'rekap') loadRekap();
-          else if (currentPage === 'dashboard') loadDashboard();
-          else if (currentPage === 'penjualan') loadPenjualan();
-          else if (currentPage === 'transaksi') loadTransaksi();
-          else if (currentPage === 'stockbarang') loadStockBarang();
-          else if (currentPage === 'produk') loadProduk();
-          else if (currentPage === 'pelanggan') loadPelanggan();
-          else if (currentPage === 'piutang') loadPiutang();
+          await refreshDataFromServer(true);
+          renderContent();
         }
-        _pullStartY = 0;
-        _pullCurrentY = 0;
+        _pullStartY = 0; _pullCurrentY = 0;
       });
     }
 
     function loadLocalData() {
       const s = localStorage.getItem('tirtaFullData');
-      if (s) { try { const d = JSON.parse(s); products = d.products || []; pelanggan = d.pelanggan || []; allTrxList = d.allTrxList || []; allCustomers = d.allCustomers || []; stockInHistory = d.stockInHistory || []; setoranHistory = d.setoranHistory || []; drivers = d.drivers || ['oji','padong','said','dedi','zehpudin']; settings = { ...settings, ...(d.settings || {}) }; allUsers = d.allUsers || []; masterStockHistory = d.masterStockHistory || {}; } catch(e) {} }
-      
+      if (s) { 
+        try { 
+          const d = JSON.parse(s); 
+          products = d.products || []; 
+          pelanggan = d.pelanggan || []; 
+          allTrxList = d.allTrxList || []; 
+          allCustomers = d.allCustomers || []; 
+          stockInHistory = d.stockInHistory || []; 
+          setoranHistory = d.setoranHistory || []; 
+          drivers = d.drivers || ['oji','padong','said','dedi','zehpudin']; 
+          settings = { ...settings, ...(d.settings || {}) }; 
+          // Load users dari localstorage tapi tetap pastikan default users ada
+          if (d.allUsers && Array.isArray(d.allUsers)) {
+             d.allUsers.forEach(u => { 
+                const existing = allUsers.find(x => x.name === u.name);
+                if (existing) { existing.role = u.role; existing.password = u.password; } 
+                else allUsers.push(u); 
+             });
+          }
+          masterStockHistory = d.masterStockHistory || {}; 
+        } catch(e) {} 
+      }
       try { _setoranEditLog = JSON.parse(localStorage.getItem('tirtaSetoranEditLog')||'[]'); } catch(e) { _setoranEditLog = []; }
 
       if (products.length === 0) products = [ { sku:'aq1500', nama:'Aqua 1500 ml', modal:50000, jual:55000, stokAwal:0 }, { sku:'aq200', nama:'Aqua 200 ml', modal:33000, jual:40000, stokAwal:3 }, { sku:'aq220b', nama:'Aqua Cube', modal:21000, jual:38000, stokAwal:0 }, { sku:'aq330', nama:'Aqua 330 ml', modal:35000, jual:42000, stokAwal:29 }, { sku:'aq600', nama:'Aqua 600 ml', modal:44000, jual:49000, stokAwal:0 }, { sku:'aqg', nama:'Aqua Galon 19L', modal:16750, jual:23000, stokAwal:5 } ];
       if (pelanggan.length === 0) pelanggan = ['Winda','ko asun'];
       if (allCustomers.length === 0) allCustomers = pelanggan.slice();
       if (!settings.salesList) settings.salesList = [];
-      if (allUsers.length === 0) {
-        allUsers = [
-          { name:'admin',  role:'admin',  password:'020730' },
-          { name:'hasan',  role:'sales',  password:'1234'   },
-          { name:'ujang',  role:'sales',  password:'1234'   },
-          { name:'oji',    role:'driver', password:'1234'   },
-          { name:'padong', role:'driver', password:'1234'   },
-          { name:'said',   role:'driver', password:'1234'   },
-          { name:'dedi',   role:'driver', password:'1234'   },
-          { name:'zehpudin', role:'driver', password:'1234'   }
-        ];
-      }
-      const _masterUsers = [
-        { name:'admin',  role:'admin',  password:'020730' },
-        { name:'hasan',  role:'sales',  password:'1234'   },
-        { name:'ujang',  role:'sales',  password:'1234'   },
-        { name:'oji',    role:'driver', password:'1234'   },
-        { name:'padong', role:'driver', password:'1234'   },
-        { name:'said',   role:'driver', password:'1234'   },
-        { name:'dedi',   role:'driver', password:'1234'   },
-        { name:'zehpudin', role:'driver', password:'1234' }
-      ];
-      _masterUsers.forEach(mu => { if (!allUsers.find(u => u.name === mu.name)) allUsers.push(mu); });
+      
       _logoUrl = localStorage.getItem('tirtaLogo') || '';
       _qrisUrl = settings.qris || localStorage.getItem('sp_qris') || '';
     }
 
-    let _syncCountdown = 0;
-    function updateSyncCountdown() {
-      const el = document.getElementById('syncStatus');
-      if (el) el.textContent = '🔄 Manual';
-    }
-
-    async function syncFromGAS(force = false) {
+    async function syncFromGAS() {
       const el = document.getElementById('syncStatus');
       if (el) el.textContent = '🔄 Sync...';
-      _syncCountdown = 30;
       try {
-        // PENTING: Selalu panggil refreshDataFromServer dengan flag force jika diminta
-        const success = await refreshDataFromServer(false, force);
-        if (!success) throw new Error("Gagal sinkron");
+        const [prod, cust, trx, set, users, stockIn, gasDrivers] = await Promise.all([
+          gasCall('getProducts', []), gasCall('getCustomers', []),
+          gasCall('getTrxList', []), gasCall('getSettings', []), gasCall('getUsers', []),
+          gasCall('getInputBarangHistory', []), gasCall('getDrivers', [])
+        ]);
+        if (Array.isArray(prod)) products = prod;
+        if (Array.isArray(cust)) { allCustomers = cust; pelanggan = cust.slice(); }
+        if (Array.isArray(trx)) {
+          const localMap = new Map(allTrxList.map(t => [t.id, t]));
+          allTrxList = trx.map(t => {
+            const existing = localMap.get(t.id);
+            return existing && Array.isArray(existing.items) ? { ...t, items: existing.items } : t;
+          });
+          allTrxList.sort((a, b) => (b.tgl || '').localeCompare(a.tgl || '') || (b.id || '').localeCompare(a.id || ''));
+        }
+        if (set && typeof set === 'object') {
+          settings.namaToko = set.storeName || settings.namaToko;
+          settings.alamat = set.address || settings.alamat;
+          settings.tagline = set.tagline || settings.tagline;
+          settings.bottomLine = set.footer || settings.bottomLine;
+          settings.telepon = set.phone || settings.telepon;
+          settings.bank1 = set.bank1 || settings.bank1;
+          settings.bank2 = set.bank2 || settings.bank2;
+          settings.salesList = Array.isArray(set.salesList) ? set.salesList : [];
+        }
+        if (Array.isArray(stockIn) && stockIn.length > 0) stockInHistory = stockIn;
         
-        if (currentPage === 'dashboard' || currentPage === 'transaksi' || currentPage === 'produk' || currentPage === 'gudang') renderContent();
+        // Handle Users Sync
+        if (Array.isArray(users) && users.length > 0) {
+           // Reset allUsers to default first to ensure structure
+           allUsers = JSON.parse(JSON.stringify(DEFAULT_USERS));
+           // Merge server users
+           users.forEach(u => {
+              const existing = allUsers.find(x => x.name === u.name);
+              if (existing) { existing.role = u.role; if(u.password) existing.password = u.password; }
+              else allUsers.push(u);
+           });
+        }
+
+        if (Array.isArray(gasDrivers) && gasDrivers.length > 0) drivers = gasDrivers;
+        
+        saveLocalData();
+        if (currentPage !== 'dashboard') renderContent();
       } catch (e) {
         console.warn('Gagal sinkron:', e);
-        // Jangan tampilkan error besar jika hanya auto-sync background, tapi tampilkan jika manual
-        if(force) {
-            Swal.fire({
-              icon: 'error',
-              title: 'Koneksi GAGAL',
-              text: e.message || 'Tidak dapat terhubung ke Google Sheets.',
-              footer: 'URL saat ini: ' + getGasUrl()
-            });
-        }
+        // Jangan tampilkan error popup yang mengganggu saat auto-sync, cukup log
       }
       const el2 = document.getElementById('syncStatus');
       if (el2) el2.textContent = '✅ Sync';
-      setTimeout(()=>{ const e3=document.getElementById('syncStatus'); if(e3) updateSyncStatus(); }, 2000);
+      setTimeout(()=>{ const e3=document.getElementById('syncStatus'); if(e3) e3.textContent = 'Manual'; }, 2000);
     }
 
     let _autoSyncTimer = null;
     const AUTO_SYNC_INTERVAL = 5 * 60 * 1000;
     let _nextSyncTime = null;
 
-    function updateSyncStatus() {
-      const el = document.getElementById('syncStatus');
-      if (!el || !_nextSyncTime) return;
-      const diff = Math.max(0, Math.round((_nextSyncTime - Date.now()) / 60000));
-      el.textContent = diff <= 0 ? '🔄 Syncing...' : `⏱ ${diff}m`;
-    }
-
     function startAutoSync() {
       if (_autoSyncTimer) clearInterval(_autoSyncTimer);
       _nextSyncTime = Date.now() + AUTO_SYNC_INTERVAL;
-      updateSyncStatus();
       _autoSyncTimer = setInterval(async () => {
         if (Date.now() >= _nextSyncTime) {
           _nextSyncTime = Date.now() + AUTO_SYNC_INTERVAL;
-          try { await syncFromGAS(false); } catch(e) { console.warn('Auto sync gagal:', e); }
+          try { await syncFromGAS(); } catch(e) { console.warn('Auto sync gagal:', e); }
         }
-        updateSyncStatus();
       }, 60000);
     }
 
     function stopAutoSync() {
       if (_autoSyncTimer) { clearInterval(_autoSyncTimer); _autoSyncTimer = null; }
-      if (_syncInterval) { clearInterval(_syncInterval); _syncInterval = null; }
       const el = document.getElementById('syncStatus');
       if (el) el.textContent = 'Manual';
     }
@@ -557,9 +558,11 @@
             p = document.getElementById('loginPass').value.trim(); 
       if (!u || !p) return Swal.fire('Error','Isi username & password','error'); 
       
-      // Pastikan allUsers terisi dulu dari lokal (fallback)
-      if (allUsers.length === 0) loadLocalData();
-
+      // PASTIKAN allUsers TERISI DENGAN DEFAULT JIKA KOSONG
+      if (!allUsers || allUsers.length === 0) {
+         allUsers = JSON.parse(JSON.stringify(DEFAULT_USERS));
+      }
+      
       const f = allUsers.find(x => x.name === u && x.password === p); 
       if (f) { 
         currentUser = { name: f.name, role: f.role }; 
@@ -567,20 +570,32 @@
         showMainApp(); 
       } else Swal.fire('Error','Username/password salah!','error'); 
     }
+    
     document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !document.getElementById('loginPage').classList.contains('hidden')) doLogin(); });
-    function doLogout() { stopAutoSync(); localStorage.removeItem('tirtaUser'); currentUser = null; document.getElementById('loginPage').classList.remove('hidden'); document.getElementById('mainApp').classList.add('hidden'); }
+    
+    function doLogout() { 
+      stopAutoSync(); 
+      localStorage.removeItem('tirtaUser'); 
+      currentUser = null; 
+      document.getElementById('loginPage').classList.remove('hidden'); 
+      document.getElementById('mainApp').classList.add('hidden'); 
+    }
 
     async function showMainApp() {
-      document.getElementById('loginPage').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
-      document.getElementById('displayName').textContent = currentUser.name; document.getElementById('displayRole').textContent = currentUser.role.toUpperCase();
+      document.getElementById('loginPage').classList.add('hidden'); 
+      document.getElementById('mainApp').classList.remove('hidden');
+      document.getElementById('displayName').textContent = currentUser.name; 
+      document.getElementById('displayRole').textContent = currentUser.role.toUpperCase();
       document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
       if (settings.alamat) document.getElementById('headerAlamat').textContent = settings.alamat;
       const _effectiveLogo = localStorage.getItem('tirtaLogo') || _logoUrl;
       if (_effectiveLogo) { _logoUrl = _effectiveLogo; document.getElementById('logoImg').src = _effectiveLogo; }
-      initDarkMode(); renderMenuTabs();
       
-      // PENTING: Paksa sinkronisasi dari server saat login agar data selalu fresh
-      try { await syncFromGAS(true); } catch(e) { console.warn('Initial sync failed', e); }
+      initDarkMode(); 
+      renderMenuTabs();
+      
+      // FORCE SYNC SAAT LOGIN AGAR DATA SELALU BARU DARI SHEETS
+      await syncFromGAS(); 
       
       startAutoSync();
       initPullToRefresh();
@@ -1625,7 +1640,7 @@
     async function loadRekap() {
       document.getElementById('contentArea').innerHTML = '<div class="loading">Memuat data terbaru...</div>';
       try {
-        await syncFromGAS(true); 
+        await syncFromGAS(); 
       } catch(e) {
         console.warn('Gagal sync otomatis, lanjut dengan data lokal:', e);
       }

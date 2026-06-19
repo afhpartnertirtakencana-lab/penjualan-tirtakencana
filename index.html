@@ -1584,10 +1584,20 @@
     }
 
     // ========== REKAP ==========
-    let _rekapJenis = 'penjualan_per_sales';
-    function loadRekap() {
+        let _rekapJenis = 'penjualan_per_sales';
+    
+    async function loadRekap() {
+      // [PENTING] Paksa sync data terbaru dari Google Sheets sebelum buka Rekap
+      document.getElementById('contentArea').innerHTML = '<div class="loading">Memuat data terbaru...</div>';
+      try {
+        await syncFromGAS(); 
+      } catch(e) {
+        console.warn('Gagal sync otomatis, lanjut dengan data lokal:', e);
+      }
+
       let sOpts = '<option value="">Semua Sales</option>';
       (settings.salesList||[]).forEach(s => { sOpts += `<option value="${esc(s)}">${esc(s)}</option>`; });
+      
       const jenisOpts = [
         { val:'penjualan_per_sales',  label:'Penjualan per Sales' },
         { val:'rekap_per_sku',        label:'Rekap per SKU' },
@@ -1600,6 +1610,7 @@
         { val:'belum_transfer',       label:'Belum Transfer' },
         { val:'laporan_per_sales',    label:'Laporan per Sales' },
       ].map(o => `<option value="${o.val}" ${_rekapJenis===o.val?'selected':''}>${o.label}</option>`).join('');
+
       document.getElementById('contentArea').innerHTML = `
         <div class="card">
           <div class="card-title"><i class="fas fa-chart-bar"></i> Laporan</div>
@@ -1614,10 +1625,10 @@
           </div>
         </div>
         <div id="rekapContent"><div class="text-center text-sm" style="padding:40px">Pilih laporan &amp; filter lalu klik Tampilkan</div></div>`;
+      
       document.getElementById('rekapTgl').value = localDateStr();
       document.getElementById('rekapJenis').value = _rekapJenis;
     }
-
     async function doRekap() {
       const tgl = document.getElementById('rekapTgl').value;
       const salesFilter = document.getElementById('rekapSales').value;

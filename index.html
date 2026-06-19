@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Tirta Kencana">
-  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRpcnRhIEtlbmNhbmEiLAogICJzaG9ydF9uYW1lIjogIlRpcnRhIEtlbmNhbmEiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzFBNkRCNSIsCiAgInRoZW1lX2NvbG9yIjogIiMxQTZEQjUiLAogICJpY29ucyI6IFt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmcgeG1sbnM9J2h0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnJyB2aWV3Qm94PScwIDAgMTkyIDE5MiclM0UlM0NjaXJjbGUgZmlsbD0nJTIzMUE2REI1JyBjeD0nOTYnIGN5PSc5Nicgcj0nOTAnLyUzRSUzQ2NpcmNsZSBmaWxsPSd3aGl0ZScgY3g9Jzk2JyBjeT0nOTYnIHI9JzcwJy8lM0UlM0N0ZXh0IHg9Jzk2JyB5PScxMTAnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZpbGw9JyUyMzFBNkRCNScgZm9udC1zaXplPSc2MCcgZm9udC13ZWlnaHQ9J2JvbGQnJTNFVEs8L3RleHQlM0UlM0Mvc3ZnJTNlIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
+  <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIlRpcnRhIEtlbmNhbmEiLAogICJzaG9ydF9uYW1lIjogIlRpcnRhIEtlbmNhbmEiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzFBNkRCNSIsCiAgInRoZW1lX2NvbG9yIjogIiMxQTZEQjUiLAogICJpY29ucyI6IFt7InNyYzoiOiJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDE5MiAxOTInJTNFJTNDY2lyY2xlIGZpbGw9JyUyMzFBNkRCNScgY3g9Jzk2JyBjeT0nOTYnIHI9JzkwLyclM0UlM0NjaXJjbGUgZmlsbD0nd2hpdGUnIGN4PSc5NicgY3k9Jzk2JyByPSc3MC8nJTNFJTNDdGV4dCB4PSc5NicgeT0nMTEwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmaWxsPScjMUE2REI1JyBmb250LXNpemU9JzYwJyBmb250LXdlaWdodD0nYm9sZCclM0VUSzwlL3RleHQlM0UlM0Mvc3ZnJTNlIiwic2l6ZXMiOiIxOTJ4MTkyIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJwdXJwb3NlIjoiYW55IG1hc2thYmxlIn1dfQ==">
   <title>Tirta Kencana · Air Minum</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -17,7 +17,6 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    /* === SEMUA CSS SAMA SEPERTI SEBELUMNYA === */
     :root {
       --biru: #1A6DB5; --biru2: #2B8FDE; --kuning: #FFD700;
       --biru-muda: #EAF4FD; --kuning-muda: #FFF8E1;
@@ -36,68 +35,109 @@
     .app-container { max-width:500px; width:100%; background:var(--card); border-radius:24px; box-shadow:var(--shadow-md); overflow:hidden; display:flex; flex-direction:column; min-height:95vh; transition:background 0.3s; }
     @media(min-width:768px){ .app-container{max-width:720px;} }
     @media(min-width:1024px){ .app-container{max-width:1000px;} }
-    @media(max-width:480px){ body{padding:4px;} .app-container{border-radius:16px;} .brand{font-size:1.5rem!important;} .tab{font-size:0.65rem!important;padding:6px 10px!important;} input,select,textarea{font-size:0.75rem!important;padding:8px 10px!important;} .btn{font-size:0.75rem!important;padding:8px 12px!important;} table{font-size:0.65rem!important;} th,td{padding:4px 5px!important;} .card{padding:12px!important;} }
-    .header { background:linear-gradient(135deg,#1A6DB5 0%,#2B8FDE 100%); color:white; padding:18px 20px 14px; text-align:center; }
-    .brand { font-size:1.9rem; font-weight:800; display:flex; justify-content:center; gap:6px; } .tirta{color:#fff;} .kencana{color:var(--kuning);}
-    .tagline { font-size:0.7rem; opacity:0.9; letter-spacing:0.5px; margin:4px 0; } .alamat { font-size:0.65rem; opacity:0.8; }
-    .logo-header { width:48px; height:48px; background:white; border-radius:50%; margin:8px auto 0; overflow:hidden; border:2px solid var(--kuning); display:flex; align-items:center; justify-content:center; cursor:pointer; } .logo-header img{width:100%;height:100%;object-fit:contain;}
-    .nav-bar { display:flex; justify-content:space-between; align-items:center; padding:8px 14px; background:var(--surface2); border-bottom:1px solid var(--border); flex-wrap:wrap; gap:6px; }
-    .user-info { display:flex; align-items:center; gap:8px; } .avatar { width:32px; height:32px; border-radius:50%; background:var(--biru); color:white; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; } .role-tag { background:var(--kuning); color:#0A2540; padding:3px 10px; border-radius:20px; font-size:0.6rem; font-weight:700; text-transform:uppercase; }
-    .btn { padding:10px 16px; border-radius:12px; border:none; font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:0.2s; font-family:var(--font); } .btn-primary{background:var(--biru);color:white;} .btn-warning{background:var(--kuning);color:#0A2540;} .btn-success{background:var(--hijau);color:white;} .btn-danger{background:var(--merah);color:white;} .btn-outline{background:transparent;border:2px solid var(--biru);color:var(--biru);} .btn-sm{padding:6px 10px;font-size:0.7rem;border-radius:8px;} .btn-block{width:100%;justify-content:center;} .btn:disabled{opacity:0.5;cursor:not-allowed;}
-    .btn-logout{background:var(--merah);color:white;border:none;padding:6px 14px;border-radius:8px;font-size:0.7rem;cursor:pointer;font-weight:600;}
-    .btn-refresh{background:var(--hijau);color:white;border:none;padding:6px 10px;border-radius:8px;font-size:0.65rem;cursor:pointer;font-weight:600;}
-    .btn-darkmode{background:#6366F1;color:white;border:none;padding:6px 10px;border-radius:8px;font-size:0.65rem;cursor:pointer;font-weight:600;}
-    .btn-install{background:#8B5CF6;color:white;border:none;padding:6px 10px;border-radius:8px;font-size:0.65rem;cursor:pointer;font-weight:600;display:none;}
-    .btn-scan{background:var(--teal);color:white;border:none;} .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border);} .btn-icon{padding:6px 8px;min-width:32px;justify-content:center;}
-    .menu-tabs { 
-      display:flex; overflow-x:auto; gap:4px; padding:8px 10px; 
-      background:var(--card); border-bottom:1px solid var(--border); 
-      scrollbar-width: thin; scrollbar-color: var(--biru) transparent;
-    } 
-    .menu-tabs::-webkit-scrollbar { height: 5px; }
-    .menu-tabs::-webkit-scrollbar-track { background: transparent; }
-    .menu-tabs::-webkit-scrollbar-thumb { background: var(--biru); border-radius: 10px; }
-    .menu-tabs::-webkit-scrollbar-thumb:hover { background: var(--biru2); }
-    .tab{flex:0 0 auto;padding:7px 14px;border-radius:20px;border:1px solid var(--border);background:var(--card);font-size:0.7rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:0.2s;color:var(--text2);display:flex;align-items:center;gap:4px;font-family:var(--font);} .tab i{font-size:0.8rem;} .tab.active{background:var(--biru);color:white;border-color:var(--biru);}
-    .content-area { flex:1; padding:12px; overflow-y:auto; max-height:calc(100vh - 280px); }
-    .card { background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow); margin-bottom:10px; border:1px solid var(--border); transition:background 0.3s; }
-    .card-title { font-weight:700; font-size:0.9rem; color:var(--biru); display:flex; align-items:center; gap:6px; margin-bottom:12px; } .card-title i{color:var(--kuning);}
-    .form-group { margin-bottom:8px; } .form-group label,.form-label { display:block; font-size:0.7rem; font-weight:600; color:var(--text2); margin-bottom:3px; }
-    input,select,textarea { width:100%; padding:9px 12px; border-radius:10px; border:1px solid var(--border); font-size:0.8rem; outline:none; background:var(--surface); color:var(--text); font-family:var(--font); } input:focus,select:focus,textarea:focus{border-color:var(--biru);box-shadow:0 0 0 3px rgba(26,109,181,0.1);} input[readonly]{background:var(--biru-muda);font-weight:600;}
-    .flex-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; } .flex-between { display:flex; justify-content:space-between; align-items:center; } .col-2{flex:2;} .col-1{flex:1;}
-    .total-box { background:var(--kuning-muda); padding:10px 14px; border-radius:12px; margin:8px 0; text-align:right; font-weight:700; font-size:1.1rem; color:var(--biru); } .total-box.danger{background:#FEE2E2;color:var(--merah);}
-    .status-badge { padding:3px 8px; border-radius:10px; font-size:0.6rem; font-weight:600; display:inline-block; } .status-cod{background:#FEF3C7;color:#92400E;} .status-transfer{background:#DBEAFE;color:#1E40AF;} .status-qris{background:#EDE9FE;color:#5B21B6;} .status-belumbayar{background:#FEE2E2;color:#991B1B;} .status-kiriman{background:#E0E7FF;color:#3730A3;} .status-titipan{background:#FCE7F3;color:#9D174D;}
-    table { width:100%; border-collapse:collapse; font-size:0.7rem; } th,td { padding:6px 8px; text-align:left; border-bottom:1px solid var(--border); } th{background:var(--biru-muda);color:var(--biru);font-weight:700;font-size:0.65rem;}
-    .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-    .bottom-bar { text-align:center; font-size:0.65rem; color:var(--text2); padding:10px; border-top:1px solid var(--border); background:var(--surface2); }
-    .hidden { display:none!important; } .mb-2{margin-bottom:8px;} .mt-2{margin-top:8px;} .text-sm{font-size:0.7rem;} .text-center{text-align:center;}
-    .summary-box { flex:1; text-align:center; padding:10px; border-radius:12px; font-size:0.65rem; background:var(--biru-muda); }
-    .loading { text-align:center; padding:48px; color:var(--text2); font-size:14px; } .loading::after{content:'';display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--biru);border-radius:50%;animation:spin .7s linear infinite;margin-left:8px;vertical-align:middle;} @keyframes spin{to{transform:rotate(360deg);}}
-    .login-container { display:flex; justify-content:center; align-items:center; min-height:100vh; background:linear-gradient(135deg,#1A6DB5,#2B8FDE); }
+    @media(max-width:480px){ body{padding:4px;} .app-container{border-radius:16px;} .brand{font-size:1.5rem!important;} .tab{font-size:0.65rem!important;padding:6px 10px!important;} input,select,textarea{font-size:16px!important;} }
+    
+    /* Utility & Components */
+    .hidden { display:none !important; }
+    .login-container { display:flex; justify-content:center; align-items:center; min-height:100vh; width:100%; background:linear-gradient(135deg,#1A6DB5,#2B8FDE); }
     .login-card { background:white; padding:30px; border-radius:24px; width:340px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.2); }
-    .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; } .modal-overlay.show{display:flex;}
-    .modal { background:var(--card); border-radius:20px; padding:20px; max-width:500px; width:90%; max-height:85vh; overflow-y:auto; } .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;} .modal-header h2{font-size:1rem;color:var(--biru);} .modal-close{background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text2);}
-    .action-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:12px 0; } .action-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px 8px;border-radius:var(--radius);cursor:pointer;border:1.5px solid var(--border);background:var(--bg2);transition:all 0.2s;text-align:center;} .action-card:hover{border-color:var(--biru);background:rgba(26,109,181,0.06);}
+    .brand { font-size:1.8rem; font-weight:800; letter-spacing:-0.5px; }
+    .tagline { font-size:0.65rem; color:var(--text3); font-weight:600; letter-spacing:1px; margin-top:4px; }
+    .alamat { font-size:0.7rem; color:var(--text2); margin-top:6px; }
+    .logo-header { width:48px; height:48px; border-radius:12px; overflow:hidden; background:white; margin:8px auto 0; cursor:pointer; border:2px solid var(--border); }
+    .logo-header img { width:100%; height:100%; object-fit:contain; }
+    
+    .header { background:linear-gradient(135deg,#1A6DB5,#2B8FDE); color:white; padding:20px 16px 16px; text-align:center; position:relative; }
+    .nav-bar { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:var(--surface); border-bottom:1px solid var(--border); }
+    .user-info { display:flex; align-items:center; gap:10px; }
+    .avatar { width:36px; height:36px; border-radius:50%; background:var(--biru-muda); color:var(--biru); display:flex; align-items:center; justify-content:center; font-weight:800; font-size:0.9rem; }
+    .role-tag { font-size:0.6rem; background:var(--kuning); color:#0A2540; padding:2px 6px; border-radius:6px; font-weight:700; text-transform:uppercase; }
+    
+    .menu-tabs { display:flex; overflow-x:auto; gap:4px; padding:8px; background:var(--surface); border-bottom:1px solid var(--border); scrollbar-width:none; }
+    .menu-tabs::-webkit-scrollbar { display:none; }
+    .tab { flex:0 0 auto; padding:8px 12px; border-radius:12px; border:none; background:transparent; color:var(--text2); font-size:0.75rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:0.2s; }
+    .tab.active { background:var(--biru-muda); color:var(--biru); }
+    
+    .content-area { flex:1; padding:16px; overflow-y:auto; background:var(--bg); }
+    .bottom-bar { padding:10px; text-align:center; font-size:0.65rem; color:var(--text3); background:var(--surface); border-top:1px solid var(--border); }
+    
+    .card { background:var(--card); border-radius:var(--radius-sm); padding:16px; margin-bottom:12px; border:1px solid var(--border); box-shadow:var(--shadow); }
+    .card-title { font-size:0.85rem; font-weight:700; color:var(--biru); margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+    
+    .form-group { margin-bottom:12px; }
+    .form-group label { display:block; font-size:0.7rem; font-weight:600; color:var(--text2); margin-bottom:6px; }
+    input, select, textarea { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); font-size:0.85rem; font-family:var(--font); transition:0.2s; }
+    input:focus, select:focus, textarea:focus { outline:none; border-color:var(--biru); box-shadow:0 0 0 3px rgba(26,109,181,0.1); }
+    
+    .flex-row { display:flex; gap:12px; margin-bottom:12px; }
+    .col-1 { flex:1; }
+    .col-2 { flex:2; }
+    .mb-2 { margin-bottom:12px; }
+    .mt-2 { margin-top:12px; }
+    
+    .btn { padding:10px 16px; border-radius:10px; border:none; font-weight:600; font-size:0.85rem; cursor:pointer; transition:0.2s; display:inline-flex; align-items:center; justify-content:center; gap:6px; }
+    .btn-primary { background:var(--biru); color:white; }
+    .btn-primary:hover { background:var(--biru2); }
+    .btn-secondary { background:var(--bg2); color:var(--text2); }
+    .btn-danger { background:var(--merah); color:white; }
+    .btn-outline { background:transparent; border:1.5px solid var(--border); color:var(--text2); }
+    .btn-outline:hover { border-color:var(--biru); color:var(--biru); }
+    .btn-ghost { background:transparent; color:var(--text3); }
+    .btn-ghost:hover { background:var(--bg2); color:var(--text2); }
+    .btn-sm { padding:6px 10px; font-size:0.75rem; border-radius:8px; }
+    .btn-block { width:100%; }
+    .btn-icon { width:36px; height:36px; padding:0; }
+    .btn-scan { background:var(--teal); color:white; }
+    .btn-darkmode, .btn-refresh, .btn-logout, .btn-install { background:var(--bg2); border:none; width:36px; height:36px; border-radius:50%; color:var(--text2); cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1rem; transition:0.2s; }
+    .btn-darkmode:hover, .btn-refresh:hover, .btn-logout:hover, .btn-install:hover { background:var(--biru-muda); color:var(--biru); }
+    
+    .table-wrap { overflow-x:auto; border-radius:8px; border:1px solid var(--border); }
+    table { width:100%; border-collapse:collapse; font-size:0.75rem; }
+    th { background:var(--bg2); color:var(--text2); font-weight:600; text-align:left; padding:8px 10px; white-space:nowrap; }
+    td { padding:8px 10px; border-bottom:1px solid var(--border); color:var(--text); white-space:nowrap; }
+    tr:last-child td { border-bottom:none; }
+    
+    .total-box { background:var(--surface2); padding:12px; border-radius:10px; border:1px solid var(--border); margin:12px 0; }
+    .total-box.danger { background:#FEF2F2; border-color:#FECACA; }
+    .flex-between { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:0.8rem; }
+    .fw-bold { font-weight:700; }
+    .text-center { text-align:center; }
+    .text-sm { font-size:0.75rem; }
+    .text-right { text-align:right; }
+    
+    .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center; }
+    .modal-overlay.show { display:flex; }
+    .modal { background:var(--card); border-radius:20px; padding:20px; max-width:500px; width:90%; max-height:85vh; overflow-y:auto; }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .modal-header h2 { font-size:1rem; color:var(--biru); }
+    .modal-close { background:none; border:none; font-size:1.2rem; cursor:pointer; color:var(--text2); }
+    .modal-body { margin-bottom:16px; }
+    .modal-footer { display:flex; gap:8px; justify-content:flex-end; }
+    
+    .action-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:12px 0; }
+    .action-card { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:18px 8px; border-radius:var(--radius); cursor:pointer; border:1.5px solid var(--border); background:var(--bg2); transition:all 0.2s; text-align:center; }
+    .action-card:hover { border-color:var(--biru); background:rgba(26,109,181,0.06); }
+    
     .cart-item-row { display:flex; align-items:center; gap:6px; margin-bottom:8px; padding:8px; background:var(--biru-muda); border-radius:10px; flex-wrap:wrap; }
-    .cart-item-select { flex:2; min-width:120px; font-size:0.7rem; padding:6px 8px; } .cart-qty{width:55px!important;} .cart-disc{width:70px!important;}
-    .scanner-video-wrap { position:relative; width:100%; max-width:400px; margin:0 auto; border-radius:12px; overflow:hidden; background:#000; } .scanner-video-wrap video{width:100%;height:auto;display:block;}
+    .cart-item-select { flex:2; min-width:120px; font-size:0.7rem; padding:6px 8px; }
+    .cart-qty { width:55px!important; }
+    .cart-disc { width:70px!important; }
+    
+    .scanner-video-wrap { position:relative; width:100%; max-width:400px; margin:0 auto; border-radius:12px; overflow:hidden; background:#000; }
+    .scanner-video-wrap video { width:100%; height:auto; display:block; }
     .barcode-thumb { width:64px; height:42px; object-fit:contain; border-radius:6px; border:1px solid var(--border); cursor:pointer; background:#fff; padding:3px; }
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; } @media(max-width:768px){.grid-2{grid-template-columns:1fr;}}
-    .stat-card { background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center; cursor:pointer; transition:0.2s; } .stat-card:hover{border-color:var(--biru);transform:translateY(-2px);} .stat-icon{font-size:24px;} .stat-label{font-size:11px;font-weight:700;color:var(--text2);margin:4px 0;} .stat-value{font-size:15px;font-weight:800;color:var(--biru);font-family:var(--mono);} .stat-count{font-size:10px;color:var(--text3);}
-    .stat-grid-mobile { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; } @media(max-width:600px){.stat-grid-mobile{grid-template-columns:repeat(3,1fr);}} @media(max-width:380px){.stat-grid-mobile{grid-template-columns:repeat(2,1fr);}}
-    .item-row-header { display:flex; gap:6px; font-size:10px; font-weight:700; color:var(--text3); padding:4px 0; margin-bottom:4px; } .item-row-header span{flex:1;}
-    .item-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; } .item-row input,.item-row select{flex:1;min-width:0;font-size:12px;padding:6px;}
-    .summary-row { display:flex; justify-content:space-between; padding:4px 0; font-size:13px; }
-    .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; } .filter-bar input,.filter-bar select{flex:1;min-width:120px;}
-    .tag-list { display:flex; flex-wrap:wrap; gap:6px; } .tag{background:var(--biru-muda);color:var(--biru);padding:5px 10px;border-radius:20px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;} .tag-remove{background:none;border:none;color:var(--merah);cursor:pointer;font-size:14px;padding:0;line-height:1;}
-    .img-upload-box { border:2px dashed var(--border); border-radius:var(--radius-sm); padding:16px; text-align:center; cursor:pointer; transition:0.2s; } .img-upload-box:hover{border-color:var(--biru);}
-    .img-placeholder { color:var(--text3); font-size:13px; }
-    .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1E293B; color:white; padding:10px 20px; border-radius:12px; font-size:13px; font-weight:600; z-index:9999; animation:fadeInUp 0.3s ease; } @keyframes fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(20px);}to{opacity:1;transform:translateX(-50%) translateY(0);}}
-    .bank-info { background:#F0F9FF; border:1px solid #BAE6FD; border-radius:10px; padding:10px; margin:10px 0; font-size:0.7rem; }
-    .section-title { font-size:0.7rem; font-weight:700; color:var(--biru); margin:12px 0 6px 0; padding-bottom:4px; border-bottom:2px solid var(--kuning); }
-    .sub-tabs { display:flex; overflow-x:auto; gap:4px; margin-bottom:10px; } .sub-tab{flex:0 0 auto;padding:5px 10px;border-radius:15px;border:1px solid var(--border);background:var(--card);font-size:0.65rem;cursor:pointer;white-space:nowrap;color:var(--text2);} .sub-tab.active{background:var(--kuning);color:#0A2540;border-color:var(--kuning);font-weight:600;}
-    #struk-offscreen { position:fixed; left:-9999px; top:0; pointer-events:none; z-index:-1; }
-
+    
+    .stat-card { background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:14px 10px; text-align:center; cursor:pointer; transition:0.2s; }
+    .stat-card:hover { border-color:var(--biru); transform:translateY(-2px); }
+    .stat-icon { font-size:24px; }
+    .stat-label { font-size:11px; font-weight:700; color:var(--text2); margin:4px 0; }
+    .stat-value { font-size:15px; font-weight:800; color:var(--biru); font-family:var(--mono); }
+    .stat-count { font-size:10px; color:var(--text3); }
+    
+    .summary-box { background:var(--biru-muda); padding:10px; border-radius:10px; text-align:center; flex:1; }
+    
+    .loading { text-align:center; padding:20px; color:var(--text2); font-size:0.8rem; }
+    
     /* Dashboard Menu Utama */
     .summary-shape {
       background: linear-gradient(135deg, #1A6DB5, #2B8FDE);
@@ -204,6 +244,7 @@
   </style>
 </head>
 <body>
+
   <div id="loginPage" class="login-container">
     <div class="login-card">
       <div class="brand" style="margin-bottom:10px;"><span style="color:#1A6DB5;">Tirta</span><span style="color:#F4B400;">Kencana</span></div>
@@ -219,7 +260,7 @@
       <div class="brand"><span class="tirta">Tirta</span><span class="kencana">Kencana</span></div>
       <div class="tagline">DO GOOD AND GOOD WILL COME TO YOU</div>
       <div class="alamat" id="headerAlamat">WTC Mangga 2 Lt UG A/53</div>
-      <div class="logo-header" onclick="document.getElementById('logoFileInput').click()"><img id="logoImg" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGZpbGw9IiMxQTZEQjUiIGN4PSI1MCIgY3k9IjUwIiByPSI0OCIvPjxjaXJjbGUgZmlsbD0id2hpdGUiIGN4PSI1MCIgY3k9IjUwIiByPSI0MiIvPjxjaXJjbGUgZmlsbD0iI0Y0QjQwMCIgY3g9IjUwIiBjeT0iNTAiIHI9IjM4Ii8+PGNpcmNsZSBmaWxsPSJ3aGl0ZSIgY3g9IjUwIiBjeT0iNTAiIHI9IjM0Ii8+PHRleHQgeD0iNTAiIHk9IjQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMUE2REI1IiBmb250LXNpemU9IjEyIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9IkFyaWFsIj5USVJUQTwvdGV4dD48dGV4dCB4PSI1MCIgeT0iNTgiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZpbGw9IiNGNEI0MDAiIGZvbnQtc2l6ZT0iMTIiIGZvbnQtd2VpZ2h0PSJib2xkIiBmb250LWZhbWlseT0iQXJpYWwiPktFTkNBTkE8L3RleHQ+PC9zdmc+" alt="Logo"></div>
+      <div class="logo-header" onclick="document.getElementById('logoFileInput').click()"><img id="logoImg" src="image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48Y2lyY2xlIGZpbGw9IiMxQTZEQjUiIGN4PSI1MCIgY3k9IjUwIiByPSI0OCIvPjxjaXJjbGUgZmlsbD0id2hpdGUiIGN4PSI1MCIgY3k9IjUwIiByPSI0MiIvPjxjaXJjbGUgZmlsbD0iI0Y0QjQwMCIgY3g9IjUwIiBjeT0iNTAiIHI9IjM4Ii8+PGNpcmNsZSBmaWxsPSJ3aGl0ZSIgY3g9IjUwIiBjeT0iNTAiIHI9IjM0Ii8+PHRleHQgeD0iNTAiIHk9IjQwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjMUE2REI1IiBmb250LXNpemU9IjEyIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9IkFyaWEiPkJJSVI8L3RleHQ+PHRleHQgeD0iNTAiIHk9IjU4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjRjRCNDAwIiBmb250LXNpemU9IjEyIiBmb250LXdlaWdodD0iYm9sZCIgZm9udC1mYW1pbHk9IkFyaWEiPktFTkNBTkE8L3RleHQ+PC9zdmc+" alt="Logo"></div>
       <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="uploadLogo(event)">
     </div>
     <div class="nav-bar">
@@ -239,16 +280,46 @@
   <div class="modal-overlay" id="strukModal" onclick="closeStruk()"><div class="modal" id="strukContent" onclick="event.stopPropagation()"></div></div>
   <div class="modal-overlay" id="scannerModal"><div class="modal" style="max-width:460px"><div class="modal-header"><h2>📷 Scan Barcode</h2><button class="modal-close" onclick="closeScanner()">✕</button></div><div class="modal-body"><div class="scanner-video-wrap"><video id="scannerVideo" playsinline autoplay muted></video></div><div id="scannerResult" style="text-align:center;padding:10px;font-size:13px;color:var(--text2)">Arahkan kamera ke barcode...</div></div><div class="modal-footer"><button class="btn btn-secondary" onclick="closeScanner()">Tutup</button><button class="btn btn-primary" id="btnScannerUse" onclick="useScanResult()" disabled>✅ Gunakan</button></div></div></div>
   <div id="strukOffscreen"></div>
-  <div class="modal-overlay" id="setoranHistoryModal"><div class="modal" style="max-width:700px"><div class="modal-header"><h2>📋 Riwayat Setoran</h2><button class="modal-close" onclick="closeSetoranHistory()">✕</button></div><div class="modal-body"><div class="flex-row mb-2"><div class="form-group col-1"><label>Tanggal</label><input type="date" id="setoranHistoryTgl"></div><button class="btn btn-primary" onclick="loadSetoranHistory()" style="height:44px;align-self:flex-end">Tampilkan</button></div><div id="setoranHistoryContent"></div></div></div></div>
+  
+  <!-- Modal Riwayat Setoran -->
+  <div class="modal-overlay" id="setoranHistoryModal">
+    <div class="modal" style="max-width:700px">
+      <div class="modal-header">
+        <h2>📋 Riwayat Setoran</h2>
+        <button class="modal-close" onclick="closeSetoranHistory()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="flex-row mb-2">
+          <div class="form-group col-1">
+            <label>Tanggal</label>
+            <input type="date" id="setoranHistoryTgl">
+          </div>
+          <button class="btn btn-primary" onclick="loadSetoranHistory()" style="height:44px;align-self:flex-end">Tampilkan</button>
+        </div>
+        <div id="setoranHistoryContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Log Edit Setoran -->
+  <div class="modal-overlay" id="setoranEditLogModal">
+    <div class="modal" style="max-width:600px">
+      <div class="modal-header">
+        <h2>📝 Log Edit Setoran</h2>
+        <button class="modal-close" onclick="document.getElementById('setoranEditLogModal').classList.remove('show')">✕</button>
+      </div>
+      <div class="modal-body" id="setoranEditLogContent"></div>
+    </div>
+  </div>
 
   <script>
     // ==================== KONSTANTA DAN GLOBAL ====================
     const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwdPgjTCISgyyaT8DSfPs14jUNCb8rSjzX7W8MoVHq_pbkdoNAMD-3lgBBJI-L57NWkSQ/exec';
     let GAS_URL = localStorage.getItem('tirtaGasUrl') || DEFAULT_GAS_URL;
-    const EMBEDDED_QRIS = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAODA48DASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD9U6KKKAKuof8AHuv/AF1j/wDQ1q1VXUP+Pdf+usf/AKGtWqACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiikoAN1IfyrA8L+ONI8Xrdf2ZdLM1rM0Eq9GVh1GK3+aUWpK6LnCVOXLNWY6iiimQFFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFFFFAFTUmC2yk9POi/wDRi0+FTK3mt0PRfSmamoW1UHkedF/6MWrQAUYHSgBaKKKACiiigCrqH/Huv/XWP/0NatVV1D/j3X/rrH/6GtWqACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigApG5Uj2paKAPgHxZqXiv8AZ3+Ml7qADm1vbl5gvPkzKf619nfDX4maR8UPD8eqaVNuU8PE33kPoRXz9+1T4otLPx1p+h6/bef4evrM/vlX57eYN99T9K8S8NeJPEH7Pvi6C9s7hrvRrs7kMbcrmI/X2avD9r9VquO8T9Wnl0c+y+nV5eWsl/o+yqj+59FFVdW/wCPdf8ArrH/AOhrVqgAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigApOaWk/jA9TQB+aH7bfwF+Lnxv8Ajtovifwzpx1TRbfT/scdtbyBZ45A7HJPsa8G+Kn7IH7R/wARtWtbnVfDSXxt4/LUfaF4HX1r+nf/AIROx3bvOVf+2lH/AAidj/z1X/v6K8d5fScnKpG7Z+nR4wx8IQpUZ8sYqySSSS8ktEfiB/wTL/Zu8c/BX4zahqvjLTH0uCbS5YUlZw27cQcYr9dwMdKPtFj4eP2iW+tY+32f71H/AAiVh/z1X/v5WlGgsPC0EcuPzGrmdZVcRJtjelFFFehY8QKKKKACiiigAooooAKKKKAKupf8e6f9dov/Ri1aqrqX/Hun/XaL/0YtWqACiiigCrqH/Huv/XWP/0NatVWv/8AUD/rrH/6GtWaACiiigAooooAKKKKACiiigAooooA+fP27vhH8Q/jh8F9N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";
+    const EMBEDDED_QRIS = "image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD..."; // Placeholder data
+    
     function getGasUrl() { return localStorage.getItem('tirtaGasUrl') || DEFAULT_GAS_URL; }
 
-    // [FIX] gasCall dengan retry dan timeout diperpanjang
     async function gasCall(fn, args = [], retry = 1) {
       return new Promise((resolve, reject) => {
         const cb = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
@@ -265,9 +336,9 @@
             console.warn(`GAS timeout, retry ${retry}...`);
             gasCall(fn, args, retry - 1).then(resolve).catch(reject);
           } else {
-            reject(new Error('GAS timeout atau tidak merespon. Cek URL dan pastikan sudah deploy sebagai Web App dengan akses "Anyone".'));
+            reject(new Error('GAS timeout atau tidak merespon.'));
           }
-        }, 20000); // timeout 20 detik
+        }, 20000);
         window[cb] = function(r) {
           if (done) return;
           done = true;
@@ -275,7 +346,7 @@
           if (script.parentNode) script.parentNode.removeChild(script);
           delete window[cb];
           if (r && r.ok) resolve(r.data);
-          else reject(new Error((r && r.error) || 'GAS error: tidak ada respon valid'));
+          else reject(new Error((r && r.error) || 'GAS error'));
         };
         script.async = true;
         script.src = url;
@@ -302,25 +373,24 @@
     let _scannerMode = null, _scanTargetIdx = null, _scanResult = '', _scanStream = null, _scanTimer = null, _scannerActive = false;
     let _strKData = null, _lastSetoranPayload = null;
     let masterStockHistory = {};
-
-    function saveLocalData() { localStorage.setItem('tirtaFullData', JSON.stringify({ products, pelanggan, allTrxList, allCustomers, stockInHistory, setoranHistory, drivers, settings, allUsers, masterStockHistory })); }
     
-    // [FIX] Fungsi syncMasterStockToSheet yang sebelumnya tidak terdefinisi
-    async function syncMasterStockToSheet() {
-      try {
-        await gasCall('syncMasterStockToSheet', [masterStockHistory]);
-        console.log('Master stock synced successfully');
-      } catch(e) {
-        console.warn('Gagal sync master stock:', e);
-      }
+    // Variabel baru untuk fitur Edit Setoran
+    let _editingSetoranIndex = undefined; 
+    let _setoranEditLog = []; 
+
+    function saveLocalData() { 
+      localStorage.setItem('tirtaFullData', JSON.stringify({ products, pelanggan, allTrxList, allCustomers, stockInHistory, setoranHistory, drivers, settings, allUsers, masterStockHistory })); 
+      // Simpan log edit setoran terpisah
+      localStorage.setItem('tirtaSetoranEditLog', JSON.stringify(_setoranEditLog));
     }
     
-    // [NEW] Fungsi untuk refresh data dari server dengan retry
+    async function syncMasterStockToSheet() {
+      try { await gasCall('syncMasterStockToSheet', [masterStockHistory]); } catch(e) { console.warn('Gagal sync master stock:', e); }
+    }
+    
     async function refreshDataFromServer(showToast = true) {
       try {
-        if (showToast) {
-          Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1000, icon: 'info', title: 'Mengambil data terbaru...' });
-        }
+        if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1000, icon: 'info', title: 'Mengambil data terbaru...' });
         const data = await gasCall('getAllData', []);
         if (data) {
           products = data.products || [];
@@ -334,40 +404,27 @@
           allUsers = data.allUsers || [];
           masterStockHistory = data.masterStockHistory || {};
           saveLocalData();
-          if (showToast) {
-            Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Data diperbarui' });
-          }
+          if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Data diperbarui' });
           return true;
         }
       } catch(e) {
         console.warn('Gagal refresh dari server:', e);
-        if (showToast) {
-          Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'warning', title: 'Gagal ambil data server, menggunakan data lokal' });
-        }
+        if (showToast) Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'warning', title: 'Gagal ambil data server' });
         return false;
       }
     }
     
-    // [NEW] Auto-sync interval yang lebih cepat (15 detik)
     let _syncInterval = null;
     function startAutoSync(intervalSeconds = 15) {
       if (_syncInterval) clearInterval(_syncInterval);
-      _syncInterval = setInterval(async () => {
-        await refreshDataFromServer(false);
-      }, intervalSeconds * 1000);
+      _syncInterval = setInterval(async () => { await refreshDataFromServer(false); }, intervalSeconds * 1000);
     }
     
-    // [NEW] Pull-to-refresh handler
     let _pullStartY = 0, _pullCurrentY = 0, _pulling = false;
     function initPullToRefresh() {
       const content = document.querySelector('.content-area');
       if (!content) return;
-      content.addEventListener('touchstart', e => {
-        if (content.scrollTop === 0) {
-          _pullStartY = e.touches[0].clientY;
-          _pulling = true;
-        }
-      }, { passive: true });
+      content.addEventListener('touchstart', e => { if (content.scrollTop === 0) { _pullStartY = e.touches[0].clientY; _pulling = true; } }, { passive: true });
       content.addEventListener('touchmove', e => {
         if (!_pulling) return;
         _pullCurrentY = e.touches[0].clientY;
@@ -390,42 +447,38 @@
         _pulling = false;
         const diff = _pullCurrentY - _pullStartY;
         let indicator = document.getElementById('pull-indicator');
-        if (indicator) {
-          indicator.remove();
-          indicator = null;
-        }
+        if (indicator) { indicator.remove(); indicator = null; }
         if (diff > 80) {
           await refreshDataFromServer(true);
-          if (currentPage === 'rekap') loadRekap();
-          else if (currentPage === 'dashboard') loadDashboard();
-          else if (currentPage === 'penjualan') loadPenjualan();
-          else if (currentPage === 'transaksi') loadTransaksi();
-          else if (currentPage === 'stockbarang') loadStockBarang();
-          else if (currentPage === 'produk') loadProduk();
-          else if (currentPage === 'pelanggan') loadPelanggan();
-          else if (currentPage === 'piutang') loadPiutang();
+          renderContent();
         }
-        _pullStartY = 0;
-        _pullCurrentY = 0;
+        _pullStartY = 0; _pullCurrentY = 0;
       });
     }
+
     function loadLocalData() {
       const s = localStorage.getItem('tirtaFullData');
       if (s) { try { const d = JSON.parse(s); products = d.products || []; pelanggan = d.pelanggan || []; allTrxList = d.allTrxList || []; allCustomers = d.allCustomers || []; stockInHistory = d.stockInHistory || []; setoranHistory = d.setoranHistory || []; drivers = d.drivers || ['oji','padong','said','dedi','zehpudin']; settings = { ...settings, ...(d.settings || {}) }; allUsers = d.allUsers || []; masterStockHistory = d.masterStockHistory || {}; } catch(e) {} }
+      
+      // Load log edit setoran
+      try { _setoranEditLog = JSON.parse(localStorage.getItem('tirtaSetoranEditLog')||'[]'); } catch(e) { _setoranEditLog = []; }
+
       if (products.length === 0) products = [ { sku:'aq1500', nama:'Aqua 1500 ml', modal:50000, jual:55000, stokAwal:0 }, { sku:'aq200', nama:'Aqua 200 ml', modal:33000, jual:40000, stokAwal:3 }, { sku:'aq220b', nama:'Aqua Cube', modal:21000, jual:38000, stokAwal:0 }, { sku:'aq330', nama:'Aqua 330 ml', modal:35000, jual:42000, stokAwal:29 }, { sku:'aq600', nama:'Aqua 600 ml', modal:44000, jual:49000, stokAwal:0 }, { sku:'aqg', nama:'Aqua Galon 19L', modal:16750, jual:23000, stokAwal:5 } ];
       if (pelanggan.length === 0) pelanggan = ['Winda','ko asun'];
       if (allCustomers.length === 0) allCustomers = pelanggan.slice();
       if (!settings.salesList) settings.salesList = [];
-      if (allUsers.length === 0) allUsers = [
-        { name:'admin',  role:'admin',  password:'020730' },
-        { name:'hasan',  role:'sales',  password:'1234'   },
-        { name:'ujang',  role:'sales',  password:'1234'   },
-        { name:'oji',    role:'driver', password:'1234'   },
-        { name:'padong', role:'driver', password:'1234'   },
-        { name:'said',   role:'driver', password:'1234'   },
-        { name:'dedi',   role:'driver', password:'1234'   },
-        { name:'zehpudin', role:'driver', password:'1234' }
-      ];
+      if (allUsers.length === 0) {
+        allUsers = [
+          { name:'admin',  role:'admin',  password:'020730' },
+          { name:'hasan',  role:'sales',  password:'1234'   },
+          { name:'ujang',  role:'sales',  password:'1234'   },
+          { name:'oji',    role:'driver', password:'1234'   },
+          { name:'padong', role:'driver', password:'1234'   },
+          { name:'said',   role:'driver', password:'1234'   },
+          { name:'dedi',   role:'driver', password:'1234'   },
+          { name:'zehpudin', role:'driver', password:'1234' }
+        ];
+      }
       const _masterUsers = [
         { name:'admin',  role:'admin',  password:'020730' },
         { name:'hasan',  role:'sales',  password:'1234'   },
@@ -447,7 +500,6 @@
       if (el) el.textContent = '🔄 Manual';
     }
 
-    // [FIX] syncFromGAS dengan error handling lebih baik
     async function syncFromGAS() {
       const el = document.getElementById('syncStatus');
       if (el) el.textContent = '🔄 Sync...';
@@ -478,9 +530,7 @@
           settings.bank2 = set.bank2 || settings.bank2;
           settings.salesList = Array.isArray(set.salesList) ? set.salesList : [];
         }
-        if (Array.isArray(stockIn) && stockIn.length > 0) {
-          stockInHistory = stockIn;
-        }
+        if (Array.isArray(stockIn) && stockIn.length > 0) stockInHistory = stockIn;
         if (Array.isArray(users) && users.length > 0) {
           const localMap = new Map(allUsers.map(u => [u.name, u]));
           users.forEach(u => { if (!localMap.has(u.name)) allUsers.push(u); });
@@ -500,10 +550,8 @@
           { name:'zehpudin', role:'driver', password:'1234' }
         ];
         _syncBuiltin.forEach(mu => { if (!allUsers.find(u => u.name === mu.name)) allUsers.push(mu); });
-        // Ambil drivers dari sheet Driver (prioritas) atau fallback dari allUsers
-        if (Array.isArray(gasDrivers) && gasDrivers.length > 0) {
-          drivers = gasDrivers;
-        } else {
+        if (Array.isArray(gasDrivers) && gasDrivers.length > 0) drivers = gasDrivers;
+        else {
           const driverNames = allUsers.filter(u => u.role === 'driver').map(u => u.name);
           if (driverNames.length > 0) drivers = driverNames;
         }
@@ -511,21 +559,15 @@
         if (currentPage === 'dashboard' || currentPage === 'transaksi' || currentPage === 'produk' || currentPage === 'gudang') renderContent();
       } catch (e) {
         console.warn('Gagal sinkron:', e);
-        Swal.fire({
-          icon: 'error',
-          title: 'Koneksi GAGAL',
-          text: e.message || 'Tidak dapat terhubung ke Google Sheets. Periksa URL GAS dan pastikan sudah di-deploy sebagai Web App dengan akses "Anyone".',
-          footer: 'URL saat ini: ' + getGasUrl()
-        });
+        Swal.fire({ icon: 'error', title: 'Koneksi GAGAL', text: e.message || 'Tidak dapat terhubung ke Google Sheets.', footer: 'URL saat ini: ' + getGasUrl() });
       }
       const el2 = document.getElementById('syncStatus');
       if (el2) el2.textContent = '✅ Sync';
       setTimeout(()=>{ const e3=document.getElementById('syncStatus'); if(e3) updateSyncStatus(); }, 2000);
     }
 
-    // ── AUTO SYNC 5 MENIT ──
     let _autoSyncTimer = null;
-    const AUTO_SYNC_INTERVAL = 5 * 60 * 1000; // 5 menit
+    const AUTO_SYNC_INTERVAL = 5 * 60 * 1000;
     let _nextSyncTime = null;
 
     function updateSyncStatus() {
@@ -539,7 +581,6 @@
       if (_autoSyncTimer) clearInterval(_autoSyncTimer);
       _nextSyncTime = Date.now() + AUTO_SYNC_INTERVAL;
       updateSyncStatus();
-      // Update countdown tiap 1 menit
       _autoSyncTimer = setInterval(async () => {
         if (Date.now() >= _nextSyncTime) {
           _nextSyncTime = Date.now() + AUTO_SYNC_INTERVAL;
@@ -557,8 +598,7 @@
     }
 
     function doLogin() { 
-      const u = document.getElementById('loginUser').value.trim(), 
-            p = document.getElementById('loginPass').value.trim(); 
+      const u = document.getElementById('loginUser').value.trim(), p = document.getElementById('loginPass').value.trim(); 
       if (!u || !p) return Swal.fire('Error','Isi username & password','error'); 
       if (!allUsers || allUsers.length === 0) {
         allUsers = [
@@ -601,17 +641,15 @@
       const _effectiveLogo = localStorage.getItem('tirtaLogo') || _logoUrl;
       if (_effectiveLogo) { _logoUrl = _effectiveLogo; document.getElementById('logoImg').src = _effectiveLogo; }
       initDarkMode(); renderMenuTabs();
-      // Sync sekali saat login
       try { await syncFromGAS(); } catch(e) {}
-      startAutoSync(15); // Auto-sync setiap 15 detik
-      initPullToRefresh(); // Aktifkan pull-to-refresh
+      startAutoSync(15);
+      initPullToRefresh();
       navigateTo('dashboard');
     }
 
     function toggleDarkMode() { document.body.classList.toggle('dark'); const d = document.body.classList.contains('dark'); localStorage.setItem('tirtaDarkMode', d ? '1' : '0'); document.querySelector('.btn-darkmode').textContent = d ? '☀️' : '🌙'; }
     function initDarkMode() { if (localStorage.getItem('tirtaDarkMode') === '1') { document.body.classList.add('dark'); const b = document.querySelector('.btn-darkmode'); if (b) b.textContent = '☀️'; } }
 
-    // ========== MENU TABS (GUDANG & LAPORAN DIHAPUS) ==========
     function renderMenuTabs() {
       let h = ''; const r = currentUser?.role;
       if (r === 'admin') {
@@ -643,25 +681,21 @@
       }
       document.getElementById('menuTabs').innerHTML = h;
     }
+
     function navigateTo(p) { currentPage = p; renderMenuTabs(); renderContent(); }
     function renderContent() { switch (currentPage) { case 'dashboard': loadDashboard(); break; case 'penjualan': loadPenjualan(); break; case 'transaksi': loadTransaksi(); break; case 'rekap': loadRekap(); break; case 'rekapinput': loadRekapInput(); break; case 'setoran': loadSetoran(); break; case 'inputbarang': loadInputBarang(); break; case 'stockbarang': loadStockBarang(); break; case 'produk': loadProduk(); break; case 'pelanggan': loadPelanggan(); break; case 'pengaturan': loadPengaturan(); break; case 'pengaturanUser': loadPengaturanUser(); break; case 'grafik': loadGrafik(); break; case 'piutang': loadPiutang(); break; } }
 
-    // ========== DASHBOARD (MENU UTAMA) ==========
     function loadDashboard() {
       const _dn = new Date(); const today = _dn.getFullYear()+'-'+String(_dn.getMonth()+1).padStart(2,'0')+'-'+String(_dn.getDate()).padStart(2,'0');
       const role = currentUser?.role;
       let h = '';
 
-      // [NEW] Cek stok rendah HANYA untuk produk tertentu
       const lowStockProductNames = ['Aqua 1500 ml', 'Aqua 200 ml', 'Aqua Cube', 'Aqua 330 ml', 'Aqua 600 ml', 'Aqua Galon 19L', 'Vit 1500 ml', 'Vit 200 ml', 'Vit 220 ml ( moksa )', 'Vit 330 ml', 'Vit 550 ml', 'Vit Galon 19 L'];
       const lowStockProducts = products.filter(p => lowStockProductNames.includes(p.nama) && (p.stokAwal || 0) < 5);
       const hasLowStock = lowStockProducts.length > 0;
 
       if (role === 'driver') {
-        const myStock = stockInHistory.filter(s => 
-          (s.date||s.tgl||'').substring(0,10) === today && 
-          (s.driver||'').toLowerCase() === currentUser.name.toLowerCase()
-        );
+        const myStock = stockInHistory.filter(s => (s.date||s.tgl||'').substring(0,10) === today && (s.driver||'').toLowerCase() === currentUser.name.toLowerCase());
         let totalKiriman = 0, totalTitipan = 0;
         myStock.forEach(s => {
           const net = (s.qty||0) * ((s.hargaModal||0) - (s.disc||0));
@@ -669,7 +703,6 @@
           else if (s.status === 'titipan') totalTitipan += net;
         });
         const totalKeseluruhan = totalKiriman + totalTitipan;
-
         h = `
           ${hasLowStock ? `<div class="card" style="background:#FEF3C7;border-color:#F59E0B;"><div class="card-title" style="color:#92400E;"><i class="fas fa-exclamation-triangle"></i> Stok Rendah (${lowStockProducts.length} produk)</div><div class="tag-list">${lowStockProducts.slice(0,5).map(p => `<span class="tag" style="background:#FFF8E1;color:#92400E;">${esc(p.nama)}: ${p.stokAwal}</span>`).join('')}</div></div>` : ''}
           <div class="summary-shape">
@@ -703,7 +736,6 @@
         `;
       }
 
-      // [NEW] Quick Actions
       h += `<div style="font-weight:700;font-size:0.9rem;color:var(--biru);margin:16px 0 12px 0;">⚡ Quick Actions</div>`;
       h += `<div class="menu-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px;">`;
       if (role === 'admin' || role === 'sales') {
@@ -776,9 +808,8 @@
       `;
     }
 
-    // ========== PENJUALAN (sama seperti sebelumnya) ==========
     let _itemIdx = 0;
-    let _currentTrxId = ''; // Untuk menyimpan ID transaksi saat ini (untuk upload foto)
+    let _currentTrxId = '';
     function loadPenjualan() {
       let datalistOptions = products.map(p => `<option value="${p.sku}">${p.nama}</option>`).join('');
       let cDatalist = allCustomers.map(c => `<option value="${esc(c)}">`).join('');
@@ -879,7 +910,6 @@
       resetTrx(); showStrukModal(); syncMasterStockToSheet();
     }
 
-    // ========== STRUK (sama seperti sebelumnya) ==========
     function buildStrukHTML(data) {
       const trx = data.trx, items = data.items || [];
       const ns = (trx.status||'').toLowerCase().replace(/\s/g,'');
@@ -919,7 +949,6 @@
     function doStrukPng() { if (!_strKData) return; const off = document.getElementById('strukOffscreen'); off.style.cssText = 'position:fixed;left:-9999px;top:0;pointer-events:none;z-index:-1;background:#e8f2f9;padding:20px'; off.innerHTML = buildStrukHTML(_strKData); const el = off.querySelector('#struk-root'); if (!el) return Swal.fire('Error','Gagal render','error'); setTimeout(() => { html2canvas(el, {backgroundColor:'#e8f2f9',scale:2.5,useCORS:true,allowTaint:true,logging:false}).then(canvas => { const a = document.createElement('a'); a.download = 'Struk-'+(_strKData.trx.id||'trx')+'.png'; a.href = canvas.toDataURL('image/png'); document.body.appendChild(a); a.click(); document.body.removeChild(a); off.innerHTML = ''; Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'success', title: 'Struk tersimpan' }); }).catch(err => { off.innerHTML=''; Swal.fire('Error',err.message,'error'); }); }, 400); }
     function doStrukWA() { if (!_strKData) return; const trx = _strKData.trx, items = _strKData.items || []; let lines = ['🧾 *STRUK TRANSAKSI*','*'+(settings.namaToko||'Tirta Kencana')+'*','━━━━━━━━━━']; lines.push('No: *'+trx.id+'*'); lines.push('Tgl: '+fmtDate(trx.tgl)); lines.push('Pelanggan: *'+(trx.customer||'-')+'*'); if (trx.sales) lines.push('Sales: '+trx.sales); lines.push('Status: *'+(trx.status==='cod'?'COD':trx.status==='transfer'?'Transfer':trx.status==='qris'?'QRIS':'Belum Transfer')+'*'); lines.push('━━━━━━━━━━'); items.forEach(it => { const nettPer = it.nettPer !== undefined ? it.nettPer : (it.harga||0) - (it.discRpPer||0); const sub = nettPer * (it.qty||1); lines.push('- '+it.nama+' ('+it.qty+'x Rp '+Number(it.harga).toLocaleString('id-ID')+')'); if (it.discRpPer) lines.push('  Disc: -Rp '+Number(it.discRpPer).toLocaleString('id-ID')); lines.push('  = Rp '+Number(sub).toLocaleString('id-ID')); }); lines.push('━━━━━━━━━━'); lines.push('Gross : Rp '+Number(trx.gross).toLocaleString('id-ID')); if (trx.diskon) lines.push('Diskon: -Rp '+Number(trx.diskon).toLocaleString('id-ID')); if (trx.biayaJml&&trx.biayaJml>0) lines.push((trx.biayaKet||'Biaya Tambahan')+': +Rp '+Number(trx.biayaJml).toLocaleString('id-ID')); lines.push('*TOTAL : Rp '+Number(trx.nett).toLocaleString('id-ID')+'*'); window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank'); }
 
-    // ========== SETORAN (sama seperti sebelumnya) ==========
     function loadSetoran() { 
       let sOpts = '<option value="">Pilih Sales</option>';
       (settings.salesList||[]).forEach(s => { sOpts += `<option value="${esc(s)}">${esc(s)}</option>`; });
@@ -949,7 +978,6 @@
         <div class="form-group"><label>🅿️ Parkir</label><input type="number" id="stParkir" value="0" min="0" oninput="calcSetoran()"></div>
         <div class="form-group"><label>⛽ Bensin</label><input type="number" id="stBensin" value="0" min="0" oninput="calcSetoran()"></div>
         <div class="form-group"><label>💳 Flazz</label><input type="number" id="stFlazz" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>🏦 Transfer</label><input type="number" id="stTransfer" value="0" min="0" oninput="calcSetoran()"></div>
         <div class="form-group"><label>💵 Cicilan</label><input type="number" id="stCicilan" value="0" min="0" oninput="calcSetoran()"></div>
         <div class="form-group"><label>📄 Tagihan</label><input type="number" id="stTagihan" value="0" min="0" oninput="calcSetoran()"></div>
         <div class="flex-row"><div class="form-group col-2"><label>Keterangan 1</label><input id="stKet1" placeholder="contoh: Bonus" oninput="calcSetoran()"></div><div class="form-group col-1"><label>Jumlah 1</label><input type="number" id="stJml1" value="0" min="0" oninput="calcSetoran()"></div></div>
@@ -966,13 +994,28 @@
     async function saveSetoran() { 
       const payload = { tgl: document.getElementById('setorTgl').value, sales: document.getElementById('setorSales').value, grandTotal: parseFloat(document.getElementById('stGrand')?.value)||0, makan: parseFloat(document.getElementById('stMakan')?.value)||0, tips: parseFloat(document.getElementById('stTips')?.value)||0, parkir: parseFloat(document.getElementById('stParkir')?.value)||0, bensin: parseFloat(document.getElementById('stBensin')?.value)||0, flazz: parseFloat(document.getElementById('stFlazz')?.value)||0, transfer: parseFloat(document.getElementById('stTransfer')?.value)||0, cicilan: parseFloat(document.getElementById('stCicilan')?.value)||0, tagihan: parseFloat(document.getElementById('stTagihan')?.value)||0, ket1: document.getElementById('stKet1')?.value.trim() || '', jml1: parseFloat(document.getElementById('stJml1')?.value)||0, ket2: document.getElementById('stKet2')?.value.trim() || '', jml2: parseFloat(document.getElementById('stJml2')?.value)||0, total: parseFloat(document.getElementById('stTotal')?.textContent.replace(/[^0-9]/g,''))||0, setor: parseFloat(document.getElementById('stSetor')?.value)||0, selisih: parseFloat(document.getElementById('stSelisih')?.textContent.replace(/[^0-9]/g,''))||0 }; 
       try { 
-        if (window._editingSetoranIndex !== undefined) {
-          // Mode edit: update data yang sudah ada
-          setoranHistory[window._editingSetoranIndex] = payload;
-          window._editingSetoranIndex = undefined;
-          Swal.fire({icon:'success',title:'Berhasil',text:'Data setoran berhasil diupdate'});
+        if (_editingSetoranIndex !== undefined) {
+          // MODE EDIT: Update data yang sudah ada
+          const oldData = setoranHistory[_editingSetoranIndex];
+          
+          // Catat log edit
+          _setoranEditLog.unshift({
+            waktu: localDateStr() + ' ' + new Date().toTimeString().slice(0,8),
+            editor: currentUser?.name || 'Unknown',
+            sales: payload.sales,
+            tgl: payload.tgl,
+            sebelum: { ...oldData },
+            sesudah: { ...payload }
+          });
+          // Batasi log hanya 50 terakhir
+          if (_setoranEditLog.length > 50) _setoranEditLog = _setoranEditLog.slice(0, 50);
+          
+          setoranHistory[_editingSetoranIndex] = payload;
+          _editingSetoranIndex = undefined; // Reset mode edit
+          
+          Swal.fire({icon:'success',title:'Berhasil',text:'Data setoran berhasil diupdate dan log disimpan'});
         } else {
-          // Mode baru: tambah data baru
+          // MODE BARU: Tambah data baru
           setoranHistory.unshift(payload);
           _lastSetoranPayload = payload;
           showSetoranStrukModal(payload);
@@ -983,7 +1026,7 @@
     }
 
     function buildSetoranStrukHTML(payload) { const now = new Date(); const timeStr = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'); const logoHtml = _logoUrl ? `<img src="${_logoUrl}" style="width:48px;height:48px;border-radius:10px;object-fit:contain;background:#fff;padding:3px;flex-shrink:0;border:1.5px solid rgba(255,255,255,.4)">` : '<div style="width:48px;height:48px;border-radius:10px;background:rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">🏪</div>'; return `<div id="setoran-root" style="width:360px;background:#fff;border-radius:16px;overflow:hidden;font-family:'DM Sans',sans-serif;box-shadow:0 8px 32px rgba(29,111,164,.18)"><div style="background:linear-gradient(135deg,#1A6DB5,#2B8FDE);padding:18px 18px 14px;display:flex;align-items:center;gap:12px">${logoHtml}<div><div style="font-size:15px;font-weight:800;color:#fff;letter-spacing:-.3px">${esc(settings.namaToko||'Tirta Kencana')}</div>${settings.tagline?`<div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:1px">${esc(settings.tagline)}</div>`:''}${settings.alamat?`<div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:2px">${esc(settings.alamat)}</div>`:''}</div></div><div style="background:#EBF4FB;padding:10px 18px;display:flex;justify-content:space-between;align-items:center;font-size:11px"><div><div style="color:#7BAAC4;font-weight:700;text-transform:uppercase;letter-spacing:.8px;font-size:9px">Setoran Sales</div><div style="font-weight:700;color:#1D6FA4;font-size:13px">${esc(payload.sales)}</div></div><div style="text-align:right"><div style="color:#7BAAC4;font-weight:700;text-transform:uppercase;letter-spacing:.8px;font-size:9px">Tanggal · Waktu</div><div style="font-weight:600;color:#0D2B3E;font-size:11px">${fmtDate(payload.tgl)} · ${timeStr}</div></div></div><div style="padding:14px 18px"><table style="width:100%;border-collapse:collapse;margin-bottom:12px"><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Grand Total COD</div><td style="text-align:right;font-weight:600;font-size:12px;color:#0D2B3E">${fmtRp(payload.grandTotal)}</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Tagihan</div><td style="text-align:right;font-weight:600;font-size:12px;color:#0D2B3E">${fmtRp(payload.tagihan)}</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Cicilan</div><td style="text-align:right;font-weight:600;font-size:12px;color:#16A34A">${fmtRp(payload.cicilan)}</div></tr><tr style="border-bottom:1px dashed #C5DFF0"><td colspan="2" style="padding:6px 0;font-size:10px;font-weight:700;color:#7BAAC4">Pengeluaran</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Makan</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.makan)}</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Tips</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.tips)}</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Parkir</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.parkir)}</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Bensin</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.bensin)}</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Flazz</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.flazz)}</div></tr><tr><td style="padding:6px 0;font-size:12px;color:#4A6882">Transfer</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.transfer)}</div></tr>${payload.ket1?`<tr><td style="padding:6px 0;font-size:12px;color:#4A6882">${esc(payload.ket1)}</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.jml1)}</div></tr>`:''}${payload.ket2?`<tr><td style="padding:6px 0;font-size:12px;color:#4A6882">${esc(payload.ket2)}</div><td style="text-align:right;font-size:12px;color:#DC2626">-${fmtRp(payload.jml2)}</div></td>`:''}</table><div style="border-top:1.5px dashed #C5DFF0;padding-top:10px;display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:#0D2B3E"><span>TOTAL SETORAN</span><span style="color:#1A6DB5">${fmtRp(payload.total)}</span></div><div style="display:flex;justify-content:space-between;font-size:13px;color:#4A6882;margin-top:4px"><span>Setor</span><span style="font-weight:600">${fmtRp(payload.setor)}</span></div><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:800;margin-top:2px;color:${payload.selisih>=0?'#16A34A':'#DC2626'}"><span>SELISIH</span><span>${fmtRp(payload.selisih)}</span></div></div><div style="background:#EBF4FB;padding:12px 18px;text-align:center;font-size:11.5px;color:#3D6880;font-weight:600;border-top:1px dashed #C5DFF0">${esc(settings.bottomLine||'Terima kasih telah berbelanja!')}</div></div>`; }
-    function showSetoranStrukModal(payload) { const html = buildSetoranStrukHTML(payload); const setoranKey = (payload.sales||'')+'_'+(payload.tgl||''); document.getElementById('strukContent').innerHTML = `<div class="modal-header"><h2>🧾 Struk Setoran</h2><button class="modal-close" onclick="closeStruk()">✕</button></div><div class="action-grid"><div class="action-card" onclick="doSetoranPrint()"><div>🖨️</div><div>Print</div></div><div class="action-card" onclick="doSetoranPng()"><div>📥</div><div>Download PNG</div></div><div class="action-card" onclick="doSetoranWA()"><div>💬</div><div>WhatsApp</div></div><div class="action-card" onclick="document.getElementById('fotoInputSetoran').click()"><div>📸</div><div>Upload Foto</div></div><div class="action-card" onclick="showFotoBukti('${setoranKey}','Setoran ${setoranKey}')"><div>🖼</div><div>Lihat Foto</div></div></div><input type="file" id="fotoInputSetoran" accept="image/*" capture="environment" style="display:none" onchange="uploadFotoBukti('${setoranKey}','setoran',this)"><div style="text-align:center;max-height:70vh;overflow:auto;background:#e8f2f9;border-radius:14px;padding:10px"><img src="" id="setoranStrukImg" style="max-width:100%;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1)" alt="Struk Setoran"></div>`; document.getElementById('strukModal').classList.add('show');
+    function showSetoranStrukModal(payload) { const html = buildSetoranStrukHTML(payload); const setoranKey = (payload.sales||'')+'_'+(payload.tgl||''); document.getElementById('strukContent').innerHTML = `<div class="modal-header"><h2>🧾 Struk Setoran</h2><button class="modal-close" onclick="closeStruk()">✕</button></div><div class="action-grid"><div class="action-card" onclick="doSetoranPrint()"><div>🖨️</div><div>Print</div></div><div class="action-card" onclick="doSetoranPng()"><div>📥</div><div>Download PNG</div></div><div class="action-card" onclick="doSetoranWA()"><div>💬</div><div>WhatsApp</div></div><div class="action-card" onclick="document.getElementById('fotoInputSetoran').click()"><div>📸</div><div>Upload Foto</div></div><div class="action-card" onclick="showFotoBukti('${setoranKey}','Setoran ${setoranKey}')"><div>🖼</div><div>Lihat Foto</div></div></div><input type="file" id="fotoInputSetoran" accept="image/*" capture="environment" style="display:none" onchange="uploadFotoBukti('${setoranKey}','setoran',this)"><div style="text-align:center;max-height:70vh;overflow-auto;background:#e8f2f9;border-radius:14px;padding:10px"><img src="" id="setoranStrukImg" style="max-width:100%;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1)" alt="Struk Setoran"></div>`; document.getElementById('strukModal').classList.add('show');
       setTimeout(() => {
         const off = document.getElementById('strukOffscreen'); off.innerHTML = html; const el = off.querySelector('#setoran-root');
         if (el) html2canvas(el, {backgroundColor:'#e8f2f9',scale:2.5,useCORS:true,allowTaint:true,logging:false}).then(canvas => { document.getElementById('setoranStrukImg').src = canvas.toDataURL('image/png'); off.innerHTML = ''; }).catch(() => off.innerHTML = '');
@@ -991,9 +1034,8 @@
     }
     function doSetoranPrint() { if (!_lastSetoranPayload) return; const win = window.open('','_blank','width=420,height=700'); win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Struk Setoran</title></head><body style="margin:16px;background:#e8f2f9;display:flex;justify-content:center">'); win.document.write(buildSetoranStrukHTML(_lastSetoranPayload)); win.document.write('<script>window.onload=function(){window.print();}<\/script></body></html>'); win.document.close(); }
     function doSetoranPng() { if (!_lastSetoranPayload) return; const off = document.getElementById('strukOffscreen'); off.style.cssText = 'position:fixed;left:-9999px;top:0;pointer-events:none;z-index:-1;background:#e8f2f9;padding:20px'; off.innerHTML = buildSetoranStrukHTML(_lastSetoranPayload); const el = off.querySelector('#setoran-root'); if (!el) return Swal.fire('Error','Gagal render','error'); setTimeout(() => { html2canvas(el, {backgroundColor:'#e8f2f9',scale:2.5,useCORS:true,allowTaint:true,logging:false}).then(canvas => { const a = document.createElement('a'); a.download = 'Setoran-'+(_lastSetoranPayload.sales)+'-'+(_lastSetoranPayload.tgl)+'.png'; a.href = canvas.toDataURL('image/png'); document.body.appendChild(a); a.click(); document.body.removeChild(a); off.innerHTML = ''; Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2000, icon: 'success', title: 'Struk setoran tersimpan' }); }).catch(err => { off.innerHTML=''; Swal.fire('Error',err.message,'error'); }); }, 400); }
-    function doSetoranWA() { if (!_lastSetoranPayload) return; const p = _lastSetoranPayload; let lines = ['🧾 *STRUK SETORAN*','*'+(settings.namaToko||'Tirta Kencana')+'*','━━━━━━━━━━']; lines.push('Sales: *'+p.sales+'*'); lines.push('Tgl: '+fmtDate(p.tgl)); lines.push('━━━━━━━━━━'); lines.push('Grand COD : '+fmtRp(p.grandTotal)); lines.push('Tagihan   : '+fmtRp(p.tagihan)); lines.push('Cicilan   : '+fmtRp(p.cicilan)); lines.push('Pengeluaran:'); lines.push('  Makan   : -'+fmtRp(p.makan)); lines.push('  Tips    : -'+fmtRp(p.tips)); lines.push('  Parkir  : -'+fmtRp(p.parkir)); lines.push('  Bensin  : -'+fmtRp(p.bensin)); lines.push('  Flazz   : -'+fmtRp(p.flazz)); lines.push('  Transfer: -'+fmtRp(p.transfer)); if(p.ket1) lines.push('  '+p.ket1+' : -'+fmtRp(p.jml1)); if(p.ket2) lines.push('  '+p.ket2+' : -'+fmtRp(p.jml2)); lines.push('━━━━━━━━━━'); lines.push('*TOTAL SETORAN : '+fmtRp(p.total)+'*'); lines.push('Setor      : '+fmtRp(p.setor)); lines.push('Selisih    : '+fmtRp(p.selisih)); window.open('https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank'); }
+    function doSetoranWA() { if (!_lastSetoranPayload) return; const p = _lastSetoranPayload; let lines = ['🧾 *STRUK SETORAN*','*'+(settings.namaToko||'Tirta Kencana')+'*','━━━━━━━━━━']; lines.push('Sales: *'+p.sales+'*'); lines.push('Tgl: '+fmtDate(p.tgl)); lines.push('━━━━━━━━━━'); lines.push('Grand COD : '+fmtRp(p.grandTotal)); lines.push('Tagihan   : '+fmtRp(p.tagihan)); lines.push('Cicilan   : '+fmtRp(p.cicilan)); lines.push('Pengeluaran:'); lines.push('  Makan   : -'+fmtRp(p.makan)); lines.push('  Tips    : -'+fmtRp(p.tips)); lines.push('  Parkir  : -'+fmtRp(p.parkir)); lines.push('  Bensin  : -'+fmtRp(p.bensin)); lines.push('  Flazz   : -'+fmtRp(p.flazz)); lines.push('  Transfer: -'+fmtRp(p.transfer)); if(p.ket1) lines.push('  '+p.ket1+' : -'+fmtRp(p.jml1)); if(p.ket2) lines.push('  '+p.ket2+' : -'+fmtRp(p.jml2)); lines.push('━━━━━━━━━━'); lines.push('*TOTAL SETORAN : '+fmtRp(p.total)+'*'); lines.push('Setor      : '+fmtRp(p.setor)); lines.push('Selisih    : '+fmtRp(p.selisih)); window.open(' https://wa.me/?text='+encodeURIComponent(lines.join('\n')),'_blank'); }
 
-    // ========== RIWAYAT SETORAN ==========
     let _currentSetoranHistory = [];
     function showSetoranHistoryModal() {
       document.getElementById('setoranHistoryTgl').value = localDateStr();
@@ -1013,17 +1055,104 @@
         const pengeluaran = (s.makan||0)+(s.tips||0)+(s.parkir||0)+(s.bensin||0)+(s.flazz||0)+(s.transfer||0)+(s.jml1||0)+(s.jml2||0);
         const total = (s.grandTotal||0) + (s.tagihan||0) + (s.cicilan||0) - pengeluaran;
         html += `<div class="card mb-3" style="background:var(--surface2); border-left:4px solid var(--biru)">
-          <div class="flex-between mb-2"><div><strong>${esc(s.sales)}</strong> <span class="text-sm">${fmtDate(s.tgl)}</span></div><button class="btn btn-sm btn-outline" onclick="editSetoranFromHistory(${idx})">✏️ Edit</button> <button class="btn btn-sm btn-outline" onclick="showSetoranStrukModal(_currentSetoranHistory[${idx}])">🧾 Lihat Struk</button></div>
+          <div class="flex-between mb-2">
+            <div><strong>${esc(s.sales)}</strong> <span class="text-sm">${fmtDate(s.tgl)}</span></div>
+            <div style="display:flex;gap:4px">
+                <button class="btn btn-sm btn-outline" onclick="editSetoranFromHistory(${idx})">✏️ Edit</button> 
+                <button class="btn btn-sm btn-outline" onclick="showSetoranStrukModal(_currentSetoranHistory[${idx}])">🧾 Lihat</button>
+            </div>
+          </div>
           <table style="width:100%; font-size:0.75rem"><tr><td>Grand Total COD</div><td style="text-align:right;">${fmtRp(s.grandTotal||0)}</div></tr><tr><td>Tagihan</div><td style="text-align:right;">${fmtRp(s.tagihan||0)}</div></tr><tr><td>Cicilan</div><td style="text-align:right; color:var(--hijau)">${fmtRp(s.cicilan||0)}</div></tr><tr><td colspan="2" style="font-weight:700; color:var(--biru)">Pengeluaran</div></tr><tr><td style="padding-left:16px;">Makan</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.makan||0)}</div></tr><tr><td style="padding-left:16px;">Tips</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.tips||0)}</div></tr><tr><td style="padding-left:16px;">Parkir</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.parkir||0)}</div></tr><tr><td style="padding-left:16px;">Bensin</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.bensin||0)}</div></tr><tr><td style="padding-left:16px;">Flazz</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.flazz||0)}</div></tr><tr><td style="padding-left:16px;">Transfer</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.transfer||0)}</div></tr>`;
         if (s.ket1) html += `<tr><td style="padding-left:16px;">${esc(s.ket1)}</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.jml1||0)}</div></tr>`;
         if (s.ket2) html += `<tr><td style="padding-left:16px;">${esc(s.ket2)}</div><td style="text-align:right; color:var(--merah)">-${fmtRp(s.jml2||0)}</div></tr>`;
         html += `<tr style="border-top:1px dashed var(--border)"><td style="font-weight:700;">TOTAL</div><td style="text-align:right; font-weight:700;">${fmtRp(total)}</div></tr><tr><td>Setor</div><td style="text-align:right;">${fmtRp(s.setor||0)}</div></tr><tr style="color:${(s.selisih||0)>=0?'var(--hijau)':'var(--merah)'};"><td style="font-weight:700;">SELISIH</div><td style="text-align:right; font-weight:700;">${fmtRp(s.selisih||0)}</div></tr></table>
         </div>`;
       });
+      
+      // Tombol lihat log edit
+      if (_setoranEditLog.length > 0) {
+          html += `<div style="margin-top:16px; text-align:center;">
+            <button class="btn btn-sm btn-ghost" onclick="showSetoranEditLogModal()" style="font-size:0.7rem; color:var(--text3);">
+                <i class="fas fa-history"></i> Lihat Log Edit Setoran
+            </button>
+          </div>`;
+      }
+      
       container.innerHTML = html;
     }
 
-    // ========== EDIT SETORAN DARI HISTORY ==========\n    function editSetoranFromHistory(idx) {\n      const s = _currentSetoranHistory[idx];\n      if (!s) return;\n      document.getElementById('setorTgl').value = s.tgl || '';\n      document.getElementById('setorSales').value = s.sales || '';\n      closeSetoranHistory();\n      doSetoran();\n      setTimeout(() => {\n        document.getElementById('stGrand').value = s.grandTotal || 0;\n        document.getElementById('stMakan').value = s.makan || 0;\n        document.getElementById('stTips').value = s.tips || 0;\n        document.getElementById('stParkir').value = s.parkir || 0;\n        document.getElementById('stBensin').value = s.bensin || 0;\n        document.getElementById('stFlazz').value = s.flazz || 0;\n        document.getElementById('stTransfer').value = s.transfer || 0;\n        document.getElementById('stCicilan').value = s.cicilan || 0;\n        document.getElementById('stTagihan').value = s.tagihan || 0;\n        document.getElementById('stKet1').value = s.ket1 || '';\n        document.getElementById('stJml1').value = s.jml1 || 0;\n        document.getElementById('stKet2').value = s.ket2 || '';\n        document.getElementById('stJml2').value = s.jml2 || 0;\n        document.getElementById('stSetor').value = s.setor || 0;\n        calcSetoran();\n        window._editingSetoranIndex = idx;\n        Swal.fire({title:'Edit Setoran',text:'Silakan edit data, lalu klik Simpan untuk update','icon':'info','confirmButtonText':'OK'});\n      }, 100);\n    }
+    // Fungsi baru: Edit setoran dari history
+    function editSetoranFromHistory(idx) {
+      const s = _currentSetoranHistory[idx];
+      if (!s) return;
+      document.getElementById('setorTgl').value = s.tgl || '';
+      document.getElementById('setorSales').value = s.sales || '';
+      closeSetoranHistory();
+      doSetoran();
+      setTimeout(() => {
+        document.getElementById('stGrand').value = s.grandTotal || 0;
+        document.getElementById('stMakan').value = s.makan || 0;
+        document.getElementById('stTips').value = s.tips || 0;
+        document.getElementById('stParkir').value = s.parkir || 0;
+        document.getElementById('stBensin').value = s.bensin || 0;
+        document.getElementById('stFlazz').value = s.flazz || 0;
+        document.getElementById('stTransfer').value = s.transfer || 0;
+        document.getElementById('stCicilan').value = s.cicilan || 0;
+        document.getElementById('stTagihan').value = s.tagihan || 0;
+        document.getElementById('stKet1').value = s.ket1 || '';
+        document.getElementById('stJml1').value = s.jml1 || 0;
+        document.getElementById('stKet2').value = s.ket2 || '';
+        document.getElementById('stJml2').value = s.jml2 || 0;
+        document.getElementById('stSetor').value = s.setor || 0;
+        calcSetoran();
+        _editingSetoranIndex = idx; // Set index untuk mode edit
+        Swal.fire({title:'Mode Edit',text:'Silakan edit data, lalu klik Simpan untuk update.','icon':'info','confirmButtonText':'OK'});
+      }, 100);
+    }
+
+    // Fungsi baru: Tampilkan Log Edit
+    function showSetoranEditLogModal() {
+        if (_setoranEditLog.length === 0) {
+            Swal.fire('Info', 'Belum ada riwayat edit.', 'info');
+            return;
+        }
+        const logs = _setoranEditLog.slice(0, 20); // Ambil 20 terakhir
+        let html = `<div style="max-height:500px; overflow-y:auto; font-size:0.75rem;">
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:var(--bg2); text-align:left;">
+                        <th style="padding:8px;">Waktu</th>
+                        <th style="padding:8px;">Editor</th>
+                        <th style="padding:8px;">Sales</th>
+                        <th style="padding:8px;">Perubahan</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        logs.forEach(log => {
+            // Hitung perbedaan sederhana
+            let changes = [];
+            const keys = ['grandTotal', 'makan', 'tips', 'parkir', 'bensin', 'flazz', 'transfer', 'cicilan', 'tagihan', 'total', 'setor', 'selisih'];
+            keys.forEach(k => {
+                if (log.sebelum[k] !== log.sesudah[k]) {
+                    changes.push(`<div style="font-size:0.65rem; margin-bottom:2px;">
+                        <b>${k}</b>: ${fmtRp(log.sebelum[k])} → <span style="color:var(--biru); font-weight:bold;">${fmtRp(log.sesudah[k])}</span>
+                    </div>`);
+                }
+            });
+            
+            html += `<tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px; vertical-align:top; white-space:nowrap;">${log.waktu}</td>
+                <td style="padding:8px; vertical-align:top;">${log.editor}</td>
+                <td style="padding:8px; vertical-align:top;">${log.sales}</td>
+                <td style="padding:8px; vertical-align:top;">${changes.length > 0 ? changes.join('') : '<span style="color:var(--text3)">-</span>'}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        
+        document.getElementById('setoranEditLogContent').innerHTML = html;
+        document.getElementById('setoranEditLogModal').classList.add('show');
+    }
 
     // ========== TRANSAKSI ==========
     function loadTransaksi() {
@@ -1113,7 +1242,6 @@
           <canvas id="salesCanvas" style="max-height:260px"></canvas>
         </div>`;
 
-      // Default tanggal SKU: 7 hari terakhir
       const _t = new Date(), _f = new Date(); _f.setDate(_t.getDate()-6);
       document.getElementById('grafikSkuFrom').value = localDateStr(_f);
       document.getElementById('grafikSkuTo').value = localDateStr(_t);
@@ -1160,7 +1288,7 @@
       const ctx = document.getElementById('grafikCanvas').getContext('2d');
       _grafikChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels, datasets: [{ label: 'Total Penjualan (Rp)', data: totals, backgroundColor: 'rgba(26,109,181,0.7)', borderColor: '#1A6DB5', borderWidth: 1, borderRadius: 4 }] },
+        data: { labels, datasets: [{ label: 'Total Penjualan (Rp)',  totals, backgroundColor: 'rgba(26,109,181,0.7)', borderColor: '#1A6DB5', borderWidth: 1, borderRadius: 4 }] },
         options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => 'Rp '+ctx.raw.toLocaleString('id-ID') } } }, scales: { y: { ticks: { callback: v => 'Rp '+(v/1000).toFixed(0)+'k' } } } }
       });
     }
@@ -1186,7 +1314,7 @@
       const colors = ['#1A6DB5','#16A34A','#F59E0B','#EF4444','#8B5CF6','#EC4899','#06B6D4','#84CC16','#F97316','#6366F1'];
       _skuChart = new Chart(ctx, {
         type: 'bar',
-        data: { labels: rows.map(r=>r.sku), datasets: [{ label: 'Qty Terjual', data: rows.map(r=>r.qty), backgroundColor: colors, borderRadius: 4 }] },
+        data: { labels: rows.map(r=>r.sku), datasets: [{ label: 'Qty Terjual',  rows.map(r=>r.qty), backgroundColor: colors, borderRadius: 4 }] },
         options: { indexAxis:'y', responsive: true, plugins: { legend:{display:false} } }
       });
     }
@@ -1206,7 +1334,7 @@
       const colors = ['#1A6DB5','#16A34A','#F59E0B','#EF4444','#8B5CF6','#EC4899','#06B6D4','#84CC16'];
       _salesChart = new Chart(ctx, {
         type: 'doughnut',
-        data: { labels: rows.map(r=>r[0]), datasets: [{ data: rows.map(r=>r[1]), backgroundColor: colors }] },
+         { labels: rows.map(r=>r[0]), datasets: [{  rows.map(r=>r[1]), backgroundColor: colors }] },
         options: { responsive: true, plugins: { tooltip: { callbacks: { label: ctx => ctx.label+': Rp '+ctx.raw.toLocaleString('id-ID') } } } }
       });
     }
@@ -1229,7 +1357,6 @@
       XLSX.writeFile(wb, `grafik-penjualan-${localDateStr()}.xlsx`);
     }
 
-    // ========== EXPORT EXCEL / PDF ==========
     function exportExcelRekap(jenis, tgl, salesFilter) {
       const filtered2 = salesFilter
         ? allTrxList.filter(t=>(t.tgl||'').substring(0,10)===tgl&&(t.sales||'').toLowerCase().trim()===salesFilter.toLowerCase().trim())
@@ -1277,16 +1404,13 @@
       }
     }
 
-    // ========== MANAJEMEN PIUTANG ==========
     function loadPiutang() {
-      // Piutang = transaksi status belumTransfer
       const piutang = allTrxList.filter(t=>(t.status||'').toLowerCase().replace(/\s/g,'')==='belumtransfer'||(t.status||'')==='belumTransfer');
       piutang.sort((a,b)=>(a.tgl||'').localeCompare(b.tgl||''));
 
       const today = localDateStr();
       const totalPiutang = piutang.reduce((s,t)=>s+(t.nett||0),0);
 
-      // Aging: hitung berapa hari
       function agingLabel(tgl) {
         const diff = Math.floor((new Date(today)-new Date(tgl))/(1000*60*60*24));
         if (diff===0) return {label:'Hari ini', cls:'hijau'};
@@ -1295,7 +1419,6 @@
         return {label:`${diff} hari ⚠️`, cls:'merah'};
       }
 
-      // Rekap per customer
       const custAgg={};
       piutang.forEach(t=>{
         if(!custAgg[t.customer]) custAgg[t.customer]={customer:t.customer,total:0,count:0,oldest:t.tgl};
@@ -1365,7 +1488,6 @@
       XLSX.writeFile(wb,`piutang-${today}.xlsx`);
     }
 
-    // ========== RIWAYAT EDIT TRANSAKSI ==========
     let _editLog = [];
     function loadEditLog() {
       try { _editLog = JSON.parse(localStorage.getItem('tirtaEditLog')||'[]'); } catch(e) { _editLog=[]; }
@@ -1403,14 +1525,11 @@
         if (!r.isConfirmed) return;
         const before = { customer:trx.customer, sales:trx.sales, status:trx.status, nett:trx.nett };
         const after = r.value;
-        // Update lokal
         const idx = allTrxList.findIndex(t=>t.id===id);
         if (idx>=0) { allTrxList[idx] = {...allTrxList[idx], ...after}; saveLocalData(); }
-        // Log edit
         loadEditLog();
         _editLog.push({ id, waktu: localDateStr()+' '+new Date().toTimeString().slice(0,8), editor: currentUser?.name||'?', before, after });
         saveEditLog();
-        // Sync status ke GAS
         try { await gasCall('updateStatus',[id, after.status]); } catch(e){ console.warn(e); }
         Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:1500,icon:'success',title:'Transaksi diupdate'});
         loadTransaksi();
@@ -1429,8 +1548,6 @@
       Swal.fire({ title:'📋 Riwayat Edit', html, width:'700px', showConfirmButton:false, showCloseButton:true });
     }
 
-    // ========== FOTO BUKTI ==========
-    // Fungsi untuk mengkompres gambar
     async function kompresGambar(file, maxSizeKB = 1800) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -1441,7 +1558,6 @@
             let width = img.width;
             let height = img.height;
             
-            // Resize jika terlalu besar (max 1920px)
             const maxDim = 1920;
             if (width > maxDim || height > maxDim) {
               if (width > height) {
@@ -1458,11 +1574,9 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
             
-            // Kompres dengan quality bertahap
             let quality = 0.9;
             let dataUrl = canvas.toDataURL('image/jpeg', quality);
             
-            // Jika masih terlalu besar, turunkan quality
             while (dataUrl.length > maxSizeKB * 1024 && quality > 0.3) {
               quality -= 0.1;
               dataUrl = canvas.toDataURL('image/jpeg', quality);
@@ -1487,25 +1601,21 @@
       try {
         let base64Data;
         const originalSizeKB = Math.round(file.size/1024);
-        const maxSize = 1.8 * 1024 * 1024; // 1.8MB untuk buffer aman
+        const maxSize = 1.8 * 1024 * 1024; 
         
-        // Selalu kompres untuk memastikan ukuran aman
-        base64Data = await kompresGambar(file, 1500); // Target 1.5MB setelah kompresi
+        base64Data = await kompresGambar(file, 1500); 
         const base64Only = base64Data.split(',')[1];
         
-        // Cek ukuran setelah kompresi
         const sizeAfterCompressKB = Math.round((base64Only.length * 3/4) / 1024);
         
         if (sizeAfterCompressKB > 1800) {
-          // Jika masih terlalu besar, kompres lagi dengan target lebih kecil
           base64Data = await kompresGambar(file, 1000);
           base64Data = base64Data.split(',')[1];
         } else {
           base64Data = base64Only;
         }
         
-        // Konversi dataURL ke blob untuk mendapatkan mime type
-        const response = await fetch('data:image/jpeg;base64,' + base64Data);
+        const response = await fetch('image/jpeg;base64,' + base64Data);
         const blob = await response.blob();
         
         if (originalSizeKB > 1800) {
@@ -1521,7 +1631,6 @@
         Swal.close();
         if (result && result.viewUrl) {
           Swal.fire({ icon:'success', title:'Foto berhasil diupload!', html:`<a href="${esc(result.viewUrl)}" target="_blank" style="color:var(--biru);font-weight:700">🔗 Lihat di Google Drive</a>`, confirmButtonText:'OK' });
-          // Simpan link ke lokal
           const fotoKey = 'foto_'+refId;
           let fotoList = []; try { fotoList=JSON.parse(localStorage.getItem(fotoKey)||'[]'); } catch(e){}
           fotoList.push({ waktu: localDateStr()+' '+new Date().toTimeString().slice(0,8), jenis, viewUrl: result.viewUrl, thumbUrl: result.thumbUrl, nama: result.fileName, uploader: currentUser?.name||'' });
@@ -1534,11 +1643,9 @@
       }
     }
 
-    // Fungsi khusus untuk upload foto kiriman transaksi
     async function uploadFotoKiriman(inputEl) {
       if (!_currentTrxId) return Swal.fire('Error', 'ID Transaksi belum tersedia', 'error');
       await uploadFotoBukti(_currentTrxId, 'foto_kiriman', inputEl);
-      // Update status setelah upload
       const fotoKey = 'foto_'+_currentTrxId;
       let fotoList = []; try { fotoList=JSON.parse(localStorage.getItem(fotoKey)||'[]'); } catch(e){}
       const statusEl = document.getElementById('fotoKirimanStatus');
@@ -1553,7 +1660,6 @@
     }
 
     function showFotoBukti(refId, judulEl) {
-      // Ambil dari lokal dulu, lalu coba GAS
       const fotoKey = 'foto_'+refId;
       let fotoList = []; try { fotoList=JSON.parse(localStorage.getItem(fotoKey)||'[]'); } catch(e){}
       const renderFotoModal = (list) => {
@@ -1569,7 +1675,6 @@
         Swal.fire({ title:'📸 Foto Bukti - '+judulEl, html, width:'600px', showCloseButton:true, showConfirmButton:false });
       };
       renderFotoModal(fotoList);
-      // Background fetch dari GAS
       gasCall('getFotoList',[refId]).then(list=>{ if(list&&list.length>list.length) renderFotoModal(list); }).catch(()=>{});
     }
 
@@ -1583,9 +1688,16 @@
       </div>`;
     }
 
-    // ========== REKAP ==========
     let _rekapJenis = 'penjualan_per_sales';
-    function loadRekap() {
+    async function loadRekap() {
+      // [PENTING] Paksa sync data terbaru dari Google Sheets sebelum buka Rekap
+      document.getElementById('contentArea').innerHTML = '<div class="loading">Memuat data terbaru...</div>';
+      try {
+        await syncFromGAS(); 
+      } catch(e) {
+        console.warn('Gagal sync otomatis, lanjut dengan data lokal:', e);
+      }
+
       let sOpts = '<option value="">Semua Sales</option>';
       (settings.salesList||[]).forEach(s => { sOpts += `<option value="${esc(s)}">${esc(s)}</option>`; });
       const jenisOpts = [
@@ -1625,14 +1737,6 @@
       _rekapJenis = jenis;
       if (!tgl) return Swal.fire('Error','Pilih tanggal!','error');
 
-      // [FIX] Selalu ambil data terbaru dari Google Sheets sebelum rekap
-      document.getElementById('rekapContent').innerHTML = '<div class="loading">Mengambil data dari server...</div>';
-      try {
-        await loadTrxFromGAS();
-      } catch(e) {
-        console.warn('Gagal load dari GAS, pakai data lokal:', e);
-      }
-
       let filtered = allTrxList.filter(t => (t.tgl||'').substring(0,10) === tgl);
       if (salesFilter) filtered = filtered.filter(t => (t.sales||'').toLowerCase().trim() === salesFilter.toLowerCase().trim());
 
@@ -1641,15 +1745,13 @@
         return;
       }
 
-      // Laporan yang butuh items: fetch getTrxDetail per transaksi jika items belum ada
       const jenisButuhItems = ['penjualan_per_sales','rekap_per_sku','rekap_per_customer','rekap_per_qty','rekap_sales_qty'];
       const adaItems = filtered.some(t => Array.isArray(t.items) && t.items.length > 0);
 
       if (jenisButuhItems.includes(jenis) && !adaItems) {
         document.getElementById('rekapContent').innerHTML = `<div class="loading">Mengambil detail item (0/${filtered.length})...</div>`;
         try {
-          // [FIX] Fetch detail dengan batch lebih besar (50 instead of 15) untuk mempercepat
-          const batchSize = 50;
+          const batchSize = 15;
           for (let i = 0; i < filtered.length; i += batchSize) {
             const batch = filtered.slice(i, i + batchSize);
             const el = document.getElementById('rekapContent');
@@ -1667,7 +1769,6 @@
             }));
           }
           saveLocalData();
-          // Re-filter setelah merge items
           filtered = allTrxList.filter(t => (t.tgl||'').substring(0,10) === tgl);
           if (salesFilter) filtered = filtered.filter(t => (t.sales||'').toLowerCase().trim() === salesFilter.toLowerCase().trim());
         } catch(e) {
@@ -1676,7 +1777,6 @@
         }
       }
 
-      // Kumpulkan semua items dari filtered
       const allItems = [];
       filtered.forEach(trx => {
         (trx.items||[]).forEach(it => {
@@ -1690,9 +1790,7 @@
       const labelFilter = `<span class="text-sm" style="color:var(--text2)">${fmtDate(tgl)}${salesFilter?' · '+salesFilter:' · Semua Sales'}</span>`;
 
       if (jenis === 'penjualan_per_sales') {
-        // Penjualan per Sales → Customer | SKU | Total
         const salesMap = new Map();
-        // Jika masih tidak ada items, fallback ke header (customer+nett per sales)
         if (allItems.length === 0) {
           filtered.forEach(trx => {
             const s = trx.sales||'Tanpa Sales';
@@ -1712,13 +1810,12 @@
             const total = items.reduce((s,it)=>s+it.subtotal,0);
             h += `<div class="card"><div class="card-title"><i class="fas fa-user-tie"></i> ${esc(salesName)}</div>${labelFilter}<div class="flex-between" style="margin-top:6px;margin-bottom:8px;font-weight:800;color:var(--biru)"><span>Total</span><span style="font-family:var(--mono)">${fmtRp(total)}</span></div>`;
             h += '<div class="table-wrap"><table><thead><tr><th>Customer</th><th>SKU</th><th style="text-align:right">Total</th></tr></thead><tbody>';
-            items.forEach(it => { h += `<tr><td>${esc(it.customer)}</td><td style="font-family:var(--mono);font-size:0.65rem">${esc(it.sku)}</td><td style="font-family:var(--mono);font-weight:700;text-align:right">${fmtRp(it.subtotal)}</td></tr>`; });
+            items.forEach(it => { h += `<tr><td>${esc(it.customer)}</td><td style="font-family:var(--mono);font-size:0.65rem">${esc(it.sku)}</td><td style="text-align:right;font-family:var(--mono);font-weight:700">${fmtRp(it.subtotal)}</td></tr>`; });
             h += '</tbody></table></div></div>';
           });
         }
 
       } else if (jenis === 'rekap_per_sku') {
-        // REKAP PER SKU → SKU | Customer | qty
         const skuMap = new Map();
         allItems.forEach(item => {
           if (!skuMap.has(item.sku)) skuMap.set(item.sku, []);
@@ -1742,8 +1839,6 @@
         }
 
       } else if (jenis === 'rekap_per_customer') {
-        // REKAP PER CUSTOMER → Customer | SKU | qty | total
-        // Jika tidak ada items, fallback ke header
         let h2 = `<div class="card"><div class="card-title"><i class="fas fa-users"></i> Rekap per Customer</div>${labelFilter}`;
         if (allItems.length === 0) {
           const custAgg = {};
@@ -1779,7 +1874,6 @@
         h = h2;
 
       } else if (jenis === 'rekap_per_qty') {
-        // REKAP PER QTY → Customer | SKU | qty (diurutkan qty terbesar)
         const agg = {};
         allItems.forEach(it => {
           const key = `${it.customer}|${it.sku}`;
@@ -1796,7 +1890,6 @@
         }
 
       } else if (jenis === 'rekap_sales_qty') {
-        // REKAP SALES QTY → Sales | SKU | qty
         const salesSkuAgg = {};
         allItems.forEach(it => {
           const s = it.sales||'Tanpa Sales';
@@ -1820,8 +1913,6 @@
         }
 
       } else if (jenis === 'cod' || jenis === 'transfer' || jenis === 'qris' || jenis === 'belum_transfer') {
-        // COD / Transfer / QRIS / Belum Transfer → Customer | Total (dari header, selalu ada)
-        // [FIX] Gunakan paymentMethod dan statusBayar yang benar
         const statusFiltered = filtered.filter(t => {
           const pm = (t.paymentMethod||'').toLowerCase().trim();
           const sb = (t.statusBayar||'Lunas').toLowerCase().trim();
@@ -1847,7 +1938,6 @@
         }
 
       } else if (jenis === 'laporan_per_sales') {
-        // LAPORAN PER SALES → Sales | SUM of total | SUM of profit (total dari header, profit dari items jika ada)
         const salesAgg = {};
         filtered.forEach(trx => {
           const s = trx.sales||'Tanpa Sales';
@@ -1878,16 +1968,14 @@
       document.getElementById('rekapContent').innerHTML = h || '<div class="card"><p class="text-center text-sm">Tidak ada data</p></div>';
     }
 
-    // ========== REKAP INPUT (dengan tabel detail bisa edit qty & status) ==========
     async function loadRekapInput() { const today = localDateStr(); document.getElementById('contentArea').innerHTML = `<div class="card"><div class="flex-row mb-2"><div class="form-group col-1"><label>Tanggal</label><input type="date" id="rekapInputTgl" value="${today}"></div><button class="btn btn-primary" onclick="doRekapInput()" style="height:44px;align-self:flex-end">📊 Tampilkan</button></div></div><div id="rekapInputContent"><div class="text-center text-sm" style="padding:40px">Pilih tanggal lalu klik Tampilkan</div></div>`; await syncStockHistoryFromGAS(); doRekapInput(); }
-    function doRekapInput() { const tgl = document.getElementById('rekapInputTgl').value; if (!tgl) return Swal.fire('Error','Pilih tanggal','error'); const filtered = stockInHistory.filter(s => (s.date||s.tgl||'').substring(0,10) === tgl); const data = hitungRekapLokal(filtered); renderRekapInput(data); // tambahkan tabel detail dengan fitur edit
+    function doRekapInput() { const tgl = document.getElementById('rekapInputTgl').value; if (!tgl) return Swal.fire('Error','Pilih tanggal','error'); const filtered = stockInHistory.filter(s => (s.date||s.tgl||'').substring(0,10) === tgl); const data = hitungRekapLokal(filtered); renderRekapInput(data); 
       document.getElementById('rekapInputContent').innerHTML += buildStockDetailTableEditable(filtered);
     }
     function hitungRekapLokal(list) { const driverMap = {}; list.forEach(entry => { const driver = entry.driver || '', rit = entry.rit || '', status = (entry.status||'').toLowerCase(), sku = entry.sku || '', qty = entry.qty || 0, hargaModal = entry.hargaModal || 0, disc = entry.disc || 0, netModalPerItem = hargaModal - disc, totalRp = qty * netModalPerItem; if (!driver || !rit || !sku || qty === 0) return; if (!driverMap[driver]) driverMap[driver] = {}; if (!driverMap[driver][rit]) driverMap[driver][rit] = { totalRp: 0, kiriman: { totalRp: 0, items: {} }, titipan: { totalRp: 0, items: {} } }; driverMap[driver][rit].totalRp += totalRp; if (status === 'kiriman') { driverMap[driver][rit].kiriman.totalRp += totalRp; driverMap[driver][rit].kiriman.items[sku] = (driverMap[driver][rit].kiriman.items[sku]||0) + qty; } else if (status === 'titipan') { driverMap[driver][rit].titipan.totalRp += totalRp; driverMap[driver][rit].titipan.items[sku] = (driverMap[driver][rit].titipan.items[sku]||0) + qty; } }); const rekap = [], kiriman = [], titipan = [], kirimanQty = [], titipanQty = []; for (const d in driverMap) { for (const r in driverMap[d]) { const entry = driverMap[d][r]; rekap.push({ driver: d, rit: r, total: entry.totalRp }); if (entry.kiriman.totalRp > 0) { kiriman.push({ driver: d, rit: r, total: entry.kiriman.totalRp }); for (const sku in entry.kiriman.items) kirimanQty.push({ driver: d, rit: r, sku, qty: entry.kiriman.items[sku] }); } if (entry.titipan.totalRp > 0) { titipan.push({ driver: d, rit: r, total: entry.titipan.totalRp }); for (const sku in entry.titipan.items) titipanQty.push({ driver: d, rit: r, sku, qty: entry.titipan.items[sku] }); } } } const sum = arr => arr.reduce((s,x)=>s+x.total,0); return { rekap, grandRekap: sum(rekap), kiriman, grandKiriman: sum(kiriman), titipan, grandTitipan: sum(titipan), kirimanQty, titipanQty }; }
     function renderRekapInput(data) { let h = buildRekapTable('TOTAL Kiriman + Titipan (Rp)', data.rekap, data.grandRekap) + buildRekapTable('TOTAL KIRIMAN (Rp)', data.kiriman, data.grandKiriman) + buildRekapTable('TOTAL TITIPAN (Rp)', data.titipan, data.grandTitipan) + buildQtyTable('TOTAL KIRIMAN (QTY)', data.kirimanQty) + buildQtyTable('TOTAL TITIPAN (QTY)', data.titipanQty); document.getElementById('rekapInputContent').innerHTML = h || '<p class="text-center text-sm">Belum ada data input barang.</p>'; }
     function buildRekapTable(title, rows, grandTotal) { let html = `<div class="card"><div class="card-title"><i class="fas fa-table"></i> ${title}</div><div class="table-wrap"><table><thead><tr><th>Driver</th><th>Rit</th><th>Total</th></tr></thead><tbody>`; if (!rows || !rows.length) html += '<tr><td colspan="3" class="text-center text-sm">Tidak ada data</td></tr>'; else { rows.forEach(row => { html += `<tr><td>${esc(row.driver)}</td><td>${esc(row.rit)}</td><td style="text-align:right;font-family:var(--mono)">${fmtRp(row.total)}</td></tr>`; }); if (grandTotal !== undefined) html += `<tr style="font-weight:700;background:var(--biru-muda)"><td colspan="2">Grand Total</td><td style="text-align:right;font-family:var(--mono);color:var(--biru)">${fmtRp(grandTotal)}</td></tr>`; } html += '</tbody></table></div></div>'; return html; }
-    function buildQtyTable(title, rows) { let html = `<div class="card"><div class="card-title"><i class="fas fa-list"></i> ${title}</div><div class="table-wrap"><table><thead><tr><th>Driver</th><th>Rit</th><th>SKU</th><th>Qty</th></tr></thead><tbody>`; if (!rows || !rows.length) html += '<tr><td colspan="4" class="text-center text-sm">Tidak ada数据</div></tr>'; else rows.forEach(row => { html += `<tr><td>${esc(row.driver)}</div><td>${esc(row.rit)}</div><td>${esc(row.sku)}</div><td>${row.qty}</div></tr>`; }); html += '</tbody></table></div></div>'; return html; }
-    // Tabel detail input barang dengan edit qty dan status (mirip dengan di halaman Input Barang)
+    function buildQtyTable(title, rows) { let html = `<div class="card"><div class="card-title"><i class="fas fa-list"></i> ${title}</div><div class="table-wrap"><table><thead><tr><th>Driver</th><th>Rit</th><th>SKU</th><th>Qty</th></tr></thead><tbody>`; if (!rows || !rows.length) html += '<tr><td colspan="4" class="text-center text-sm">Tidak ada data</td></tr>'; else rows.forEach(row => { html += `<tr><td>${esc(row.driver)}</td><td>${esc(row.rit)}</td><td>${esc(row.sku)}</td><td>${row.qty}</td></tr>`; }); html += '</tbody></table></div></div>'; return html; }
     function buildStockDetailTableEditable(filteredList) {
       if (!filteredList.length) return '<div class="card"><p class="text-sm text-center">Tidak ada data input barang untuk tanggal ini.</p></div>';
       let rows = filteredList.map(s => {
@@ -1911,7 +1999,6 @@
       return `<div class="card mt-2"><div class="card-title"><i class="fas fa-clipboard-list"></i> Detail Input Barang</div><div class="table-wrap"><table><thead><tr><th>ID</th><th>Tanggal</th><th>SKU</th><th>Nama</th><th>Qty</th><th>Disc</th><th>Harga Modal</th><th>Net Modal</th><th>Driver</th><th>Rit</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${rows}</tbody></tr></div></div>`;
     }
 
-    // ========== INPUT BARANG ==========
     function loadInputBarang() { 
       let pOpts = '<option value="">Pilih Produk</option>'; 
       products.forEach(p => { pOpts += `<option value="${p.sku}">${p.sku} - ${p.nama}</option>`; }); 
@@ -2019,7 +2106,7 @@
         doStockBarang();
       } catch(e) {
         const el = document.getElementById('sbContent');
-        if (el) el.innerHTML = `<div class="card"><p class="text-center text-sm" style="color:var(--merah)">Gagal memuat data: ${e.message}</p></div>`;
+        if (el) el.innerHTML = `<div class="card"><p class="text-center text-sm" style="color:var(--merah)">Gagal memuat  ${e.message}</p></div>`;
       }
     }
     function doStockBarang() {
@@ -2029,7 +2116,6 @@
       let filtered = _stockBarangAll;
       if (tgl) filtered = filtered.filter(d => (d.date||'').substring(0,10) === tgl);
       if (_sbSelectedSkus.size > 0) filtered = filtered.filter(d => _sbSelectedSkus.has(d.sku));
-      // Koreksi field masuk dari stockInHistory lokal (kiriman + titipan)
       filtered = filtered.map(d => {
         const localMasuk = stockInHistory
           .filter(s => (s.date||s.tgl||'').substring(0,10) === (d.date||'').substring(0,10) && s.sku === d.sku && (s.status||'').toLowerCase() === 'kiriman')
@@ -2068,24 +2154,20 @@
     }
     async function rolloverStokAwal() {
       const today = localDateStr();
-      // Hitung kemarin (lokal)
       const _kemarin = new Date(); _kemarin.setDate(_kemarin.getDate() - 1);
       const kemarin = localDateStr(_kemarin);
 
-      // Cek apakah data hari ini sudah ada di GAS
       const dataHariIni = _stockBarangAll.filter(d => (d.date||'').substring(0,10) === today);
       if (dataHariIni.length > 0) {
         const konfirm = await Swal.fire({ title: 'Data hari ini sudah ada', text: `Stock tanggal ${today} sudah ada (${dataHariIni.length} SKU). Tetap lakukan rollover dan timpa stok awal hari ini?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, timpa', cancelButtonText: 'Batal' });
         if (!konfirm.isConfirmed) return;
       }
 
-      // Ambil data kemarin dari _stockBarangAll
       const dataKemarin = _stockBarangAll.filter(d => (d.date||'').substring(0,10) === kemarin);
       if (!dataKemarin.length) {
         return Swal.fire('Tidak ada data', `Tidak ada data stock untuk tanggal kemarin (${kemarin}). Pastikan data kemarin sudah ada di sistem.`, 'warning');
       }
 
-      // Hitung stok akhir kemarin (dengan koreksi dari stockInHistory lokal)
       const rolloverData = dataKemarin.map(d => {
         const localMasuk = stockInHistory
           .filter(s => (s.date||s.tgl||'').substring(0,10) === kemarin && s.sku === d.sku && (s.status||'').toLowerCase() === 'kiriman')
@@ -2095,7 +2177,6 @@
         return { date: today, sku: d.sku, nama: d.nama, stokAwal: stokAkhirKemarin, masuk: 0, keluar: 0 };
       });
 
-      // Preview ke user
       const previewRows = rolloverData.map(r => `<tr><td style="font-family:var(--mono);font-size:11px">${esc(r.sku)}</td><td>${esc(r.nama)}</td><td style="text-align:right;font-weight:700;color:var(--biru)">${r.stokAwal}</td></tr>`).join('');
       const konfirmFinal = await Swal.fire({
         title: `🔄 Rollover Stok ke ${today}`,
@@ -2118,7 +2199,6 @@
       Swal.close();
       if (berhasil > 0) {
         Swal.fire({ icon: gagal > 0 ? 'warning' : 'success', title: 'Rollover Selesai', text: `${berhasil} SKU berhasil${gagal > 0 ? ', '+gagal+' SKU gagal' : ''}.` });
-        // Reload data stock
         try {
           const data = await gasCall('getStockBarang', []);
           if (Array.isArray(data)) { _stockBarangAll = data; doStockBarang(); }
@@ -2145,7 +2225,7 @@
       const items = getInputItems(); 
       if (!items.length) return Swal.fire('Error','Minimal satu item harus diisi','error'); 
       const now = new Date(), date = localDateStr(now), createdAt = localDateStr(now)+' '+String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0'); 
-      const entries = items.map((it, idx) => ({ id: inpId + '-' + (idx+1), groupId: inpId, sku: it.sku, nama: it.nama, qty: it.qty, hargaModal: it.hargaModal, disc: it.disc, netModal: it.netModal, driver, rit, status, date, createdAt })); 
+      const entries = items.map((it, idx) => ({ id: inpId + '-' + (idx+1), groupId: inpId, sku: it.sku, nama: it.nama, qty: it.qty, hargaModal: it.hargaModal, disc: it.disc, netModal: (hargaModal - disc) * qty, driver, rit, status, date, createdAt })); 
       entries.forEach(e => stockInHistory.unshift(e)); 
       saveLocalData(); 
       try { for (const e of entries) await gasCall('saveInputBarang', [e]); } catch(e) { console.warn('Gagal simpan ke GAS:', e); } 
@@ -2198,10 +2278,6 @@
     }
     async function syncStockHistoryFromGAS() { try { const data = await gasCall('getInputBarangHistory', []); if (Array.isArray(data) && data.length > 0) { stockInHistory = data; saveLocalData(); if (document.getElementById('stkHistory')) renderStockHistory(); } } catch(e) { console.warn('Gagal ambil riwayat input barang:', e); } }
 
-    // ========== GUDANG & LAPORAN TELAH DIHAPUS ==========
-    // (fungsi-fungsi terkait gudang dan laporan tidak ada lagi)
-
-    // ========== PRODUK ==========
     function loadProduk() {
       document.getElementById('contentArea').innerHTML = `
         <div class="card" style="padding:14px 16px;">
@@ -2236,6 +2312,7 @@
         </div>`;
       renderProdukList();
     }
+
     function renderProdukList() {
       const tb = document.getElementById('produkTbody');
       if (!tb) return;
@@ -2281,13 +2358,11 @@
     function saveProduk() { const sku = document.getElementById('prodSku').value.trim(), nama = document.getElementById('prodNama').value.trim(); if (!sku || !nama) return Swal.fire('Error','SKU dan Nama wajib diisi','error'); const obj = { sku, barcode: document.getElementById('prodBarcode').value.trim(), nama, jual: parseFloat(document.getElementById('prodJual').value)||0, harga: parseFloat(document.getElementById('prodJual').value)||0, modal: parseFloat(document.getElementById('prodModal').value)||0, stokAwal: parseInt(document.getElementById('prodStok').value)||0 }; const idx = parseInt(document.getElementById('editProdIdx').value); if (idx >= 0 && products[idx]) products[idx] = obj; else products.push(obj); saveLocalData(); closeProdukForm(); renderProdukList(); Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Produk disimpan' }); syncMasterStockToSheet(); }
     function deleteProduk(idx) { Swal.fire({ title:'Hapus?', text:'Hapus '+products[idx].nama+'?', icon:'warning', showCancelButton:true }).then(r => { if (r.isConfirmed) { products.splice(idx,1); saveLocalData(); renderProdukList(); Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Produk dihapus' }); syncMasterStockToSheet(); } }); }
 
-    // ========== PELANGGAN ==========
     function loadPelanggan() { document.getElementById('contentArea').innerHTML = `<div class="card"><div class="flex-between mb-2"><div class="card-title"><i class="fas fa-address-book"></i> Daftar Pelanggan</div><button class="btn btn-primary btn-sm" onclick="addPelanggan()">+ Tambah</button></div><div class="table-wrap"><table><thead><tr><th>#</th><th>Nama</th><th>Aksi</th></tr></thead><tbody id="pelangganTbody"></tbody></table></div></div>`; renderPelangganList(); }
-    function renderPelangganList() { const tb = document.getElementById('pelangganTbody'); if (!tb) return; if (!allCustomers.length) { tb.innerHTML = '<tr><td colspan="3" class="text-center text-sm" style="padding:32px">Belum ada pelanggan</div></tr>'; return; } tb.innerHTML = allCustomers.map((c,i) => `<td>${i+1}</div><td class="fw-bold">${esc(c)}</div><td><button class="btn btn-sm btn-danger" onclick="deletePelanggan(${i})">🗑</button></div></tr>`).join(''); }
+    function renderPelangganList() { const tb = document.getElementById('pelangganTbody'); if (!tb) return; if (!allCustomers.length) { tb.innerHTML = '<tr><td colspan="3" class="text-center text-sm" style="padding:32px">Belum ada pelanggan</div></tr>'; return; } tb.innerHTML = allCustomers.map((c,i) => `<td>${i+1}</td><td class="fw-bold">${esc(c)}</td><td><button class="btn btn-sm btn-danger" onclick="deletePelanggan(${i})">🗑</button></td></tr>`).join(''); }
     function addPelanggan() { Swal.fire({ title:'Tambah Pelanggan', input:'text', inputLabel:'Nama pelanggan', showCancelButton:true }).then(r => { if (r.isConfirmed && r.value) { const name = r.value.trim(); if (!allCustomers.includes(name)) { allCustomers.push(name); pelanggan = allCustomers.slice(); saveLocalData(); renderPelangganList(); Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Pelanggan ditambahkan' }); } else Swal.fire('Info','Sudah ada','info'); } }); }
     function deletePelanggan(idx) { Swal.fire({ title:'Hapus?', text:'Hapus '+allCustomers[idx]+'?', icon:'warning', showCancelButton:true }).then(r => { if (r.isConfirmed) { allCustomers.splice(idx,1); pelanggan = allCustomers.slice(); saveLocalData(); renderPelangganList(); Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Pelanggan dihapus' }); } }); }
 
-    // ========== PENGATURAN ==========
     function loadPengaturan() { 
       document.getElementById('contentArea').innerHTML = `
         <div class="card">
@@ -2307,7 +2382,7 @@
           <div class="section-title">👥 Users</div><div id="userList" class="mb-2"></div><div class="flex-row"><input id="newUserName" placeholder="Nama" style="flex:1"><select id="newUserRole" style="width:100px"><option value="admin">Admin</option><option value="sales">Sales</option><option value="driver">Driver</option></select><input id="newUserPass" placeholder="Password" style="flex:1"><button class="btn btn-primary btn-sm" onclick="addUser()">+ Tambah</button></div>
           <button class="btn btn-primary btn-block mt-2" onclick="savePengaturan()">💾 Simpan Pengaturan</button>
           <div class="section-title">🔗 Google Apps Script URL</div>
-          <div class="form-group"><label>URL GAS (Google Apps Script)</label><input id="setGasUrl" placeholder="https://script.google.com/macros/s/..." style="font-size:0.65rem"></div>
+          <div class="form-group"><label>URL GAS (Google Apps Script)</label><input id="setGasUrl" placeholder="https://script.google.com/macros/s/... " style="font-size:0.65rem"></div>
           <div class="flex-row"><button class="btn btn-primary" style="flex:1" onclick="saveGasUrl()"><i class="fas fa-link"></i> Simpan URL</button><button class="btn btn-outline btn-sm" onclick="testGasConnection()"><i class="fas fa-plug"></i> Test Koneksi</button></div>
           <div class="section-title">💾 Backup & Restore</div><div class="flex-row"><button class="btn btn-warning" style="flex:1" onclick="backupData()"><i class="fas fa-download"></i> Backup</button><button class="btn btn-danger" style="flex:1" onclick="restoreData()"><i class="fas fa-upload"></i> Restore</button></div>
         </div>`;
@@ -2352,7 +2427,6 @@
     function backupData() { saveLocalData(); const blob = new Blob([localStorage.getItem('tirtaFullData')], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tirta-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); }
     function restoreData() { Swal.fire({ title:'Restore Data', text:'Pilih file backup JSON', icon:'warning', showCancelButton:true }).then(r => { if (r.isConfirmed) { const input = document.createElement('input'); input.type='file'; input.accept='.json'; input.onchange = e => { const file = e.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = ev => { try { const data = JSON.parse(ev.target.result); localStorage.setItem('tirtaFullData', JSON.stringify(data)); loadLocalData(); Swal.fire('Sukses','Data direstore! Refresh halaman.','success'); } catch(err) { Swal.fire('Error','File tidak valid','error'); } }; reader.readAsText(file); }; input.click(); } }); }
 
-    // ========== PENGATURAN USER (Sales & Driver) ==========
     function loadPengaturanUser() {
       const role = currentUser?.role;
       const gasUrl = localStorage.getItem('tirtaGasUrl') || DEFAULT_GAS_URL;
@@ -2365,88 +2439,51 @@
             <div class="form-group"><div class="img-upload-box" onclick="document.getElementById('salesLogoInput').click()"><input type="file" id="salesLogoInput" accept="image/*" onchange="uploadSalesLogo(event)" style="display:none"><div id="salesLogoPrev"><div class="img-placeholder">🖼️ Klik untuk upload logo</div></div></div></div>
             <div class="section-title">📱 QRIS Pembayaran</div>
             <div class="form-group"><div class="img-upload-box" onclick="document.getElementById('salesQrisInput').click()"><input type="file" id="salesQrisInput" accept="image/*" onchange="uploadSalesQris(event)" style="display:none"><div id="salesQrisPrev"><div class="img-placeholder">📱 Upload gambar QRIS</div></div></div></div>
-            <div class="section-title">🔗 Google Apps Script URL</div>
-            <div class="form-group"><label>URL GAS</label><input id="userGasUrl" value="${esc(gasUrl)}" placeholder="https://script.google.com/macros/s/..." style="font-size:0.65rem"></div>
-            <div class="flex-row mb-2"><button class="btn btn-primary" style="flex:1" onclick="saveUserGasUrl()"><i class="fas fa-link"></i> Simpan URL</button><button class="btn btn-outline btn-sm" onclick="testUserGasConnection()"><i class="fas fa-plug"></i> Test</button></div>
-            <div class="section-title">💾 Backup & Restore Data Lokal</div>
-            <div class="flex-row"><button class="btn btn-warning" style="flex:1" onclick="backupData()"><i class="fas fa-download"></i> Backup</button><button class="btn btn-danger" style="flex:1" onclick="restoreData()"><i class="fas fa-upload"></i> Restore</button></div>
-          </div>
-        `;
+            <div class="section-title">🔗 URL Aplikasi</div>
+            <div class="form-group"><label>Salin URL ini:</label><input type="text" readonly value="${window.location.href}" style="font-size:0.7rem" onclick="this.select();document.execCommand('copy');Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:1500,icon:'success',title:'URL disalin'})"></div>
+            <div class="section-title">🔐 Ganti Password</div>
+            <div class="flex-row">
+              <div class="form-group col-1"><input type="password" id="newPass1" placeholder="Password baru"></div>
+              <div class="form-group col-1"><input type="password" id="newPass2" placeholder="Ulangi password"></div>
+              <button class="btn btn-primary btn-sm" onclick="changeUserPass()" style="align-self:flex-end;height:44px">Ubah</button>
+            </div>
+          </div>`;
         if (_logoUrl) document.getElementById('salesLogoPrev').innerHTML = `<img src="${_logoUrl}" style="max-height:80px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`;
         if (_qrisUrl) document.getElementById('salesQrisPrev').innerHTML = `<img src="${_qrisUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`;
-      } 
-      else if (role === 'driver') {
+      } else if (role === 'driver') {
         document.getElementById('contentArea').innerHTML = `
           <div class="card">
             <div class="card-title"><i class="fas fa-cog"></i> Pengaturan Driver</div>
-            <div class="section-title">🚚 Daftar Driver</div>
-            <div class="tag-list" id="driverUserTagList"></div>
-            <div class="flex-row mt-2"><input id="newDriverUser" placeholder="Nama driver baru" style="flex:1"><button class="btn btn-primary btn-sm" onclick="addDriverUser()">+ Tambah</button></div>
-            <div class="section-title">🔗 Google Apps Script URL</div>
-            <div class="form-group"><label>URL GAS</label><input id="userGasUrl" value="${esc(gasUrl)}" placeholder="https://script.google.com/macros/s/..." style="font-size:0.65rem"></div>
-            <div class="flex-row mb-2"><button class="btn btn-primary" style="flex:1" onclick="saveUserGasUrl()"><i class="fas fa-link"></i> Simpan URL</button><button class="btn btn-outline btn-sm" onclick="testUserGasConnection()"><i class="fas fa-plug"></i> Test</button></div>
-            <div class="section-title">💾 Backup & Restore Data Lokal</div>
-            <div class="flex-row"><button class="btn btn-warning" style="flex:1" onclick="backupData()"><i class="fas fa-download"></i> Backup</button><button class="btn btn-danger" style="flex:1" onclick="restoreData()"><i class="fas fa-upload"></i> Restore</button></div>
-          </div>
-        `;
-        renderDriverUserTags();
-      } else {
-        document.getElementById('contentArea').innerHTML = '<div class="card"><p class="text-center">Role tidak dikenali.</p></div>';
+            <div class="section-title">📱 QRIS Pembayaran</div>
+            <div class="form-group"><div class="img-upload-box" onclick="document.getElementById('driverQrisInput').click()"><input type="file" id="driverQrisInput" accept="image/*" onchange="uploadDriverQris(event)" style="display:none"><div id="driverQrisPrev"><div class="img-placeholder">📱 Upload gambar QRIS</div></div></div></div>
+            <div class="section-title">🔗 URL Aplikasi</div>
+            <div class="form-group"><label>Salin URL ini:</label><input type="text" readonly value="${window.location.href}" style="font-size:0.7rem" onclick="this.select();document.execCommand('copy');Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:1500,icon:'success',title:'URL disalin'})"></div>
+            <div class="section-title">🔐 Ganti Password</div>
+            <div class="flex-row">
+              <div class="form-group col-1"><input type="password" id="newPass1" placeholder="Password baru"></div>
+              <div class="form-group col-1"><input type="password" id="newPass2" placeholder="Ulangi password"></div>
+              <button class="btn btn-primary btn-sm" onclick="changeUserPass()" style="align-self:flex-end;height:44px">Ubah</button>
+            </div>
+          </div>`;
+        if (_qrisUrl) document.getElementById('driverQrisPrev').innerHTML = `<img src="${_qrisUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`;
       }
     }
 
-    function uploadSalesLogo(e) { uploadLogo(e); }
-    function uploadSalesQris(e) { uploadQris(e); }
-    function addDriverUser() { const v = document.getElementById('newDriverUser').value.trim(); if (!v) return; if (!drivers.includes(v)) { drivers.push(v); saveLocalData(); gasCall('saveDrivers', [drivers.map(String)]).catch(e => console.warn('Gagal sync driver:', e)); renderDriverUserTags(); } document.getElementById('newDriverUser').value = ''; Swal.fire({ toast:true, position:'top-end', showConfirmButton:false, timer:1500, icon:'success', title:'Driver ditambahkan' }); }
-    function renderDriverUserTags() { const el = document.getElementById('driverUserTagList'); if (!el) return; el.innerHTML = drivers.length ? drivers.map((d,i) => `<span class="tag">${esc(d)} <button class="tag-remove" onclick="removeDriverUser(${i})">✕</button></span>`).join('') : '<span style="color:var(--text3);font-size:13px">Belum ada driver</span>'; }
-    function removeDriverUser(i) { drivers.splice(i,1); saveLocalData(); gasCall('saveDrivers', [drivers.map(String)]).catch(e => console.warn('Gagal sync driver:', e)); renderDriverUserTags(); }
-    function saveUserGasUrl() { const v = document.getElementById('userGasUrl')?.value.trim(); if (!v || !v.startsWith('https://')) return Swal.fire('Error','URL tidak valid!','error'); localStorage.setItem('tirtaGasUrl', v); GAS_URL = v; Swal.fire({ toast:true, position:'top-end', showConfirmButton:false, timer:2000, icon:'success', title:'URL GAS disimpan!' }); }
-    async function testUserGasConnection() { Swal.fire({ title:'Testing...', text:'Menghubungi GAS server...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() }); try { await gasCall('getSettings', []); Swal.fire({ icon:'success', title:'Koneksi OK!', text:'GAS server berhasil dihubungi.' }); } catch(e) { Swal.fire({ icon:'error', title:'Gagal!', text:e.message }); } }
+    function uploadSalesLogo(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { _logoUrl = ev.target.result; localStorage.setItem('tirtaLogo', _logoUrl); document.getElementById('logoImg').src = _logoUrl; if (document.getElementById('salesLogoPrev')) document.getElementById('salesLogoPrev').innerHTML = `<img src="${_logoUrl}" style="max-height:80px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; saveLocalData(); Swal.fire({ toast:true, position:'top-end', showConfirmButton:false, timer:1500, icon:'success', title:'Logo diperbarui!' }); }; r.readAsDataURL(f); }
+    function uploadSalesQris(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { _qrisUrl = ev.target.result; localStorage.setItem('sp_qris', _qrisUrl); settings.qris = _qrisUrl; if (document.getElementById('salesQrisPrev')) document.getElementById('salesQrisPrev').innerHTML = `<img src="${_qrisUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; saveLocalData(); }; r.readAsDataURL(f); }
+    function uploadDriverQris(e) { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = ev => { _qrisUrl = ev.target.result; localStorage.setItem('sp_qris', _qrisUrl); settings.qris = _qrisUrl; if (document.getElementById('driverQrisPrev')) document.getElementById('driverQrisPrev').innerHTML = `<img src="${_qrisUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; saveLocalData(); }; r.readAsDataURL(f); }
+    function changeUserPass() { const p1 = document.getElementById('newPass1').value, p2 = document.getElementById('newPass2').value; if (!p1 || !p2) return Swal.fire('Error','Isi password baru & ulangi','error'); if (p1 !== p2) return Swal.fire('Error','Password tidak cocok','error'); const idx = allUsers.findIndex(u => u.name === currentUser.name); if (idx >= 0) { allUsers[idx].password = p1; saveLocalData(); gasCall('saveUser', [allUsers[idx]]).catch(e => console.warn('Gagal update password di GAS:', e)); Swal.fire('Sukses','Password diubah','success'); document.getElementById('newPass1').value=''; document.getElementById('newPass2').value=''; } }
 
-    // ========== HELPERS ==========
-    function fmtRp(n) { return 'Rp\u00a0' + Number(n||0).toLocaleString('id-ID'); }
-    function fmtDate(s) { if (!s) return '-'; const p = String(s).substring(0,10).split('-'); if (p.length<3) return s; const m=['','Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des']; return p[2]+' '+m[parseInt(p[1])]+' '+p[0]; }
-    function genId() { const d = new Date(), pp = n => String(n).padStart(2,'0'); return 'TRX-'+d.getFullYear()+pp(d.getMonth()+1)+pp(d.getDate())+'-'+Math.random().toString(36).slice(2,6).toUpperCase(); }
-    function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-    function localDateStr(d) { const dt = d||new Date(); return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+    function installApp() { if (window.deferredPrompt) { window.deferredPrompt.prompt(); window.deferredPrompt.userChoice.then(choiceResult => { if (choiceResult.outcome === 'accepted') { console.log('PWA installation accepted'); } window.deferredPrompt = null; }); } else { Swal.fire('Info','Fitur install tidak tersedia di browser ini.','info'); } }
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.deferredPrompt = e; });
 
-    // PWA
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt = e; document.getElementById('installBtn').style.display = 'block'; });
-    function installApp() { if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then(r => { if (r.outcome === 'accepted') console.log('Installed'); deferredPrompt = null; document.getElementById('installBtn').style.display = 'none'; }); } else { Swal.fire('Info','Klik menu browser > Add to Home Screen','info'); } }
-    // Service Worker dinonaktifkan sementara untuk memperbaiki masalah cache
-/*
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(function(registration) {
-      console.log('SW registered');
-    })
-    .catch(function(error) {
-      console.log('SW registration failed', error);
-    });
-}
-*/
-console.log("Service Worker dimatikan untuk debugging cache.");
-    // Inisialisasi URL default jika kosong
-    if (!localStorage.getItem('tirtaGasUrl')) {
-      localStorage.setItem('tirtaGasUrl', DEFAULT_GAS_URL);
-    }
-    loadLocalData();
-    if (!allUsers || allUsers.length === 0) {
-      allUsers = [
-        { name:'admin',  role:'admin',  password:'020730' },
-        { name:'hasan',  role:'sales',  password:'1234'   },
-        { name:'ujang',  role:'sales',  password:'1234'   },
-        { name:'oji',    role:'driver', password:'1234'   },
-        { name:'padong', role:'driver', password:'1234'   },
-        { name:'said',   role:'driver', password:'1234'   },
-        { name:'dedi',   role:'driver', password:'1234'   },
-        { name:'zehpudin', role:'driver', password:'1234' }
-      ];
-      saveLocalData();
-    }
-    const savedUser = localStorage.getItem('tirtaUser');
-    if (savedUser) { try { currentUser = JSON.parse(savedUser); showMainApp(); } catch(e) { localStorage.removeItem('tirtaUser'); } }
+    function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+    function fmtRp(n) { return 'Rp ' + Number(n||0).toLocaleString('id-ID'); }
+    function fmtDate(s) { if (!s) return '-'; const d = new Date(s); return isNaN(d.getTime()) ? s : d.toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}); }
+    function localDateStr(d=new Date()) { return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+    function genId() { const now = new Date(); return 'TRX-'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(now.getHours()).padStart(2,'0')+String(now.getMinutes()).padStart(2,'0')+String(now.getSeconds()).padStart(2,'0'); }
+
+    window.addEventListener('load', () => { loadLocalData(); const savedUser = localStorage.getItem('tirtaUser'); if (savedUser) { try { const u = JSON.parse(savedUser); currentUser = u; showMainApp(); } catch(e) { doLogout(); } } else { document.getElementById('loginPage').classList.remove('hidden'); } });
   </script>
 </body>
 </html>

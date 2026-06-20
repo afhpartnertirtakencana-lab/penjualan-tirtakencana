@@ -219,7 +219,7 @@
       <div class="brand"><span class="tirta">Tirta</span><span class="kencana">Kencana</span></div>
       <div class="tagline">DO GOOD AND GOOD WILL COME TO YOU</div>
       <div class="alamat" id="headerAlamat">WTC Mangga 2 Lt UG A/53</div>
-      <div class="logo-header" onclick="document.getElementById('logoFileInput').click()"><img id="logoImg" src=""></div>
+      <div class="logo-header" onclick="document.getElementById('logoFileInput').click()"><img id="logoImg" src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" style="width:200px;height:200px;object-fit:contain;"></div>
       <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="uploadLogo(event)">
     </div>
     <div class="nav-bar">
@@ -1075,7 +1075,7 @@
       document.getElementById('setoranHistoryContent').innerHTML = '<div class="text-center text-sm" style="padding:20px">Mengambil data dari Google Sheets...</div>';
       document.getElementById('setoranHistoryModal').classList.add('show');
       await syncSetoranHistoryFromGAS(); // [NEW] pastikan data terbaru dari Sheets, bukan hanya lokal
-      document.getElementById('setoranHistoryContent').innerHTML = '';
+      loadSetoranHistory(); // [FIX] Tampilkan data setelah sync selesai
     }
     function closeSetoranHistory() { document.getElementById('setoranHistoryModal').classList.remove('show'); }
     function loadSetoranHistory() {
@@ -2524,7 +2524,8 @@
         </div>`;
       document.getElementById('setNamaToko').value=settings.namaToko||''; document.getElementById('setTagline').value=settings.tagline||''; document.getElementById('setAlamat').value=settings.alamat||''; document.getElementById('setTelepon').value=settings.telepon||''; document.getElementById('setFooter').value=settings.bottomLine||''; document.getElementById('setB1Nama').value=settings.bank1?.nama||''; document.getElementById('setB1Norek').value=settings.bank1?.norek||''; document.getElementById('setB1Penerima').value=settings.bank1?.penerima||''; document.getElementById('setB2Nama').value=settings.bank2?.nama||''; document.getElementById('setB2Norek').value=settings.bank2?.norek||''; document.getElementById('setB2Penerima').value=settings.bank2?.penerima||''; 
       if (_logoUrl) document.getElementById('logoPrev').innerHTML = `<img src="${_logoUrl}" style="max-height:80px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; 
-      if (_qrisUrl) document.getElementById('qrisPrev').innerHTML = `<img src="${_qrisUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; 
+      const qrisDisplayUrl = _qrisUrl || "https://www.image2url.com/r2/default/images/1781920179544-5e92dd0f-d0fa-482c-afc2-88259a5d3000.jpg";
+      if (qrisDisplayUrl) document.getElementById('qrisPrev').innerHTML = `<img src="${qrisDisplayUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`; 
       renderSalesTags(); renderDriverTags(); renderUserList();
       const gasUrlEl = document.getElementById('setGasUrl');
       if (gasUrlEl) gasUrlEl.value = localStorage.getItem('tirtaGasUrl') || DEFAULT_GAS_URL;
@@ -2584,7 +2585,8 @@
           </div>
         `;
         if (_logoUrl) document.getElementById('salesLogoPrev').innerHTML = `<img src="${_logoUrl}" style="max-height:80px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`;
-        if (_qrisUrl) document.getElementById('salesQrisPrev').innerHTML = `<img src="${_qrisUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`;
+        const salesQrisDisplayUrl = _qrisUrl || "https://www.image2url.com/r2/default/images/1781920179544-5e92dd0f-d0fa-482c-afc2-88259a5d3000.jpg";
+        if (salesQrisDisplayUrl) document.getElementById('salesQrisPrev').innerHTML = `<img src="${salesQrisDisplayUrl}" style="max-height:130px;max-width:100%;border-radius:8px"><div style="font-size:11px;color:var(--text3);margin-top:6px">Klik untuk ganti</div>`;
       } 
       else if (role === 'driver') {
         document.getElementById('contentArea').innerHTML = `

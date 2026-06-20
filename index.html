@@ -589,38 +589,58 @@
             p = document.getElementById('loginPass').value.trim(); 
       if (!u || !p) return Swal.fire('Error','Isi username & password','error'); 
       
+      const loadingSwal = Swal.fire({ title: 'Logging in...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
       try {
+        console.log('[LOGIN] Attempting login for user:', u);
+        console.log('[LOGIN] Using GAS URL:', getGasUrl());
+        
         // Try new authenticateUser function first (with hashed passwords)
         let result;
         try {
+          console.log('[LOGIN] Trying authenticateUser...');
           result = await gasCall('authenticateUser', [u, p]);
+          console.log('[LOGIN] authenticateUser result:', result);
           if (result && result.success) {
             currentUser = { name: result.user.name, role: result.user.role };
             localStorage.setItem('tirtaUser', JSON.stringify(currentUser));
             localStorage.setItem('tirtaAuthToken', result.token);
+            await loadingSwal;
             showMainApp();
+            Swal.fire({ icon: 'success', title: 'Login Berhasil', timer: 1500, showConfirmButton: false });
             return;
           }
         } catch (authErr) {
           // authenticateUser function not available on server, fall back to legacy method
-          console.warn('authenticateUser not available, using legacy auth');
+          console.warn('[LOGIN] authenticateUser not available, using legacy auth:', authErr);
         }
         
         // Legacy fallback: fetch users and check locally (for backward compatibility)
+        console.log('[LOGIN] Falling back to legacy auth...');
         const users = await gasCall('getUsers', []);
+        console.log('[LOGIN] Got users:', users);
         const user = users.find(x => x.name === u && x.password == p);
         if (user) {
           currentUser = { name: user.name, role: user.role };
           localStorage.setItem('tirtaUser', JSON.stringify(currentUser));
           // Generate a simple token for legacy compatibility
           localStorage.setItem('tirtaAuthToken', 'legacy_' + Date.now());
+          await loadingSwal;
           showMainApp();
+          Swal.fire({ icon: 'success', title: 'Login Berhasil', timer: 1500, showConfirmButton: false });
         } else {
+          await loadingSwal;
           Swal.fire('Error', 'Username/password salah!','error');
         }
       } catch (e) {
-        console.error('Login error:', e);
-        Swal.fire('Error','Gagal terhubung ke server. Periksa koneksi.','error');
+        console.error('[LOGIN] Error:', e);
+        await loadingSwal;
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Login',
+          text: 'Gagal terhubung ke server. Periksa koneksi internet Anda.',
+          footer: '<small>URL: ' + getGasUrl() + '</small><br><small>Pastikan GAS sudah di-deploy sebagai Web App dengan akses \"Anyone\"</small>'
+        });
       }
     }
     document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !document.getElementById('loginPage').classList.contains('hidden')) doLogin(); });

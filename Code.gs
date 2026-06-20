@@ -702,36 +702,60 @@ function getSetoranHistory() {
     var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
     var data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
     var result = [];
+    
+    // Buat mapping index kolom berdasarkan header yang ada
+    var colIndex = {};
+    for (var h = 0; h < headers.length; h++) {
+      var hdr = String(headers[h] || '').trim();
+      var hdrl = hdr.toLowerCase().replace(/\s+/g, '');
+      colIndex[hdrl] = h;
+      colIndex[hdr] = h;
+    }
+    
     for (var i = 0; i < data.length; i++) {
-      var row = {};
-      for (var j = 0; j < headers.length; j++) {
-        var h = String(headers[j] || '').trim();
-        var hl = h.toLowerCase();
-        row[hl] = data[i][j];
-        // Simpan juga dengan nama asli header untuk fallback
-        row[h] = data[i][j];
-      }
+      var row = data[i];
+      var getVal = function(keys) {
+        var keyArr = keys.split(',');
+        for (var k = 0; k < keyArr.length; k++) {
+          var key = keyArr[k].trim();
+          var keyLower = key.toLowerCase().replace(/\s+/g, '');
+          if (colIndex.hasOwnProperty(keyLower) && row[colIndex[keyLower]] !== undefined) {
+            return row[colIndex[keyLower]];
+          }
+          if (colIndex.hasOwnProperty(key) && row[colIndex[key]] !== undefined) {
+            return row[colIndex[key]];
+          }
+        }
+        return null;
+      };
+      
+      var num = function(v) {
+        if (v === null || v === undefined || v === '') return 0;
+        var n = parseFloat(v);
+        return isNaN(n) ? 0 : n;
+      };
+      
       result.push({
-        tgl: row['tanggal'] || row['Tanggal'] || '',
-        sales: row['sales'] || row['Sales'] || '',
-        grandTotal: Number(row['grandtotal'] || row['grandTotal'] || row['grand total'] || row['GrandTot'] || row['GrandTotal'] || 0),
-        makan: Number(row['makan'] || row['uangmak'] || row['UangMak'] || row['UangMakan'] || row['Makan'] || 0),
-        tips: Number(row['tips'] || row['Tips'] || 0),
-        parkir: Number(row['parkir'] || row['Parkir'] || 0),
-        bensin: Number(row['bensin'] || row['Bensin'] || 0),
-        flazz: Number(row['flazz'] || row['Flazz'] || 0),
-        transfer: Number(row['transfer'] || row['Transfer'] || 0),
-        cicilan: Number(row['cicilan'] || row['cicilanhu'] || row['CicilanHu'] || row['Cicilan'] || row['cicilan hu'] || row['CicilanHU'] || 0),
-        tagihan: Number(row['tagihan'] || row['Tagihan'] || 0),
-        ket1: row['ket1'] || row['ekstra1li'] || row['Ekstra1Li'] || row['ekstra1ket'] || row['Ekstra1Ket'] || row['ket 1'] || row['keterangan1'] || row['Ket1'] || '',
-        jml1: Number(row['jml1'] || row['ekstra1'] || row['Ekstra1'] || row['jumlah1'] || row['jml 1'] || row['Jml1'] || row['Ekstra1Li'] || 0),
-        ket2: row['ket2'] || row['ekstra2li'] || row['Ekstra2Li'] || row['ekstra2ket'] || row['Ekstra2Ket'] || row['ket 2'] || row['keterangan2'] || row['Ket2'] || '',
-        jml2: Number(row['jml2'] || row['ekstra2'] || row['Ekstra2'] || row['jumlah2'] || row['jml 2'] || row['Jml2'] || row['Ekstra2Li'] || 0),
-        total: Number(row['total'] || row['Total'] || 0),
-        setor: Number(row['setor'] || row['Setor'] || 0),
-        selisih: Number(row['selisih'] || row['Selisih'] || 0),
-        createdAt: row['createdat'] || row['CreatedAt'] || '',
-        fotoUrl: row['fotourl'] || row['FotoUrl'] || ''
+        tgl: getVal('tanggal,Tanggal,tgl,Tgl') || '',
+        sales: getVal('sales,Sales') || '',
+        grandTotal: num(getVal('grandtotal,grandTotal,GrandTot,Grand Total,GrandTotl')),
+        makan: num(getVal('makan,Makan,uangmak,UangMak,UangMakan')),
+        tips: num(getVal('tips,Tips')),
+        parkir: num(getVal('parkir,Parkir')),
+        bensin: num(getVal('bensin,Bensin')),
+        flazz: num(getVal('flazz,Flazz')),
+        transfer: num(getVal('transfer,Transfer')),
+        cicilan: num(getVal('cicilan,Cicilan,cicilanhu,CicilanHu,cicilan hu,CicilanHU')),
+        tagihan: num(getVal('tagihan,Tagihan')),
+        ket1: getVal('ket1,Ket1,ket 1,Keterangan1,ekstra1li,Ekstra1Li,ekstra1ket,Ekstra1Ket') || '',
+        jml1: num(getVal('jml1,Jml1,jumlah1,Jumlah1,jml 1,ekstra1,Ekstra1,Ekstra1Li')),
+        ket2: getVal('ket2,Ket2,ket 2,Keterangan2,ekstra2li,Ekstra2Li,ekstra2ket,Ekstra2Ket') || '',
+        jml2: num(getVal('jml2,Jml2,jumlah2,Jumlah2,jml 2,ekstra2,Ekstra2,Ekstra2Li')),
+        total: num(getVal('total,Total')),
+        setor: num(getVal('setor,Setor')),
+        selisih: num(getVal('selisih,Selisih')),
+        createdAt: getVal('createdat,CreatedAt,createdAt') || '',
+        fotoUrl: getVal('fotourl,FotoUrl,fotoUrl') || ''
       });
     }
     return result;

@@ -2396,23 +2396,23 @@
     function normalizeSetoranRecord(raw) {
       if (!raw || typeof raw !== 'object') return raw;
       const g = (...keys) => { for (const k of keys) { if (raw[k] !== undefined && raw[k] !== null && raw[k] !== '') return raw[k]; } return undefined; };
-      const num = v => parseFloat(v) || 0;
+      const num = v => { if (v === undefined || v === null || v === '') return 0; var n = parseFloat(v); return isNaN(n) ? 0 : n; };
       return {
         tgl: g('tgl','Tanggal','tanggal') || '',
         sales: g('sales','Sales') || '',
-        grandTotal: num(g('grandtotal','grandTotal','GrandTot','grandTot','grand total')),
-        makan: num(g('makan','uangmak','UangMak','UangMakan','uangMakan')),
+        grandTotal: num(g('grandtotal','grandTotal','GrandTot','grandTot','grand total','GrandTotal')),
+        makan: num(g('makan','uangmak','UangMak','UangMakan','uangMakan','Makan')),
         tips: num(g('tips','Tips')),
         parkir: num(g('parkir','Parkir')),
         bensin: num(g('bensin','Bensin')),
         flazz: num(g('flazz','Flazz')),
         transfer: num(g('transfer','Transfer')),
-        cicilan: num(g('cicilan','cicilanhu','CicilanHu','Cicilan','cicilan hu','cicilanhu')),
+        cicilan: num(g('cicilan','cicilanhu','CicilanHu','Cicilan','cicilan hu','cicilanhu','CicilanHU')),
         tagihan: num(g('tagihan','Tagihan')),
-        ket1: g('ket1','ekstra1li','Ekstra1Li','ekstra1ket','Ekstra1Ket','ket 1','keterangan1') || '',
-        jml1: num(g('jml1','ekstra1','Ekstra1','jumlah1','jml 1')),
-        ket2: g('ket2','ekstra2li','Ekstra2Li','ekstra2ket','Ekstra2Ket','ket 2','keterangan2') || '',
-        jml2: num(g('jml2','ekstra2','Ekstra2','jumlah2','jml 2')),
+        ket1: g('ket1','ekstra1li','Ekstra1Li','ekstra1ket','Ekstra1Ket','ket 1','keterangan1','Ket1') || '',
+        jml1: num(g('jml1','ekstra1','Ekstra1','jumlah1','jml 1','Jml1','Ekstra1Li')),
+        ket2: g('ket2','ekstra2li','Ekstra2Li','ekstra2ket','Ekstra2Ket','ket 2','keterangan2','Ket2') || '',
+        jml2: num(g('jml2','ekstra2','Ekstra2','jumlah2','jml 2','Jml2','Ekstra2Li')),
         total: num(g('total','Total')),
         setor: num(g('setor','Setor')),
         selisih: num(g('selisih','Selisih'))

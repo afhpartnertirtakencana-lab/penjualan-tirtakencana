@@ -84,6 +84,7 @@ function doGet(e) {
       case 'saveInputBarang'      : result = saveInputBarang(args[0]);            break;
       case 'getInputBarangHistory': result = getInputBarangHistory();             break;
       case 'saveSetoran'          : result = saveSetoran(args[0]);                break;
+      case 'getSetoranHistory'    : result = getSetoranHistory();                 break;
       case 'uploadFoto'           : result = uploadFoto(args[0]);                 break;
       case 'getFotoList'          : result = getFotoList(args[0]);                break;
       case 'saveMasterStock'      : result = saveMasterStock(args[0]);            break;
@@ -688,6 +689,51 @@ function saveSetoran(data) {
     return 'ok';
   } catch(e) {
     throw new Error('saveSetoran gagal: ' + e.message);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GET SETORAN HISTORY — Ambil semua riwayat setoran dari sheet
+// ══════════════════════════════════════════════════════════════
+function getSetoranHistory() {
+  try {
+    var sheet = getSheet(SHEET.SETORAN);
+    if (sheet.getLastRow() === 0) return [];
+    var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    var data = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
+    var result = [];
+    for (var i = 0; i < data.length; i++) {
+      var row = {};
+      for (var j = 0; j < headers.length; j++) {
+        var h = String(headers[j] || '').toLowerCase();
+        row[h] = data[i][j];
+      }
+      result.push({
+        tgl: row['tanggal'] || '',
+        sales: row['sales'] || '',
+        grandTotal: Number(row['grandtotal'] || 0),
+        makan: Number(row['makan'] || 0),
+        tips: Number(row['tips'] || 0),
+        parkir: Number(row['parkir'] || 0),
+        bensin: Number(row['bensin'] || 0),
+        flazz: Number(row['flazz'] || 0),
+        transfer: Number(row['transfer'] || 0),
+        cicilan: Number(row['cicilan'] || 0),
+        tagihan: Number(row['tagihan'] || 0),
+        ket1: row['ket1'] || '',
+        jml1: Number(row['jml1'] || 0),
+        ket2: row['ket2'] || '',
+        jml2: Number(row['jml2'] || 0),
+        total: Number(row['total'] || 0),
+        setor: Number(row['setor'] || 0),
+        selisih: Number(row['selisih'] || 0),
+        createdAt: row['createdat'] || '',
+        fotoUrl: row['fotourl'] || ''
+      });
+    }
+    return result;
+  } catch(e) {
+    throw new Error('getSetoranHistory gagal: ' + e.message);
   }
 }
 

@@ -219,7 +219,7 @@
       <div class="brand"><span class="tirta">Tirta</span><span class="kencana">Kencana</span></div>
       <div class="tagline">DO GOOD AND GOOD WILL COME TO YOU</div>
       <div class="alamat" id="headerAlamat">WTC Mangga 2 Lt UG A/53</div>
-      <div class="logo-header" onclick="document.getElementById('logoFileInput').click()"><img id="logoImg" src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" style="width:200px;height:200px;object-fit:contain;"></div>
+      <div class="logo-header" onclick="document.getElementById('logoFileInput').click()"><img id="logoImg" src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" style="width:100%;height:100%;object-fit:contain;"></div>
       <input type="file" id="logoFileInput" accept="image/*" style="display:none" onchange="uploadLogo(event)">
     </div>
     <div class="nav-bar">
@@ -493,6 +493,9 @@
       _masterUsers.forEach(mu => { if (!allUsers.find(u => u.name === mu.name)) allUsers.push(mu); });
       _logoUrl = localStorage.getItem('tirtaLogo') || EMBEDDED_LOGO;
       _qrisUrl = settings.qris || localStorage.getItem('sp_qris') || EMBEDDED_QRIS;
+      // Pastikan logo dan QRIS langsung tampil dengan URL embedded jika belum ada di settings
+      if (!_logoUrl) _logoUrl = EMBEDDED_LOGO;
+      if (!_qrisUrl) _qrisUrl = EMBEDDED_QRIS;
     }
 
     let _syncCountdown = 0;
@@ -652,8 +655,16 @@
       document.getElementById('displayName').textContent = currentUser.name; document.getElementById('displayRole').textContent = currentUser.role.toUpperCase();
       document.getElementById('userAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
       if (settings.alamat) document.getElementById('headerAlamat').textContent = settings.alamat;
-      const _effectiveLogo = localStorage.getItem('tirtaLogo') || _logoUrl;
-      if (_effectiveLogo) { _logoUrl = _effectiveLogo; document.getElementById('logoImg').src = _effectiveLogo; }
+      const _effectiveLogo = localStorage.getItem('tirtaLogo') || _logoUrl || EMBEDDED_LOGO;
+      if (_effectiveLogo) { 
+        _logoUrl = _effectiveLogo; 
+        const logoEl = document.getElementById('logoImg');
+        if (logoEl) logoEl.src = _effectiveLogo; 
+      } else {
+        _logoUrl = EMBEDDED_LOGO;
+        const logoEl = document.getElementById('logoImg');
+        if (logoEl) logoEl.src = EMBEDDED_LOGO;
+      }
       initDarkMode(); renderMenuTabs();
       // Sync sekali saat login
       try { await syncFromGAS(); } catch(e) {}
@@ -2407,7 +2418,39 @@
         selisih: num(g('selisih','Selisih'))
       };
     }
-    async function syncSetoranHistoryFromGAS() { try { const data = await gasCall('getSetoranHistory', []); if (Array.isArray(data) && data.length > 0) { setoranHistory = data.map(normalizeSetoranRecord); saveLocalData(); } } catch(e) { console.warn('Gagal ambil riwayat setoran dari GAS:', e); } }
+    async function syncSetoranHistoryFromGAS() { 
+      try { 
+        const data = await gasCall('getSetoranHistory', []); 
+        if (Array.isArray(data)) { 
+          // Gabungkan data dari Sheets dengan data lokal, hindari duplikasi
+          const sheetData = data.map(normalizeSetoranRecord);
+          if (sheetData.length > 0) {
+            // Buat map dari data sheets berdasarkan key tgl+sales
+            const sheetMap = {};
+            sheetData.forEach(s => {
+              const key = (s.tgl||'').substring(0,10) + '|' + (s.sales||'').toLowerCase().trim();
+              sheetMap[key] = s;
+            });
+            // Update atau tambahkan ke setoranHistory lokal
+            sheetData.forEach(sSheet => {
+              const key = (sSheet.tgl||'').substring(0,10) + '|' + (sSheet.sales||'').toLowerCase().trim();
+              const existingIdx = setoranHistory.findIndex(s => {
+                const k = (s.tgl||'').substring(0,10) + '|' + (s.sales||'').toLowerCase().trim();
+                return k === key;
+              });
+              if (existingIdx >= 0) {
+                setoranHistory[existingIdx] = sSheet;
+              } else {
+                setoranHistory.unshift(sSheet);
+              }
+            });
+            saveLocalData();
+          }
+        } 
+      } catch(e) { 
+        console.warn('Gagal ambil riwayat setoran dari GAS:', e); 
+      } 
+    }
 
     // ========== GUDANG & LAPORAN TELAH DIHAPUS ==========
     // (fungsi-fungsi terkait gudang dan laporan tidak ada lagi)

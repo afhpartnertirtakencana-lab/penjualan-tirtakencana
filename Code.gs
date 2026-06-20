@@ -1,18 +1,23 @@
 // ══════════════════════════════════════════════════════════════
-//  TIRTA KENCANA — Google Apps Script Backend (v8.2)
-//  - Menambahkan fungsi updateStockAwal untuk fitur Rollover Stok
+//  TIRTA KENCANA — Google Apps Script Backend (v8.3 Optimized)
+//  - Performance optimizations: batch reads/writes, reduced API calls
 // ══════════════════════════════════════════════════════════════
 var SPREADSHEET_ID = '12q8SwBtoww9Y9c6EZ46-SNa1q5TKIXnf9g_3wLbsNK4';
+var SS;
+var SHEET_CACHE = {};
+var HEADER_CACHE = {};
 
 function getSpreadsheet() {
-  try {
-    if (SPREADSHEET_ID) return SpreadsheetApp.openById(SPREADSHEET_ID);
-    return SpreadsheetApp.getActiveSpreadsheet();
-  } catch (e) {
-    throw new Error('Gagal membuka Spreadsheet: ' + e.message);
+  if (!SS) {
+    try {
+      if (SPREADSHEET_ID) SS = SpreadsheetApp.openById(SPREADSHEET_ID);
+      else SS = SpreadsheetApp.getActiveSpreadsheet();
+    } catch (e) {
+      throw new Error('Gagal membuka Spreadsheet: ' + e.message);
+    }
   }
+  return SS;
 }
-var SS = getSpreadsheet();
 
 var SHEET_NAMES = {
   TRX       : ['Transaksi',    'Transactions'],
@@ -102,18 +107,41 @@ function doGet(e) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  HELPER
+//  HELPER - OPTIMIZED WITH CACHING
 // ══════════════════════════════════════════════════════════════
 function getSheet(name) { 
-  try {
-    var sh = SS.getSheetByName(name); 
-    if (!sh) sh = SS.insertSheet(name); 
-    return sh;
-  } catch(e) {
-    throw new Error('Gagal mengakses sheet "' + name + '": ' + e.message);
+  if (!SHEET_CACHE[name]) {
+    try {
+      var sh = SS.getSheetByName(name); 
+      if (!sh) sh = SS.insertSheet(name); 
+      SHEET_CACHE[name] = sh;
+    } catch(e) {
+      throw new Error('Gagal mengakses sheet "' + name + '": ' + e.message);
+    }
   }
+  return SHEET_CACHE[name];
 }
-function getSheetData(name) { return getSheet(name).getDataRange().getValues(); }
+
+function getSheetData(name) { 
+  var sheet = getSheet(name);
+  var lastRow = sheet.getLastRow();
+  if (lastRow === 0) return [];
+  return sheet.getRange(1, 1, lastRow, sheet.getLastColumn()).getValues();
+}
+
+function getHeaders(name) {
+  if (HEADER_CACHE[name]) return HEADER_CACHE[name];
+  var sheet = getSheet(name);
+  var lastRow = sheet.getLastRow();
+  if (lastRow === 0) return [];
+  var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  HEADER_CACHE[name] = headers.map(function(c) { return String(c||'').toLowerCase().trim(); });
+  return HEADER_CACHE[name];
+}
+
+function clearHeaderCache() {
+  HEADER_CACHE = {};
+}
 function formatDateCell(val) {
   if (!val) return '';
   if (val instanceof Date) return Utilities.formatDate(val, 'Asia/Jakarta', 'yyyy-MM-dd');
@@ -282,7 +310,7 @@ function getProducts() {
   try {
     ensureProductHeaders();
     var data = getSheetData(SHEET.PRODUCTS); if (data.length <= 1) return [];
-    var headers = data[0].map(function(c) { return String(c||'').trim().toLowerCase(); });
+    var headers = getHeaders(SHEET.PRODUCTS);
     var col = {
       sku: headers.indexOf('sku'), barcode: headers.indexOf('barcode'), nama: headers.indexOf('nama'),
       harga: headers.indexOf('harga'), modal: headers.indexOf('modal'), satuan: headers.indexOf('satuan'),
@@ -311,10 +339,13 @@ function saveProducts(list) {
   if (!list) return 'error: data kosong';
   if (!Array.isArray(list)) { try { list = JSON.parse(list); } catch(e) { return 'error: format tidak valid'; } }
   var sh = getSheet(SHEET.PRODUCTS); sh.clearContents();
-  sh.appendRow(['SKU','Barcode','Nama','Harga','Modal','Satuan','StokAwal','HasBarcode']);
-  list.forEach(function(p) {
-    sh.appendRow([String(p.sku||''), String(p.barcode||''), String(p.nama||''), Number(p.harga)||0, Number(p.modal)||0, String(p.satuan||'Pcs'), parseInt(p.stokAwal)||0, p.hasBarcode?'true':'false']);
-  });
+  var headerRow = ['SKU','Barcode','Nama','Harga','Modal','Satuan','StokAwal','HasBarcode'];
+  var rows = [headerRow];
+  for (var i = 0; i < list.length; i++) {
+    var p = list[i];
+    rows.push([String(p.sku||''), String(p.barcode||''), String(p.nama||''), Number(p.harga)||0, Number(p.modal)||0, String(p.satuan||'Pcs'), parseInt(p.stokAwal)||0, p.hasBarcode?'true':'false']);
+  }
+  if (rows.length > 0) sh.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
   return 'ok';
 }
 
@@ -333,7 +364,15 @@ function getCustomers() {
   } catch(e) { throw new Error('getCustomers gagal: ' + e.message); }
 }
 function addCustomer(name) { if (!name) throw new Error('Nama kosong'); if (getCustomers().indexOf(name) >= 0) return 'exists'; getSheet(SHEET.CUSTOMERS).appendRow([name]); return 'ok'; }
-function saveCustomers(list) { if (!Array.isArray(list)) throw new Error('Harus array'); var sh = getSheet(SHEET.CUSTOMERS); sh.clearContents(); list.forEach(function(c) { if (c) sh.appendRow([c]); }); return 'ok'; }
+function saveCustomers(list) { 
+  if (!Array.isArray(list)) throw new Error('Harus array'); 
+  var sh = getSheet(SHEET.CUSTOMERS); 
+  sh.clearContents(); 
+  var rows = [];
+  for (var i = 0; i < list.length; i++) { if (list[i]) rows.push([list[i]]); }
+  if (rows.length > 0) sh.getRange(1, 1, rows.length, 1).setValues(rows);
+  return 'ok'; 
+}
 
 // ══════════════════════════════════════════════════════════════
 //  TRANSAKSI
@@ -377,59 +416,69 @@ function saveTrx(trx) {
     var now = Utilities.formatDate(new Date(), 'Asia/Jakarta', 'yyyy-MM-dd HH:mm:ss');
     var items = Array.isArray(trx.items) ? trx.items : [];
     var totalModal = 0, totalProfit = 0;
-    var trxSheet = getSheet(SHEET.TRX);
-    var trxHeaders = trxSheet.getRange(1,1,1,trxSheet.getLastColumn()).getValues()[0].map(String);
-    var newTrxRow = new Array(trxHeaders.length).fill('');
-    trxHeaders.forEach(function(h, idx) {
-      var key = h.toString().toLowerCase().trim();
-      if (key === 'id' || key === 'trxid') newTrxRow[idx] = trx.id;
-      else if (key === 'tanggal' || key === 'tgl') newTrxRow[idx] = trx.tgl || '';
-      else if (key === 'customer' || key === 'pelanggan') newTrxRow[idx] = trx.customer || '';
-      else if (key === 'sales') newTrxRow[idx] = trx.sales || '';
-      else if (key === 'gross') newTrxRow[idx] = Number(trx.gross) || 0;
-      else if (key === 'diskon' || key === 'discount') newTrxRow[idx] = Number(trx.diskon) || 0;
-      else if (key === 'nett' || key === 'net') newTrxRow[idx] = Number(trx.nett) || 0;
-      else if (key === 'status' || key === 'pembayaran') newTrxRow[idx] = trx.status || 'belumTransfer';
-      else if (key === 'createdat') newTrxRow[idx] = now;
-    });
-    items.forEach(function(it) {
-      var modal = Number(it.modal)||0, qty = Number(it.qty)||1, harga = Number(it.harga)||0, disc = Number(it.discRpPer)||0;
-      totalModal += modal * qty;
-      totalProfit += ((harga - disc) - modal) * qty;
-    });
-    trxHeaders.forEach(function(h, idx) {
-      var key = h.toString().toLowerCase().trim();
-      if (key === 'totalmodal') newTrxRow[idx] = totalModal;
-      else if (key === 'totalprofit') newTrxRow[idx] = totalProfit;
-    });
-    trxSheet.appendRow(newTrxRow);
-    var detSheet = getSheet(SHEET.DETAIL);
-    var detHeaders = detSheet.getRange(1,1,1,detSheet.getLastColumn()).getValues()[0].map(String);
-    items.forEach(function(it) {
+    
+    // Pre-calculate item values to avoid repeated computation
+    var processedItems = [];
+    for (var i = 0; i < items.length; i++) {
+      var it = items[i];
       var modal = Number(it.modal)||0, qty = Number(it.qty)||1, harga = Number(it.harga)||0, disc = Number(it.discRpPer)||0;
       var nettPer = harga - disc, subtotal = nettPer * qty, profit = (nettPer - modal) * qty;
+      totalModal += modal * qty;
+      totalProfit += profit;
+      processedItems.push({ modal: modal, qty: qty, harga: harga, disc: disc, nettPer: nettPer, subtotal: subtotal, profit: profit, sku: it.sku||'', barcode: it.barcode||'', nama: it.nama||'' });
+    }
+    
+    var trxSheet = getSheet(SHEET.TRX);
+    var trxHeaders = getHeaders(SHEET.TRX);
+    var newTrxRow = new Array(trxHeaders.length).fill('');
+    for (var j = 0; j < trxHeaders.length; j++) {
+      var key = trxHeaders[j];
+      if (key === 'id' || key === 'trxid') newTrxRow[j] = trx.id;
+      else if (key === 'tanggal' || key === 'tgl') newTrxRow[j] = trx.tgl || '';
+      else if (key === 'customer' || key === 'pelanggan') newTrxRow[j] = trx.customer || '';
+      else if (key === 'sales') newTrxRow[j] = trx.sales || '';
+      else if (key === 'gross') newTrxRow[j] = Number(trx.gross) || 0;
+      else if (key === 'diskon' || key === 'discount') newTrxRow[j] = Number(trx.diskon) || 0;
+      else if (key === 'nett' || key === 'net') newTrxRow[j] = Number(trx.nett) || 0;
+      else if (key === 'status' || key === 'pembayaran') newTrxRow[j] = trx.status || 'belumTransfer';
+      else if (key === 'createdat') newTrxRow[j] = now;
+      else if (key === 'totalmodal') newTrxRow[j] = totalModal;
+      else if (key === 'totalprofit') newTrxRow[j] = totalProfit;
+    }
+    trxSheet.appendRow(newTrxRow);
+    
+    // Batch insert detail rows
+    var detSheet = getSheet(SHEET.DETAIL);
+    var detHeaders = getHeaders(SHEET.DETAIL);
+    var rowsToAppend = [];
+    for (var k = 0; k < processedItems.length; k++) {
+      var it = processedItems[k];
       var newDetRow = new Array(detHeaders.length).fill('');
-      detHeaders.forEach(function(h, idx) {
-        var key = h.toString().toLowerCase().trim();
-        if (key === 'trxid') newDetRow[idx] = trx.id;
-        else if (key === 'tanggal' || key === 'tgl') newDetRow[idx] = trx.tgl || '';
-        else if (key === 'customer' || key === 'pelanggan') newDetRow[idx] = trx.customer || '';
-        else if (key === 'sales') newDetRow[idx] = trx.sales || '';
-        else if (key === 'status' || key === 'pembayaran') newDetRow[idx] = trx.status || '';
-        else if (key === 'sku') newDetRow[idx] = it.sku || '';
-        else if (key === 'barcode') newDetRow[idx] = it.barcode || '';
-        else if (key === 'nama') newDetRow[idx] = it.nama || '';
-        else if (key === 'qty') newDetRow[idx] = qty;
-        else if (key === 'harga') newDetRow[idx] = harga;
-        else if (key === 'modal') newDetRow[idx] = modal;
-        else if (key === 'discrpper' || key === 'disc') newDetRow[idx] = disc;
-        else if (key === 'nettper' || key === 'nett') newDetRow[idx] = nettPer;
-        else if (key === 'subtotal') newDetRow[idx] = subtotal;
-        else if (key === 'profit') newDetRow[idx] = profit;
-        else if (key === 'createdat') newDetRow[idx] = now;
-      });
-      detSheet.appendRow(newDetRow);
-    });
+      for (var m = 0; m < detHeaders.length; m++) {
+        var key = detHeaders[m];
+        if (key === 'trxid') newDetRow[m] = trx.id;
+        else if (key === 'tanggal' || key === 'tgl') newDetRow[m] = trx.tgl || '';
+        else if (key === 'customer' || key === 'pelanggan') newDetRow[m] = trx.customer || '';
+        else if (key === 'sales') newDetRow[m] = trx.sales || '';
+        else if (key === 'status' || key === 'pembayaran') newDetRow[m] = trx.status || '';
+        else if (key === 'sku') newDetRow[m] = it.sku;
+        else if (key === 'barcode') newDetRow[m] = it.barcode;
+        else if (key === 'nama') newDetRow[m] = it.nama;
+        else if (key === 'qty') newDetRow[m] = it.qty;
+        else if (key === 'harga') newDetRow[m] = it.harga;
+        else if (key === 'modal') newDetRow[m] = it.modal;
+        else if (key === 'discrpper' || key === 'disc') newDetRow[m] = it.disc;
+        else if (key === 'nettper' || key === 'nett') newDetRow[m] = it.nettPer;
+        else if (key === 'subtotal') newDetRow[m] = it.subtotal;
+        else if (key === 'profit') newDetRow[m] = it.profit;
+        else if (key === 'createdat') newDetRow[m] = now;
+      }
+      rowsToAppend.push(newDetRow);
+    }
+    if (rowsToAppend.length > 0) {
+      detSheet.getRange(detSheet.getLastRow() + 1, 1, rowsToAppend.length, rowsToAppend[0].length).setValues(rowsToAppend);
+    }
+    
     return { ok: true, id: trx.id, totalModal: totalModal, totalProfit: totalProfit };
   } catch(e) {
     throw new Error('saveTrx gagal: ' + e.message);
@@ -471,7 +520,7 @@ function updateStatus(id, newStatus) {
     if (!id || !newStatus) throw new Error('ID dan status diperlukan');
     var trxSheet = getSheet(SHEET.TRX);
     var trxData = trxSheet.getDataRange().getValues();
-    var trxHeaders = trxData[0].map(function(c) { return String(c||'').toLowerCase(); });
+    var trxHeaders = getHeaders(SHEET.TRX);
     var idCol = trxHeaders.indexOf('id'); if (idCol < 0) idCol = 0;
     var statusCol = trxHeaders.indexOf('status'); if (statusCol < 0) statusCol = trxHeaders.indexOf('pembayaran'); if (statusCol < 0) statusCol = 7;
     for (var i = trxData.length - 1; i >= 1; i--) {
@@ -479,7 +528,7 @@ function updateStatus(id, newStatus) {
     }
     var detSheet = getSheet(SHEET.DETAIL);
     var detData = detSheet.getDataRange().getValues();
-    var detHeaders = detData[0].map(function(c) { return String(c||'').toLowerCase(); });
+    var detHeaders = getHeaders(SHEET.DETAIL);
     var trxIdCol = detHeaders.indexOf('trxid'); if (trxIdCol < 0) trxIdCol = 0;
     var detStatusCol = detHeaders.indexOf('status'); if (detStatusCol < 0) detStatusCol = detHeaders.indexOf('pembayaran'); if (detStatusCol < 0) detStatusCol = 4;
     for (var j = detData.length - 1; j >= 1; j--) {
@@ -496,7 +545,7 @@ function deleteTrx(id) {
     if (!id) throw new Error('ID transaksi diperlukan');
     var trxSheet = getSheet(SHEET.TRX);
     var trxData = trxSheet.getDataRange().getValues();
-    var trxHeaders = trxData[0].map(function(c) { return String(c||'').trim().toLowerCase(); });
+    var trxHeaders = getHeaders(SHEET.TRX);
     var idCol = trxHeaders.indexOf('id'); if (idCol < 0) idCol = 0;
     var rowToDelete = -1;
     for (var i = trxData.length - 1; i >= 1; i--) {
@@ -505,14 +554,14 @@ function deleteTrx(id) {
     if (rowToDelete > 0) trxSheet.deleteRow(rowToDelete);
     var detSheet = getSheet(SHEET.DETAIL);
     var detData = detSheet.getDataRange().getValues();
-    var detHeaders = detData[0].map(function(c) { return String(c||'').trim().toLowerCase(); });
+    var detHeaders = getHeaders(SHEET.DETAIL);
     var detIdCol = detHeaders.indexOf('trxid'); if (detIdCol < 0) detIdCol = 0;
     var rowsToDelete = [];
     for (var j = detData.length - 1; j >= 1; j--) {
       if (String(detData[j][detIdCol]||'').trim() === id) rowsToDelete.push(j + 1);
     }
     rowsToDelete.sort(function(a,b) { return b - a; });
-    rowsToDelete.forEach(function(r) { detSheet.deleteRow(r); });
+    for (var k = 0; k < rowsToDelete.length; k++) { detSheet.deleteRow(rowsToDelete[k]); }
     return { ok: true, deleted: id };
   } catch(e) {
     throw new Error('deleteTrx gagal: ' + e.message);

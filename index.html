@@ -603,6 +603,7 @@
       initDarkMode(); renderMenuTabs();
       // Sync sekali saat login
       try { await syncFromGAS(); } catch(e) {}
+      try { await syncSetoranHistoryFromGAS(); } catch(e) {} // [NEW] pastikan riwayat setoran juga dari Google Sheets saat login/refresh
       startAutoSync(15); // Auto-sync setiap 15 detik
       initPullToRefresh(); // Aktifkan pull-to-refresh
       navigateTo('dashboard');
@@ -930,35 +931,50 @@
             <div class="form-group col-1"><label>Sales</label><select id="setorSales">${sOpts}</select></div>
             <button class="btn btn-primary" onclick="doSetoran()" style="height:44px;align-self:flex-end">💰 Tampilkan</button>
             <button class="btn btn-outline" onclick="showSetoranHistoryModal()" style="height:44px;align-self:flex-end"><i class="fas fa-history"></i> Riwayat</button>
+            <button class="btn btn-outline" onclick="showSetoranEditLog()" style="height:44px;align-self:flex-end"><i class="fas fa-clipboard-list"></i> Log Edit</button>
           </div>
         </div>
         <div id="setoranContent"><div class="text-center text-sm" style="padding:40px">Pilih tanggal & sales lalu klik Tampilkan</div></div>`;
       document.getElementById('setorTgl').value = localDateStr(); 
     }
 
-    function doSetoran() { 
+    async function doSetoran() { 
       const tgl = document.getElementById('setorTgl').value; const sales = document.getElementById('setorSales').value; 
       if (!tgl || !sales) return Swal.fire('Error','Pilih tanggal & sales!','error'); 
       const filtered = allTrxList.filter(t => (t.tgl||'').substring(0,10) === tgl && (t.sales||'').toLowerCase().trim() === sales.toLowerCase().trim()); 
       const grand = filtered.filter(t=>t.status==='cod').reduce((s,t)=>s+(t.nett||0),0); 
+      // [NEW] Sync riwayat setoran dari Google Sheets dulu, lalu cek apakah tgl & sales ini sudah pernah disimpan
+      document.getElementById('setoranContent').innerHTML = '<div class="text-center text-sm" style="padding:30px">Mengambil data dari Google Sheets...</div>';
+      try { await syncSetoranHistoryFromGAS(); } catch(e) {}
+      const existingIdx = setoranHistory.findIndex(s => (s.tgl||'').substring(0,10) === tgl && (s.sales||'').toLowerCase().trim() === sales.toLowerCase().trim());
+      const ex = existingIdx >= 0 ? normalizeSetoranRecord(setoranHistory[existingIdx]) : null;
       document.getElementById('setoranContent').innerHTML = 
         `<div class="card"><div class="flex-between mb-2"><div><strong>💰 Setoran: ${esc(sales)}</strong><br><span class="text-sm">${fmtDate(tgl)}</span></div><div style="font-size:1.2rem;font-weight:800;color:var(--biru)">Grand Total COD: ${fmtRp(grand)}</div></div>
+        ${ex ? '<div style="background:#FFF7E6;border:1px solid #FFE2A8;border-radius:8px;padding:8px 12px;font-size:12px;color:#92660A;margin-bottom:10px"><i class="fas fa-info-circle"></i> Setoran tanggal & sales ini sudah tersimpan di Google Sheets. Data di bawah dimuat otomatis — klik Simpan untuk update.</div>' : ''}
         <input type="hidden" id="stGrand" value="${grand}">
-        <div class="form-group"><label>🍽️ Uang Makan</label><input type="number" id="stMakan" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>🎁 Tips</label><input type="number" id="stTips" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>🅿️ Parkir</label><input type="number" id="stParkir" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>⛽ Bensin</label><input type="number" id="stBensin" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>💳 Flazz</label><input type="number" id="stFlazz" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>🏦 Transfer</label><input type="number" id="stTransfer" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>💵 Cicilan</label><input type="number" id="stCicilan" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="form-group"><label>📄 Tagihan</label><input type="number" id="stTagihan" value="0" min="0" oninput="calcSetoran()"></div>
-        <div class="flex-row"><div class="form-group col-2"><label>Keterangan 1</label><input id="stKet1" placeholder="contoh: Bonus" oninput="calcSetoran()"></div><div class="form-group col-1"><label>Jumlah 1</label><input type="number" id="stJml1" value="0" min="0" oninput="calcSetoran()"></div></div>
-        <div class="flex-row"><div class="form-group col-2"><label>Keterangan 2</label><input id="stKet2" placeholder="contoh: Lain-lain" oninput="calcSetoran()"></div><div class="form-group col-1"><label>Jumlah 2</label><input type="number" id="stJml2" value="0" min="0" oninput="calcSetoran()"></div></div>
+        <div class="form-group"><label>🍽️ Uang Makan</label><input type="number" id="stMakan" value="${ex?ex.makan:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>🎁 Tips</label><input type="number" id="stTips" value="${ex?ex.tips:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>🅿️ Parkir</label><input type="number" id="stParkir" value="${ex?ex.parkir:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>⛽ Bensin</label><input type="number" id="stBensin" value="${ex?ex.bensin:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>💳 Flazz</label><input type="number" id="stFlazz" value="${ex?ex.flazz:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>🏦 Transfer</label><input type="number" id="stTransfer" value="${ex?ex.transfer:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>💵 Cicilan</label><input type="number" id="stCicilan" value="${ex?ex.cicilan:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>📄 Tagihan</label><input type="number" id="stTagihan" value="${ex?ex.tagihan:0}" min="0" oninput="calcSetoran()"></div>
+        <div class="flex-row"><div class="form-group col-2"><label>Keterangan 1</label><input id="stKet1" placeholder="contoh: Bonus" value="${ex?esc(ex.ket1):''}" oninput="calcSetoran()"></div><div class="form-group col-1"><label>Jumlah 1</label><input type="number" id="stJml1" value="${ex?ex.jml1:0}" min="0" oninput="calcSetoran()"></div></div>
+        <div class="flex-row"><div class="form-group col-2"><label>Keterangan 2</label><input id="stKet2" placeholder="contoh: Lain-lain" value="${ex?esc(ex.ket2):''}" oninput="calcSetoran()"></div><div class="form-group col-1"><label>Jumlah 2</label><input type="number" id="stJml2" value="${ex?ex.jml2:0}" min="0" oninput="calcSetoran()"></div></div>
         <div class="total-box"><div class="flex-between"><span>TOTAL</span><span id="stTotal">Rp 0</span></div></div>
-        <div class="form-group"><label>✅ SETOR</label><input type="number" id="stSetor" value="0" min="0" oninput="calcSetoran()"></div>
+        <div class="form-group"><label>✅ SETOR</label><input type="number" id="stSetor" value="${ex?ex.setor:0}" min="0" oninput="calcSetoran()"></div>
         <div class="total-box danger"><div class="flex-between"><span>SELISIH</span><span id="stSelisih">Rp 0</span></div></div>
         <button class="btn btn-primary btn-block mt-2" onclick="saveSetoran()">💾 Simpan Setoran</button></div>`; 
       calcSetoran(); 
+      // [NEW] Jika data sudah ada di Sheets, masuk mode edit agar tombol Simpan mengupdate, bukan menduplikasi
+      if (ex) {
+        window._editingSetoranIndex = existingIdx;
+        window._editingSetoranBefore = JSON.parse(JSON.stringify(ex));
+      } else {
+        window._editingSetoranIndex = undefined;
+        window._editingSetoranBefore = undefined;
+      }
     }
 
     function calcSetoran() { const gv = id => parseFloat(document.getElementById(id)?.value)||0; const grand = gv('stGrand'); const pengeluaran = gv('stMakan')+gv('stTips')+gv('stParkir')+gv('stBensin')+gv('stFlazz')+gv('stTransfer')+gv('stJml1')+gv('stJml2'); const total = grand + gv('stTagihan') + gv('stCicilan') - pengeluaran; document.getElementById('stTotal').textContent = fmtRp(total); document.getElementById('stSelisih').textContent = fmtRp(total - gv('stSetor')); }
@@ -969,7 +985,12 @@
         if (window._editingSetoranIndex !== undefined) {
           // Mode edit: update data yang sudah ada
           setoranHistory[window._editingSetoranIndex] = payload;
+          // [NEW] Catat log edit setoran
+          loadSetoranEditLog();
+          _setoranEditLog.push({ waktu: localDateStr()+' '+new Date().toTimeString().slice(0,8), editor: currentUser?.name||'?', sales: payload.sales, tgl: payload.tgl, before: window._editingSetoranBefore || {}, after: payload });
+          saveSetoranEditLog();
           window._editingSetoranIndex = undefined;
+          window._editingSetoranBefore = undefined;
           Swal.fire({icon:'success',title:'Berhasil',text:'Data setoran berhasil diupdate'});
         } else {
           // Mode baru: tambah data baru
@@ -995,10 +1016,12 @@
 
     // ========== RIWAYAT SETORAN ==========
     let _currentSetoranHistory = [];
-    function showSetoranHistoryModal() {
+    async function showSetoranHistoryModal() {
       document.getElementById('setoranHistoryTgl').value = localDateStr();
-      document.getElementById('setoranHistoryContent').innerHTML = '';
+      document.getElementById('setoranHistoryContent').innerHTML = '<div class="text-center text-sm" style="padding:20px">Mengambil data dari Google Sheets...</div>';
       document.getElementById('setoranHistoryModal').classList.add('show');
+      await syncSetoranHistoryFromGAS(); // [NEW] pastikan data terbaru dari Sheets, bukan hanya lokal
+      document.getElementById('setoranHistoryContent').innerHTML = '';
     }
     function closeSetoranHistory() { document.getElementById('setoranHistoryModal').classList.remove('show'); }
     function loadSetoranHistory() {
@@ -1023,7 +1046,60 @@
       container.innerHTML = html;
     }
 
-    // ========== EDIT SETORAN DARI HISTORY ==========\n    function editSetoranFromHistory(idx) {\n      const s = _currentSetoranHistory[idx];\n      if (!s) return;\n      document.getElementById('setorTgl').value = s.tgl || '';\n      document.getElementById('setorSales').value = s.sales || '';\n      closeSetoranHistory();\n      doSetoran();\n      setTimeout(() => {\n        document.getElementById('stGrand').value = s.grandTotal || 0;\n        document.getElementById('stMakan').value = s.makan || 0;\n        document.getElementById('stTips').value = s.tips || 0;\n        document.getElementById('stParkir').value = s.parkir || 0;\n        document.getElementById('stBensin').value = s.bensin || 0;\n        document.getElementById('stFlazz').value = s.flazz || 0;\n        document.getElementById('stTransfer').value = s.transfer || 0;\n        document.getElementById('stCicilan').value = s.cicilan || 0;\n        document.getElementById('stTagihan').value = s.tagihan || 0;\n        document.getElementById('stKet1').value = s.ket1 || '';\n        document.getElementById('stJml1').value = s.jml1 || 0;\n        document.getElementById('stKet2').value = s.ket2 || '';\n        document.getElementById('stJml2').value = s.jml2 || 0;\n        document.getElementById('stSetor').value = s.setor || 0;\n        calcSetoran();\n        window._editingSetoranIndex = idx;\n        Swal.fire({title:'Edit Setoran',text:'Silakan edit data, lalu klik Simpan untuk update','icon':'info','confirmButtonText':'OK'});\n      }, 100);\n    }
+    // ========== EDIT SETORAN DARI HISTORY ==========
+    // [FIX] Sebelumnya fungsi ini rusak (tertulis sebagai satu baris komentar tunggal sehingga tidak pernah terdaftar/berfungsi).
+    // Diperbaiki menjadi kode yang valid tanpa mengubah logika aslinya, plus menyimpan data lama untuk keperluan log edit.
+    function editSetoranFromHistory(idx) {
+      const s = _currentSetoranHistory[idx];
+      if (!s) return;
+      document.getElementById('setorTgl').value = s.tgl || '';
+      document.getElementById('setorSales').value = s.sales || '';
+      closeSetoranHistory();
+      doSetoran();
+      setTimeout(() => {
+        document.getElementById('stGrand').value = s.grandTotal || 0;
+        document.getElementById('stMakan').value = s.makan || 0;
+        document.getElementById('stTips').value = s.tips || 0;
+        document.getElementById('stParkir').value = s.parkir || 0;
+        document.getElementById('stBensin').value = s.bensin || 0;
+        document.getElementById('stFlazz').value = s.flazz || 0;
+        document.getElementById('stTransfer').value = s.transfer || 0;
+        document.getElementById('stCicilan').value = s.cicilan || 0;
+        document.getElementById('stTagihan').value = s.tagihan || 0;
+        document.getElementById('stKet1').value = s.ket1 || '';
+        document.getElementById('stJml1').value = s.jml1 || 0;
+        document.getElementById('stKet2').value = s.ket2 || '';
+        document.getElementById('stJml2').value = s.jml2 || 0;
+        document.getElementById('stSetor').value = s.setor || 0;
+        calcSetoran();
+        window._editingSetoranIndex = idx;
+        window._editingSetoranBefore = JSON.parse(JSON.stringify(s)); // [NEW] simpan data lama untuk log edit
+        Swal.fire({title:'Edit Setoran',text:'Silakan edit data, lalu klik Simpan untuk update','icon':'info','confirmButtonText':'OK'});
+      }, 100);
+    }
+
+    // ========== LOG EDIT SETORAN ========== [NEW]
+    let _setoranEditLog = [];
+    function loadSetoranEditLog() {
+      try { _setoranEditLog = JSON.parse(localStorage.getItem('tirtaSetoranEditLog')||'[]'); } catch(e) { _setoranEditLog = []; }
+    }
+    function saveSetoranEditLog() { try { localStorage.setItem('tirtaSetoranEditLog', JSON.stringify(_setoranEditLog.slice(-200))); } catch(e){} }
+    function showSetoranEditLog() {
+      loadSetoranEditLog();
+      if (!_setoranEditLog.length) return Swal.fire('Info','Belum ada riwayat edit setoran','info');
+      const rows = _setoranEditLog.slice().reverse().slice(0,50);
+      const fieldLabel = { grandTotal:'Grand Total', makan:'Makan', tips:'Tips', parkir:'Parkir', bensin:'Bensin', flazz:'Flazz', transfer:'Transfer', cicilan:'Cicilan', tagihan:'Tagihan', ket1:'Ket 1', jml1:'Jml 1', ket2:'Ket 2', jml2:'Jml 2', total:'Total', setor:'Setor', selisih:'Selisih' };
+      const html = `<div style="max-height:400px;overflow-y:auto;font-size:12px">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#EAF4FD"><th style="padding:4px 8px;text-align:left">Waktu</th><th style="text-align:left">Editor</th><th style="text-align:left">Sales / Tgl</th><th style="text-align:left">Perubahan</th></tr></thead>
+          <tbody>${rows.map(log => {
+            const before = log.before||{}, after = log.after||{};
+            const diffHtml = Object.keys(fieldLabel).filter(k => (before[k]||0) !== (after[k]||0) || (before[k]||'') !== (after[k]||'')).map(k => `<b>${fieldLabel[k]}</b>: ${esc(String(before[k]??'-'))} → ${esc(String(after[k]??'-'))}`).join('<br>') || '<i>Tidak ada perubahan nilai</i>';
+            return `<tr style="border-bottom:1px solid #eee"><td style="padding:4px 8px;white-space:nowrap">${esc(log.waktu)}</td><td>${esc(log.editor)}</td><td>${esc(log.sales)} · ${fmtDate(log.tgl)}</td><td style="font-size:11px">${diffHtml}</td></tr>`;
+          }).join('')}</tbody>
+        </table></div>`;
+      Swal.fire({ title:'📋 Riwayat Edit Setoran', html, width:'700px', showConfirmButton:false, showCloseButton:true });
+    }
 
     // ========== TRANSAKSI ==========
     function loadTransaksi() {
@@ -1375,6 +1451,14 @@
     function editTrx(id) {
       const trx = allTrxList.find(t=>t.id===id);
       if (!trx) return;
+      const items = trx.items || [];
+      // [NEW] Baris editable untuk SKU & Qty setiap item dalam transaksi
+      let prodOpts = products.map(p => `<option value="${esc(p.sku)}">${esc(p.sku)} - ${esc(p.nama)}</option>`).join('');
+      let itemsHtml = items.length ? items.map((it,i) => `
+          <div style="display:flex;gap:4px;margin:4px 0;align-items:center">
+            <select id="editItemSku${i}" style="flex:2;font-size:12px;height:34px;border:1px solid #d9d9d9;border-radius:6px;padding:0 6px">${prodOpts.replace(`value="${esc(it.sku)}"`, `value="${esc(it.sku)}" selected`)}</select>
+            <input id="editItemQty${i}" type="number" min="1" value="${it.qty||1}" style="width:64px;font-size:12px;height:34px;border:1px solid #d9d9d9;border-radius:6px;padding:0 6px">
+          </div>`).join('') : '<div style="font-size:12px;color:#999">Tidak ada item</div>';
       Swal.fire({
         title: '✏️ Edit Transaksi',
         html: `<div style="text-align:left">
@@ -1391,29 +1475,58 @@
           </select>
           <label style="font-size:12px;font-weight:600">Nett (Rp)</label>
           <input id="editNett" type="number" class="swal2-input" value="${trx.nett||0}">
+          <label style="font-size:12px;font-weight:600;margin-top:6px;display:block">Item Transaksi (SKU & Qty bisa diedit)</label>
+          <div id="editItemsWrap" style="max-height:220px;overflow:auto;border:1px solid #eee;border-radius:8px;padding:6px;margin-top:4px">${itemsHtml}</div>
         </div>`,
         showCancelButton: true, confirmButtonText: '💾 Simpan', cancelButtonText: 'Batal',
-        preConfirm: () => ({
-          customer: document.getElementById('editCust').value.trim(),
-          sales: document.getElementById('editSales').value.trim(),
-          status: document.getElementById('editStatus').value,
-          nett: parseFloat(document.getElementById('editNett').value)||0
-        })
+        preConfirm: () => {
+          const newItems = items.map((it,i) => {
+            const sel = document.getElementById('editItemSku'+i);
+            const qtyEl = document.getElementById('editItemQty'+i);
+            const sku = sel ? sel.value : it.sku;
+            const qty = Math.max(1, parseInt(qtyEl?.value)||it.qty||1);
+            const skuChanged = sku !== it.sku;
+            const p = products.find(x => x.sku === sku);
+            const harga = skuChanged ? (p ? (p.jual||p.harga||0) : it.harga) : it.harga;
+            const discRpPer = skuChanged ? 0 : (it.discRpPer||0);
+            const modal = skuChanged ? (p ? (p.modal||0) : it.modal) : it.modal;
+            const nama = skuChanged ? (p ? p.nama : it.nama) : it.nama;
+            const nettPer = harga - discRpPer;
+            return { sku, nama, qty, harga, discRpPer, modal, nettPer, subtotal: nettPer * qty };
+          });
+          return {
+            customer: document.getElementById('editCust').value.trim(),
+            sales: document.getElementById('editSales').value.trim(),
+            status: document.getElementById('editStatus').value,
+            nett: parseFloat(document.getElementById('editNett').value)||0,
+            items: newItems
+          };
+        }
       }).then(async r => {
         if (!r.isConfirmed) return;
-        const before = { customer:trx.customer, sales:trx.sales, status:trx.status, nett:trx.nett };
+        const before = { customer:trx.customer, sales:trx.sales, status:trx.status, nett:trx.nett, items:JSON.parse(JSON.stringify(items)) };
         const after = r.value;
+        // [NEW] Hitung ulang gross & diskon dari item yang baru, tapi pertahankan porsi diskon global (manual) yang sudah ada sebelumnya
+        const oldGross = items.reduce((s,it)=>s+(it.harga||0)*(it.qty||0),0);
+        const oldItemDisc = items.reduce((s,it)=>s+(it.discRpPer||0)*(it.qty||0),0);
+        const globalDiscPortion = Math.max(0,(trx.diskon||0) - oldItemDisc);
+        const newGross = after.items.reduce((s,it)=>s+(it.harga||0)*(it.qty||0),0);
+        const newItemDisc = after.items.reduce((s,it)=>s+(it.discRpPer||0)*(it.qty||0),0);
+        const newDiskon = newItemDisc + globalDiscPortion;
         // Update lokal
         const idx = allTrxList.findIndex(t=>t.id===id);
-        if (idx>=0) { allTrxList[idx] = {...allTrxList[idx], ...after}; saveLocalData(); }
-        // Log edit
+        if (idx>=0) { allTrxList[idx] = {...allTrxList[idx], customer:after.customer, sales:after.sales, status:after.status, nett:after.nett, items:after.items, gross:newGross, diskon:newDiskon }; saveLocalData(); }
+        // Log edit (termasuk perubahan item SKU/Qty)
         loadEditLog();
-        _editLog.push({ id, waktu: localDateStr()+' '+new Date().toTimeString().slice(0,8), editor: currentUser?.name||'?', before, after });
+        _editLog.push({ id, waktu: localDateStr()+' '+new Date().toTimeString().slice(0,8), editor: currentUser?.name||'?', before, after: { customer:after.customer, sales:after.sales, status:after.status, nett:after.nett, items:after.items } });
         saveEditLog();
         // Sync status ke GAS
         try { await gasCall('updateStatus',[id, after.status]); } catch(e){ console.warn(e); }
+        // [NEW] Sync seluruh transaksi (termasuk item) ke GAS bila endpoint tersedia
+        try { await gasCall('saveTrx',[allTrxList[idx]]); } catch(e){ console.warn('Gagal sync item trx ke GAS:', e); }
         Swal.fire({toast:true,position:'top-end',showConfirmButton:false,timer:1500,icon:'success',title:'Transaksi diupdate'});
         loadTransaksi();
+        syncMasterStockToSheet();
       });
     }
 
@@ -1421,10 +1534,24 @@
       loadEditLog();
       if (!_editLog.length) return Swal.fire('Info','Belum ada riwayat edit','info');
       const rows = _editLog.slice().reverse().slice(0,50);
+      const fieldLabel = { customer:'Customer', sales:'Sales', status:'Status', nett:'Nett' };
       const html = `<div style="max-height:400px;overflow-y:auto;font-size:12px">
         <table style="width:100%;border-collapse:collapse">
           <thead><tr style="background:#EAF4FD"><th style="padding:4px 8px;text-align:left">Waktu</th><th style="text-align:left">Editor</th><th style="text-align:left">ID</th><th style="text-align:left">Perubahan</th></tr></thead>
-          <tbody>${rows.map(log=>`<tr style="border-bottom:1px solid #eee"><td style="padding:4px 8px;white-space:nowrap">${log.waktu}</td><td>${esc(log.editor)}</td><td style="font-family:monospace;font-size:11px">${esc(log.id)}</td><td style="font-size:11px">${Object.keys(log.after).filter(k=>log.before[k]!==log.after[k]).map(k=>`<b>${k}</b>: ${esc(String(log.before[k]))} → ${esc(String(log.after[k]))}`).join('<br>')}</td></tr>`).join('')}</tbody>
+          <tbody>${rows.map(log=>{
+            const before = log.before||{}, after = log.after||{};
+            let diffParts = Object.keys(fieldLabel).filter(k=>before[k]!==after[k]).map(k=>`<b>${fieldLabel[k]}</b>: ${esc(String(before[k]))} → ${esc(String(after[k]))}`);
+            // [NEW] Tampilkan perubahan SKU/Qty per item secara ringkas, bukan dump object mentah
+            const bItems = before.items||[], aItems = after.items||[];
+            aItems.forEach((it,i) => {
+              const bi = bItems[i];
+              if (bi && (bi.sku !== it.sku || bi.qty !== it.qty)) {
+                diffParts.push(`<b>Item #${i+1}</b>: ${esc(bi.sku)} (qty ${bi.qty}) → ${esc(it.sku)} (qty ${it.qty})`);
+              }
+            });
+            if (!diffParts.length) diffParts.push('<i>Tidak ada perubahan nilai</i>');
+            return `<tr style="border-bottom:1px solid #eee"><td style="padding:4px 8px;white-space:nowrap">${log.waktu}</td><td>${esc(log.editor)}</td><td style="font-family:monospace;font-size:11px">${esc(log.id)}</td><td style="font-size:11px">${diffParts.join('<br>')}</td></tr>`;
+          }).join('')}</tbody>
         </table></div>`;
       Swal.fire({ title:'📋 Riwayat Edit', html, width:'700px', showConfirmButton:false, showCloseButton:true });
     }
@@ -2197,6 +2324,36 @@
       }
     }
     async function syncStockHistoryFromGAS() { try { const data = await gasCall('getInputBarangHistory', []); if (Array.isArray(data) && data.length > 0) { stockInHistory = data; saveLocalData(); if (document.getElementById('stkHistory')) renderStockHistory(); } } catch(e) { console.warn('Gagal ambil riwayat input barang:', e); } }
+    // [NEW] Sync riwayat setoran dari Google Sheets secara independen (tidak ikut Promise.all utama agar tidak mengganggu sync lain bila endpoint belum tersedia di backend)
+    // [NEW] Normalisasi record setoran dari Google Sheets: kolom sheet memakai nama berbeda
+    // (UangMak, Ekstra1Li, Ekstra1, Ekstra2Li, Ekstra2, CicilanHu, GrandTot, dst.) dari field internal aplikasi.
+    // Fungsi ini mencocokkan beberapa kemungkinan nama kolom tanpa mengubah struktur data internal yang sudah berjalan.
+    function normalizeSetoranRecord(raw) {
+      if (!raw || typeof raw !== 'object') return raw;
+      const g = (...keys) => { for (const k of keys) { if (raw[k] !== undefined && raw[k] !== null && raw[k] !== '') return raw[k]; } return undefined; };
+      const num = v => parseFloat(v) || 0;
+      return {
+        tgl: g('tgl','Tanggal','tanggal') || '',
+        sales: g('sales','Sales') || '',
+        grandTotal: num(g('grandTotal','GrandTot','grandTot')),
+        makan: num(g('makan','UangMak','UangMakan','uangMakan')),
+        tips: num(g('tips','Tips')),
+        parkir: num(g('parkir','Parkir')),
+        bensin: num(g('bensin','Bensin')),
+        flazz: num(g('flazz','Flazz')),
+        transfer: num(g('transfer','Transfer')),
+        cicilan: num(g('cicilan','CicilanHu','Cicilan')),
+        tagihan: num(g('tagihan','Tagihan')),
+        ket1: g('ket1','Ekstra1Li','Ekstra1Ket') || '',
+        jml1: num(g('jml1','Ekstra1')),
+        ket2: g('ket2','Ekstra2Li','Ekstra2Ket') || '',
+        jml2: num(g('jml2','Ekstra2')),
+        total: num(g('total','Total')),
+        setor: num(g('setor','Setor')),
+        selisih: num(g('selisih','Selisih'))
+      };
+    }
+    async function syncSetoranHistoryFromGAS() { try { const data = await gasCall('getSetoranHistory', []); if (Array.isArray(data) && data.length > 0) { setoranHistory = data.map(normalizeSetoranRecord); saveLocalData(); } } catch(e) { console.warn('Gagal ambil riwayat setoran dari GAS:', e); } }
 
     // ========== GUDANG & LAPORAN TELAH DIHAPUS ==========
     // (fungsi-fungsi terkait gudang dan laporan tidak ada lagi)

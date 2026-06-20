@@ -243,7 +243,7 @@
 
   <script>
     // ==================== KONSTANTA DAN GLOBAL ====================
-    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwhrKOTSZZzX2dzV_5dH1n7fSjmHGQK8S22YnA5s7BrR0srWw2_mE_i1pA2cOgPTV3Low/exec';
+    const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbwdPgjTCISgyyaT8DSfPs14jUNCb8rSjzX7W8MoVHq_pbkdoNAMD-3lgBBJI-L57NWkSQ/exec';
     let GAS_URL = localStorage.getItem('tirtaGasUrl') || DEFAULT_GAS_URL;
     
     // [PERF] Cache untuk data yang sering diakses
@@ -302,16 +302,11 @@
     const EMBEDDED_LOGO = "https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg";
     function getGasUrl() { return localStorage.getItem('tirtaGasUrl') || DEFAULT_GAS_URL; }
 
-    // [SECURITY] gasCall with callback name validation to prevent XSS
+    // [FIX] gasCall dengan retry dan timeout diperpanjang
     async function gasCall(fn, args = [], retry = 1) {
       return new Promise((resolve, reject) => {
-        // Validate callback name to prevent XSS injection
-        const cbName = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
-        // Ensure callback name is safe (alphanumeric + underscore only)
-        if (!/^[a-zA-Z_][a-zA-Z0-9_]{0,50}$/.test(cbName)) {
-          return reject(new Error('Invalid callback name'));
-        }
-        const url = getGasUrl() + '?fn=' + encodeURIComponent(fn) + '&args=' + encodeURIComponent(JSON.stringify(args)) + '&callback=' + cbName + '&t=' + Date.now();
+        const cb = 'cb_' + Date.now() + '_' + Math.floor(Math.random() * 1e6);
+        const url = getGasUrl() + '?fn=' + encodeURIComponent(fn) + '&args=' + encodeURIComponent(JSON.stringify(args)) + '&callback=' + cb + '&t=' + Date.now();
         const script = document.createElement('script');
         let done = false;
         const timer = setTimeout(() => {
@@ -319,7 +314,7 @@
           done = true;
           script.src = '';
           if (script.parentNode) script.parentNode.removeChild(script);
-          delete window[cbName];
+          delete window[cb];
           if (retry > 0) {
             console.warn(`GAS timeout, retry ${retry}...`);
             gasCall(fn, args, retry - 1).then(resolve).catch(reject);
@@ -327,12 +322,12 @@
             reject(new Error('GAS timeout atau tidak merespon. Cek URL dan pastikan sudah deploy sebagai Web App dengan akses "Anyone".'));
           }
         }, 20000); // timeout 20 detik
-        window[cbName] = function(r) {
+        window[cb] = function(r) {
           if (done) return;
           done = true;
           clearTimeout(timer);
           if (script.parentNode) script.parentNode.removeChild(script);
-          delete window[cbName];
+          delete window[cb];
           if (r && r.ok) resolve(r.data);
           else reject(new Error((r && r.error) || 'GAS error: tidak ada respon valid'));
         };
@@ -346,9 +341,16 @@
     let products = [], pelanggan = [], allTrxList = [], allCustomers = [], stockInHistory = [], setoranHistory = [];
     let drivers = ['oji','padong','said','dedi','zehpudin'];
     let settings = { namaToko:'Tirta Kencana', alamat:'WTC Mangga 2 Lt UG A/53', tagline:'DO GOOD AND GOOD WILL COME TO YOU', bottomLine:'Terima kasih sudah berbelanja', logo:'', qris:'', telepon:'088211058000', bank1:{ nama:'BCA', norek:'6930099099', penerima:'Hendri' }, bank2:{ nama:'bluBCA', norek:'002283588888', penerima:'Hendri' }, salesList:[] };
-    // [SECURITY] Removed hardcoded credentials - fetched from server only
-    // Default users removed for security - must be created via admin panel
-    let allUsers = [];
+    let allUsers = [
+      { name:'admin',  role:'admin',  password:'020730' },
+      { name:'hasan',  role:'sales',  password:'1234'   },
+      { name:'ujang',  role:'sales',  password:'1234'   },
+      { name:'oji',    role:'driver', password:'1234'   },
+      { name:'padong', role:'driver', password:'1234'   },
+      { name:'said',   role:'driver', password:'1234'   },
+      { name:'dedi',   role:'driver', password:'1234'   },
+      { name:'zehpudin', role:'driver', password:'1234'   }
+    ];
     let _logoUrl = localStorage.getItem('tirtaLogo') || EMBEDDED_LOGO;
     let _qrisUrl = '';
     let _scannerMode = null, _scanTargetIdx = null, _scanResult = '', _scanStream = null, _scanTimer = null, _scannerActive = false;
@@ -468,8 +470,27 @@
       if (pelanggan.length === 0) pelanggan = ['Winda','ko asun'];
       if (allCustomers.length === 0) allCustomers = pelanggan.slice();
       if (!settings.salesList) settings.salesList = [];
-      // [SECURITY] Removed hardcoded fallback users - must be fetched from server
-      // Users are loaded via gasCall('getUsers', []) in syncFromGAS()
+      if (allUsers.length === 0) allUsers = [
+        { name:'admin',  role:'admin',  password:'020730' },
+        { name:'hasan',  role:'sales',  password:'1234'   },
+        { name:'ujang',  role:'sales',  password:'1234'   },
+        { name:'oji',    role:'driver', password:'1234'   },
+        { name:'padong', role:'driver', password:'1234'   },
+        { name:'said',   role:'driver', password:'1234'   },
+        { name:'dedi',   role:'driver', password:'1234'   },
+        { name:'zehpudin', role:'driver', password:'1234' }
+      ];
+      const _masterUsers = [
+        { name:'admin',  role:'admin',  password:'020730' },
+        { name:'hasan',  role:'sales',  password:'1234'   },
+        { name:'ujang',  role:'sales',  password:'1234'   },
+        { name:'oji',    role:'driver', password:'1234'   },
+        { name:'padong', role:'driver', password:'1234'   },
+        { name:'said',   role:'driver', password:'1234'   },
+        { name:'dedi',   role:'driver', password:'1234'   },
+        { name:'zehpudin', role:'driver', password:'1234' }
+      ];
+      _masterUsers.forEach(mu => { if (!allUsers.find(u => u.name === mu.name)) allUsers.push(mu); });
       _logoUrl = localStorage.getItem('tirtaLogo') || EMBEDDED_LOGO;
       _qrisUrl = settings.qris || localStorage.getItem('sp_qris') || EMBEDDED_QRIS;
       // Pastikan logo dan QRIS langsung tampil dengan URL embedded jika belum ada di settings
@@ -525,7 +546,17 @@
             if (local && gasU.role) local.role = gasU.role;
           });
         }
-        // [SECURITY] Removed hardcoded user sync - users managed server-side only
+        const _syncBuiltin = [
+          { name:'admin',  role:'admin',  password:'020730' },
+          { name:'hasan',  role:'sales',  password:'1234'   },
+          { name:'ujang',  role:'sales',  password:'1234'   },
+          { name:'oji',    role:'driver', password:'1234'   },
+          { name:'padong', role:'driver', password:'1234'   },
+          { name:'said',   role:'driver', password:'1234'   },
+          { name:'dedi',   role:'driver', password:'1234'   },
+          { name:'zehpudin', role:'driver', password:'1234' }
+        ];
+        _syncBuiltin.forEach(mu => { if (!allUsers.find(u => u.name === mu.name)) allUsers.push(mu); });
         // Ambil drivers dari sheet Driver (prioritas) atau fallback dari allUsers
         if (Array.isArray(gasDrivers) && gasDrivers.length > 0) {
           drivers = gasDrivers;
@@ -582,55 +613,42 @@
       if (el) el.textContent = 'Manual';
     }
 
-    // [SECURITY] Server-side authentication with token-based validation
-    async function doLogin() { 
+    function doLogin() { 
       const u = document.getElementById('loginUser').value.trim(), 
             p = document.getElementById('loginPass').value.trim(); 
       if (!u || !p) return Swal.fire('Error','Isi username & password','error'); 
-      
-      try {
-        // Try new authenticateUser function first (with hashed passwords)
-        let result;
-        try {
-          result = await gasCall('authenticateUser', [u, p]);
-          if (result && result.success) {
-            currentUser = { name: result.user.name, role: result.user.role };
-            localStorage.setItem('tirtaUser', JSON.stringify(currentUser));
-            localStorage.setItem('tirtaAuthToken', result.token);
-            showMainApp();
-            return;
-          }
-        } catch (authErr) {
-          // authenticateUser function not available on server, fall back to legacy method
-          console.warn('authenticateUser not available, using legacy auth');
-        }
-        
-        // Legacy fallback: fetch users and check locally (for backward compatibility)
-        const users = await gasCall('getUsers', []);
-        const user = users.find(x => x.name === u && x.password == p);
-        if (user) {
-          currentUser = { name: user.name, role: user.role };
-          localStorage.setItem('tirtaUser', JSON.stringify(currentUser));
-          // Generate a simple token for legacy compatibility
-          localStorage.setItem('tirtaAuthToken', 'legacy_' + Date.now());
-          showMainApp();
-        } else {
-          Swal.fire('Error', 'Username/password salah!','error');
-        }
-      } catch (e) {
-        console.error('Login error:', e);
-        Swal.fire('Error','Gagal terhubung ke server. Periksa koneksi.','error');
+      if (!allUsers || allUsers.length === 0) {
+        allUsers = [
+          { name:'admin',    role:'admin',  password:'020730' },
+          { name:'hasan',    role:'sales',  password:'1234'   },
+          { name:'ujang',    role:'sales',  password:'1234'   },
+          { name:'oji',      role:'driver', password:'1234'   },
+          { name:'padong',   role:'driver', password:'1234'   },
+          { name:'said',     role:'driver', password:'1234'   },
+          { name:'dedi',     role:'driver', password:'1234'   },
+          { name:'zehpudin', role:'driver', password:'1234'   }
+        ];
       }
+      const _builtinUsers = [
+        { name:'admin',  role:'admin',  password:'020730' },
+        { name:'hasan',  role:'sales',  password:'1234'   },
+        { name:'ujang',  role:'sales',  password:'1234'   },
+        { name:'oji',    role:'driver', password:'1234'   },
+        { name:'padong', role:'driver', password:'1234'   },
+        { name:'said',   role:'driver', password:'1234'   },
+        { name:'dedi',   role:'driver', password:'1234'   },
+        { name:'zehpudin', role:'driver', password:'1234' }
+      ];
+      _builtinUsers.forEach(mu => { if (!allUsers.find(u => u.name === mu.name)) allUsers.push(mu); });
+      const f = allUsers.find(x => x.name === u && x.password === p); 
+      if (f) { 
+        currentUser = { name: f.name, role: f.role }; 
+        localStorage.setItem('tirtaUser', JSON.stringify(currentUser)); 
+        showMainApp(); 
+      } else Swal.fire('Error','Username/password salah!','error'); 
     }
     document.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !document.getElementById('loginPage').classList.contains('hidden')) doLogin(); });
-    function doLogout() { 
-      stopAutoSync(); 
-      localStorage.removeItem('tirtaUser'); 
-      localStorage.removeItem('tirtaAuthToken');  // [SECURITY] Clear auth token on logout
-      currentUser = null; 
-      document.getElementById('loginPage').classList.remove('hidden'); 
-      document.getElementById('mainApp').classList.add('hidden'); 
-    }
+    function doLogout() { stopAutoSync(); localStorage.removeItem('tirtaUser'); currentUser = null; document.getElementById('loginPage').classList.remove('hidden'); document.getElementById('mainApp').classList.add('hidden'); }
 
     async function showMainApp() {
       document.getElementById('loginPage').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden');
@@ -669,7 +687,6 @@
              <button class="tab ${currentPage==='rekap'?'active':''}" onclick="navigateTo('rekap')"><i class="fas fa-chart-bar"></i> Rekap</button>
              <button class="tab ${currentPage==='rekapinput'?'active':''}" onclick="navigateTo('rekapinput')"><i class="fas fa-boxes"></i> Rekap Input</button>
              <button class="tab ${currentPage==='setoran'?'active':''}" onclick="navigateTo('setoran')"><i class="fas fa-money-bill-wave"></i> Setoran</button>
-             <button class="tab ${currentPage==='rekapsetoran'?'active':''}" onclick="navigateTo('rekapsetoran')"><i class="fas fa-money-bill-wave"></i> Rekap Setoran</button>
              <button class="tab ${currentPage==='inputbarang'?'active':''}" onclick="navigateTo('inputbarang')"><i class="fas fa-boxes"></i> Input</button>
              <button class="tab ${currentPage==='stockbarang'?'active':''}" onclick="navigateTo('stockbarang')"><i class="fas fa-warehouse"></i> Stock</button>
              <button class="tab ${currentPage==='produk'?'active':''}" onclick="navigateTo('produk')"><i class="fas fa-cubes"></i> Produk</button>
@@ -693,7 +710,7 @@
       document.getElementById('menuTabs').innerHTML = h;
     }
     function navigateTo(p) { currentPage = p; renderMenuTabs(); renderContent(); }
-    function renderContent() { switch (currentPage) { case 'dashboard': loadDashboard(); break; case 'penjualan': loadPenjualan(); break; case 'transaksi': loadTransaksi(); break; case 'rekap': loadRekap(); break; case 'rekapinput': loadRekapInput(); break; case 'rekapsetoran': loadRekapSetoran(); break; case 'setoran': loadSetoran(); break; case 'inputbarang': loadInputBarang(); break; case 'stockbarang': loadStockBarang(); break; case 'produk': loadProduk(); break; case 'pelanggan': loadPelanggan(); break; case 'pengaturan': loadPengaturan(); break; case 'pengaturanUser': loadPengaturanUser(); break; case 'grafik': loadGrafik(); break; case 'piutang': loadPiutang(); break; } }
+    function renderContent() { switch (currentPage) { case 'dashboard': loadDashboard(); break; case 'penjualan': loadPenjualan(); break; case 'transaksi': loadTransaksi(); break; case 'rekap': loadRekap(); break; case 'rekapinput': loadRekapInput(); break; case 'setoran': loadSetoran(); break; case 'inputbarang': loadInputBarang(); break; case 'stockbarang': loadStockBarang(); break; case 'produk': loadProduk(); break; case 'pelanggan': loadPelanggan(); break; case 'pengaturan': loadPengaturan(); break; case 'pengaturanUser': loadPengaturanUser(); break; case 'grafik': loadGrafik(); break; case 'piutang': loadPiutang(); break; } }
 
     // ========== DASHBOARD (MENU UTAMA) ==========
     function loadDashboard() {
@@ -2055,35 +2072,9 @@
 
     // ========== REKAP INPUT (dengan tabel detail bisa edit qty & status) ==========
     async function loadRekapInput() { const today = localDateStr(); document.getElementById('contentArea').innerHTML = `<div class="card"><div class="flex-row mb-2"><div class="form-group col-1"><label>Tanggal</label><input type="date" id="rekapInputTgl" value="${today}"></div><button class="btn btn-primary" onclick="doRekapInput()" style="height:44px;align-self:flex-end">📊 Tampilkan</button></div></div><div id="rekapInputContent"><div class="text-center text-sm" style="padding:40px">Pilih tanggal lalu klik Tampilkan</div></div>`; await syncStockHistoryFromGAS(); doRekapInput(); }
-    async function loadRekapSetoran() { 
-      const today = localDateStr(); 
-      document.getElementById('contentArea').innerHTML = `<div class="card"><div class="flex-row mb-2"><div class="form-group col-1"><label>Tanggal</label><input type="date" id="rekapSetoranTgl" value="${today}"></div><button class="btn btn-primary" onclick="doRekapSetoran()" style="height:44px;align-self:flex-end">📊 Tampilkan</button></div></div><div id="rekapSetoranContent"><div class="text-center text-sm" style="padding:40px">Pilih tanggal lalu klik Tampilkan</div></div>`; 
-      await syncSetoranHistoryFromGAS(); 
-      doRekapSetoran(); 
+    function doRekapInput() { const tgl = document.getElementById('rekapInputTgl').value; if (!tgl) return Swal.fire('Error','Pilih tanggal','error'); const filtered = stockInHistory.filter(s => (s.date||s.tgl||'').substring(0,10) === tgl); const data = hitungRekapLokal(filtered); renderRekapInput(data); // tambahkan tabel detail dengan fitur edit
+      document.getElementById('rekapInputContent').innerHTML += buildStockDetailTableEditable(filtered);
     }
-    
-    function doRekapSetoran() { 
-      const tgl = document.getElementById('rekapSetoranTgl').value; 
-      if (!tgl) return Swal.fire('Error','Pilih tanggal','error'); 
-      const filtered = setoranHistory.filter(s => (s.tgl||'').substring(0,10) === tgl); 
-      renderRekapSetoran(filtered); 
-    }
-    
-    function renderRekapSetoran(filtered) { 
-      if (!filtered || filtered.length === 0) { 
-        document.getElementById('rekapSetoranContent').innerHTML = '<div class="card"><p class="text-center text-sm">Tidak ada setoran pada tanggal ini.</p></div>'; 
-        return; 
-      } 
-      let html = '<div class="card"><div class="card-title"><i class="fas fa-money-bill-wave"></i> Data Setoran</div><div class="table-wrap"><table><thead><tr><th>Sales</th><th>Grand Total COD</th><th>Tagihan</th><th>Cicilan</th><th>Pengeluaran</th><th>Total</th><th>Setor</th><th>Selisih</th></tr></thead><tbody>'; 
-      filtered.forEach(s => { 
-        const pengeluaran = (s.makan||0)+(s.tips||0)+(s.parkir||0)+(s.bensin||0)+(s.flazz||0)+(s.transfer||0)+(s.jml1||0)+(s.jml2||0); 
-        const total = (s.grandTotal||0) + (s.tagihan||0) + (s.cicilan||0) - pengeluaran; 
-        html += '<tr><td>'+esc(s.sales||'')+'</td><td style="text-align:right;font-family:var(--mono)">'+fmtRp(s.grandTotal||0)+'</td><td style="text-align:right;font-family:var(--mono)">'+fmtRp(s.tagihan||0)+'</td><td style="text-align:right;font-family:var(--mono)">'+fmtRp(s.cicilan||0)+'</td><td style="text-align:right;font-family:var(--mono);color:var(--merah)">-'+fmtRp(pengeluaran)+'</td><td style="text-align:right;font-family:var(--mono);font-weight:700;color:var(--biru)">'+fmtRp(total)+'</td><td style="text-align:right;font-family:var(--mono)">'+fmtRp(s.setor||0)+'</td><td style="text-align:right;font-family:var(--mono);font-weight:700;color:'+((s.selisih||0)>=0?'var(--hijau)':'var(--merah)')+'">'+fmtRp(s.selisih||0)+'</td></tr>'; 
-      }); 
-      html += '</tbody></table></div></div>'; 
-      document.getElementById('rekapSetoranContent').innerHTML = html; 
-    }
-    
     function hitungRekapLokal(list) { const driverMap = {}; list.forEach(entry => { const driver = entry.driver || '', rit = entry.rit || '', status = (entry.status||'').toLowerCase(), sku = entry.sku || '', qty = entry.qty || 0, hargaModal = entry.hargaModal || 0, disc = entry.disc || 0, netModalPerItem = hargaModal - disc, totalRp = qty * netModalPerItem; if (!driver || !rit || !sku || qty === 0) return; if (!driverMap[driver]) driverMap[driver] = {}; if (!driverMap[driver][rit]) driverMap[driver][rit] = { totalRp: 0, kiriman: { totalRp: 0, items: {} }, titipan: { totalRp: 0, items: {} } }; driverMap[driver][rit].totalRp += totalRp; if (status === 'kiriman') { driverMap[driver][rit].kiriman.totalRp += totalRp; driverMap[driver][rit].kiriman.items[sku] = (driverMap[driver][rit].kiriman.items[sku]||0) + qty; } else if (status === 'titipan') { driverMap[driver][rit].titipan.totalRp += totalRp; driverMap[driver][rit].titipan.items[sku] = (driverMap[driver][rit].titipan.items[sku]||0) + qty; } }); const rekap = [], kiriman = [], titipan = [], kirimanQty = [], titipanQty = []; for (const d in driverMap) { for (const r in driverMap[d]) { const entry = driverMap[d][r]; rekap.push({ driver: d, rit: r, total: entry.totalRp }); if (entry.kiriman.totalRp > 0) { kiriman.push({ driver: d, rit: r, total: entry.kiriman.totalRp }); for (const sku in entry.kiriman.items) kirimanQty.push({ driver: d, rit: r, sku, qty: entry.kiriman.items[sku] }); } if (entry.titipan.totalRp > 0) { titipan.push({ driver: d, rit: r, total: entry.titipan.totalRp }); for (const sku in entry.titipan.items) titipanQty.push({ driver: d, rit: r, sku, qty: entry.titipan.items[sku] }); } } } const sum = arr => arr.reduce((s,x)=>s+x.total,0); return { rekap, grandRekap: sum(rekap), kiriman, grandKiriman: sum(kiriman), titipan, grandTitipan: sum(titipan), kirimanQty, titipanQty }; }
     function renderRekapInput(data) { let h = buildRekapTable('TOTAL Kiriman + Titipan (Rp)', data.rekap, data.grandRekap) + buildRekapTable('TOTAL KIRIMAN (Rp)', data.kiriman, data.grandKiriman) + buildRekapTable('TOTAL TITIPAN (Rp)', data.titipan, data.grandTitipan) + buildQtyTable('TOTAL KIRIMAN (QTY)', data.kirimanQty) + buildQtyTable('TOTAL TITIPAN (QTY)', data.titipanQty); document.getElementById('rekapInputContent').innerHTML = h || '<p class="text-center text-sm">Belum ada data input barang.</p>'; }
     function buildRekapTable(title, rows, grandTotal) { let html = `<div class="card"><div class="card-title"><i class="fas fa-table"></i> ${title}</div><div class="table-wrap"><table><thead><tr><th>Driver</th><th>Rit</th><th>Total</th></tr></thead><tbody>`; if (!rows || !rows.length) html += '<tr><td colspan="3" class="text-center text-sm">Tidak ada data</td></tr>'; else { rows.forEach(row => { html += `<tr><td>${esc(row.driver)}</td><td>${esc(row.rit)}</td><td style="text-align:right;font-family:var(--mono)">${fmtRp(row.total)}</td></tr>`; }); if (grandTotal !== undefined) html += `<tr style="font-weight:700;background:var(--biru-muda)"><td colspan="2">Grand Total</td><td style="text-align:right;font-family:var(--mono);color:var(--biru)">${fmtRp(grandTotal)}</td></tr>`; } html += '</tbody></table></div></div>'; return html; }
@@ -2405,23 +2396,23 @@
     function normalizeSetoranRecord(raw) {
       if (!raw || typeof raw !== 'object') return raw;
       const g = (...keys) => { for (const k of keys) { if (raw[k] !== undefined && raw[k] !== null && raw[k] !== '') return raw[k]; } return undefined; };
-      const num = v => { if (v === undefined || v === null || v === '') return 0; var n = parseFloat(v); return isNaN(n) ? 0 : n; };
+      const num = v => parseFloat(v) || 0;
       return {
         tgl: g('tgl','Tanggal','tanggal') || '',
         sales: g('sales','Sales') || '',
-        grandTotal: num(g('grandtotal','grandTotal','GrandTot','grandTot','grand total','GrandTotal')),
-        makan: num(g('makan','uangmak','UangMak','UangMakan','uangMakan','Makan')),
+        grandTotal: num(g('grandtotal','grandTotal','GrandTot','grandTot','grand total')),
+        makan: num(g('makan','uangmak','UangMak','UangMakan','uangMakan')),
         tips: num(g('tips','Tips')),
         parkir: num(g('parkir','Parkir')),
         bensin: num(g('bensin','Bensin')),
         flazz: num(g('flazz','Flazz')),
         transfer: num(g('transfer','Transfer')),
-        cicilan: num(g('cicilan','cicilanhu','CicilanHu','Cicilan','cicilan hu','cicilanhu','CicilanHU')),
+        cicilan: num(g('cicilan','cicilanhu','CicilanHu','Cicilan','cicilan hu','cicilanhu')),
         tagihan: num(g('tagihan','Tagihan')),
-        ket1: g('ket1','ekstra1li','Ekstra1Li','ekstra1ket','Ekstra1Ket','ket 1','keterangan1','Ket1') || '',
-        jml1: num(g('jml1','ekstra1','Ekstra1','jumlah1','jml 1','Jml1','Ekstra1Li')),
-        ket2: g('ket2','ekstra2li','Ekstra2Li','ekstra2ket','Ekstra2Ket','ket 2','keterangan2','Ket2') || '',
-        jml2: num(g('jml2','ekstra2','Ekstra2','jumlah2','jml 2','Jml2','Ekstra2Li')),
+        ket1: g('ket1','ekstra1li','Ekstra1Li','ekstra1ket','Ekstra1Ket','ket 1','keterangan1') || '',
+        jml1: num(g('jml1','ekstra1','Ekstra1','jumlah1','jml 1')),
+        ket2: g('ket2','ekstra2li','Ekstra2Li','ekstra2ket','Ekstra2Ket','ket 2','keterangan2') || '',
+        jml2: num(g('jml2','ekstra2','Ekstra2','jumlah2','jml 2')),
         total: num(g('total','Total')),
         setor: num(g('setor','Setor')),
         selisih: num(g('selisih','Selisih'))
@@ -2610,34 +2601,7 @@
     function addDriverName() { const v = document.getElementById('newDriverName').value.trim(); if (!v) return; if (!drivers.includes(v)) { drivers.push(v); saveLocalData(); gasCall('saveDrivers', [drivers.map(String)]).catch(e => console.warn('Gagal sync driver:', e)); } document.getElementById('newDriverName').value = ''; renderDriverTags(); }
     function removeDriver(i) { drivers.splice(i,1); saveLocalData(); gasCall('saveDrivers', [drivers.map(String)]).catch(e => console.warn('Gagal sync driver:', e)); renderDriverTags(); }
     function renderUserList() { const el = document.getElementById('userList'); if (!el) return; el.innerHTML = allUsers.length ? allUsers.map((u,i) => `<div class="flex-between mb-1" style="padding:4px 0;border-bottom:1px solid var(--border)"><span><b>${esc(u.name)}</b> (${u.role})</span><button class="btn btn-sm btn-danger" onclick="deleteUser(${i})">🗑</button></div>`).join('') : '<p class="text-sm text-center">Belum ada user</p>'; }
-    function addUser() { 
-      const name = document.getElementById('newUserName').value.trim(), 
-            role = document.getElementById('newUserRole').value, 
-            pass = document.getElementById('newUserPass').value.trim(); 
-      if (!name || !pass) return Swal.fire('Error','Nama dan password wajib diisi','error'); 
-      if (pass.length < 4) return Swal.fire('Error','Password minimal 4 karakter','error');
-      if (allUsers.find(u => u.name === name)) return Swal.fire('Error','Nama sudah ada','error'); 
-      
-      // [SECURITY] Send to server for hashing - don't store plaintext locally
-      gasCall('saveUser', [{ name, role, password: pass }])
-        .then(() => {
-          // Refresh users from server
-          return gasCall('getUsers', []);
-        })
-        .then(users => {
-          allUsers = users;
-          saveLocalData();
-          renderUserList();
-          Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'User ditambahkan' });
-        })
-        .catch(e => {
-          console.warn('Gagal sync user ke GAS:', e);
-          Swal.fire('Error','Gagal menambahkan user','error');
-        });
-      
-      document.getElementById('newUserName').value = ''; 
-      document.getElementById('newUserPass').value = ''; 
-    }
+    function addUser() { const name = document.getElementById('newUserName').value.trim(), role = document.getElementById('newUserRole').value, pass = document.getElementById('newUserPass').value.trim(); if (!name || !pass) return Swal.fire('Error','Nama dan password wajib diisi','error'); if (allUsers.find(u => u.name === name)) return Swal.fire('Error','Nama sudah ada','error'); allUsers.push({ name, role, password: pass }); saveLocalData(); gasCall('saveUser', [{ name, role, password: pass }]).catch(e => console.warn('Gagal sync user ke GAS:', e)); document.getElementById('newUserName').value = ''; document.getElementById('newUserPass').value = ''; renderUserList(); Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'User ditambahkan' }); }
     function deleteUser(i) { Swal.fire({ title:'Hapus user?', text:'Hapus '+allUsers[i].name+'?', icon:'warning', showCancelButton:true }).then(r => { if (r.isConfirmed) { const deletedName = allUsers[i].name; allUsers.splice(i,1); saveLocalData(); renderUserList(); gasCall('deleteUser', [deletedName]).catch(e => console.warn('Gagal hapus user GAS:', e)); Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'User dihapus' }); } }); }
     function savePengaturan() { settings.namaToko = document.getElementById('setNamaToko').value.trim(); settings.tagline = document.getElementById('setTagline').value.trim(); settings.alamat = document.getElementById('setAlamat').value.trim(); settings.telepon = document.getElementById('setTelepon').value.trim(); settings.bottomLine = document.getElementById('setFooter').value.trim(); settings.bank1 = { nama: document.getElementById('setB1Nama').value.trim(), norek: document.getElementById('setB1Norek').value.trim(), penerima: document.getElementById('setB1Penerima').value.trim() }; settings.bank2 = { nama: document.getElementById('setB2Nama').value.trim(), norek: document.getElementById('setB2Norek').value.trim(), penerima: document.getElementById('setB2Penerima').value.trim() }; document.getElementById('headerAlamat').textContent = settings.alamat; saveLocalData(); gasCall('saveSettings', [{ storeName: settings.namaToko||settings.storeName, tagline: settings.tagline, address: settings.alamat||settings.address, phone: settings.telepon||settings.phone, footer: settings.bottomLine||settings.footer, salesList: settings.salesList||[], bank1: settings.bank1, bank2: settings.bank2 }]).catch(e => console.warn('Gagal sync settings:', e)); Swal.fire({ toast: true, position: 'top-end', showConfirmButton: false, timer: 1500, icon: 'success', title: 'Pengaturan disimpan' }); }
     function backupData() { saveLocalData(); const blob = new Blob([localStorage.getItem('tirtaFullData')], {type:'application/json'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'tirta-backup-'+new Date().toISOString().slice(0,10)+'.json'; a.click(); }
@@ -2733,7 +2697,19 @@ console.log("Service Worker dimatikan untuk debugging cache.");
       localStorage.setItem('tirtaGasUrl', DEFAULT_GAS_URL);
     }
     loadLocalData();
-    // [SECURITY] Removed hardcoded user fallback - users must be fetched from server
+    if (!allUsers || allUsers.length === 0) {
+      allUsers = [
+        { name:'admin',  role:'admin',  password:'020730' },
+        { name:'hasan',  role:'sales',  password:'1234'   },
+        { name:'ujang',  role:'sales',  password:'1234'   },
+        { name:'oji',    role:'driver', password:'1234'   },
+        { name:'padong', role:'driver', password:'1234'   },
+        { name:'said',   role:'driver', password:'1234'   },
+        { name:'dedi',   role:'driver', password:'1234'   },
+        { name:'zehpudin', role:'driver', password:'1234' }
+      ];
+      saveLocalData();
+    }
     const savedUser = localStorage.getItem('tirtaUser');
     if (savedUser) { try { currentUser = JSON.parse(savedUser); showMainApp(); } catch(e) { localStorage.removeItem('tirtaUser'); } }
   </script>

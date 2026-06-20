@@ -1,21 +1,38 @@
-```
+```gitignore
+# Google Apps Script specific
+*.gs.bak
+*.gs~
+*.js.bak
+*.js~
+
 # Compiled and build artifacts
 *.pyc
-__pycache__/
 *.o
 *.obj
+*.class
+*.exe
+*.dll
+*.so
+*.a
+*.out
 
 # Dependencies
-.venv/
-venv/
 node_modules/
+venv/
+.venv/
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+target/
+.gradle/
 
 # Logs and temp files
 *.log
 *.tmp
 *.swp
+*.swo
 
-# Environment
+# Environment files
 .env
 .env.local
 *.env.*
@@ -24,23 +41,14 @@ node_modules/
 .vscode/
 .idea/
 
-# Coverage reports
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
 coverage/
 htmlcov/
 .coverage
-
-# Distribution files
-dist/
-build/
-target/
-
-# Python specific
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-.Python
-*.so
 
 # Compressed files
 *.zip
@@ -65,21 +73,4 @@ __pycache__/
 *.tar.bz2
 *.tar.xz
 *.tar.zst
-
-# OS generated files
-.DS_Store
-Thumbs.db
-
-# MyPy cache
-.mypy_cache/
-# Pytest cache
-.pytest_cache/
-
-# Gradle
-.gradle/
-
-# Temporary files
-*.tmp
-*.temp
-*~
 ```

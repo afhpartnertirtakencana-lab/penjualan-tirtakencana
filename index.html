@@ -4,17 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tirta Kencana POS</title>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- SheetJS for Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Untuk alert yang lebih bagus -->
 
-    <!-- Configure Tailwind Theme -->
     <script>
         tailwind.config = {
             theme: {
@@ -25,7 +19,6 @@
                         accent: '#00D1FF',
                         background: '#F0F4F8',
                     },
-                    borderRadius: { 'xl': '1rem', '2xl': '1.5rem', '3xl': '2rem' },
                     animation: {
                         'float': 'float 6s ease-in-out infinite',
                         'fade-in': 'fadeIn 0.5s ease-out forwards',
@@ -40,7 +33,6 @@
             }
         }
     </script>
-
     <style>
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #F0F4F8 0%, #e0eafc 100%); min-height: 100vh; }
         .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); }
@@ -49,16 +41,10 @@
         .btn-primary { background: linear-gradient(135deg, #00509E 0%, #00A8E8 100%); color: white; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 80, 158, 0.3); }
         .btn-primary:active { transform: scale(0.95); }
         .input-field { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0, 80, 158, 0.2); transition: all 0.3s ease; }
-        .input-field:focus { outline: none; border-color: #00A8E8; box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.2); background: white; }
-        .hidden-page { display: none; }
-        .loading-spinner { border: 4px solid rgba(0, 80, 158, 0.1); border-left-color: #00509E; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        .input-field:focus { outline: none; border-color: #00A8E8; box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.2); }
+        .loading-spinner { border: 4px solid rgba(0, 80, 158, 0.1); border-left-color: #00509E; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #00509E; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #003366; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -74,7 +60,7 @@
         </div>
 
         <!-- Login Page -->
-        <div id="login-page" class="hidden-page min-h-screen flex items-center justify-center p-4">
+        <div id="login-page" class="hidden min-h-screen flex items-center justify-center p-4">
             <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
                 <div class="absolute -top-20 -right-20 w-40 h-40 bg-secondary/20 rounded-full animate-float"></div>
                 <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-accent/20 rounded-full animate-float" style="animation-delay: 2s;"></div>
@@ -101,32 +87,30 @@
                                 <input type="password" id="password" class="input-field w-full pl-10 pr-4 py-3 rounded-xl" placeholder="Masukkan password" required>
                             </div>
                         </div>
+                        
                         <div id="login-error" class="text-red-500 text-sm text-center hidden"></div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2">
+                        
+                        <button type="submit" id="login-btn" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2">
                             <span>Masuk</span>
                             <i data-lucide="arrow-right" class="w-5 h-5"></i>
                         </button>
                     </form>
-                    <div class="mt-6 text-center">
-                        <p class="text-xs text-gray-500">Tirta Kencana POS &copy; 2024</p>
-                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main App Layout -->
-        <div id="main-app" class="hidden-page page-transition">
-            <!-- Header -->
+        <!-- Main App -->
+        <div id="main-app" class="hidden page-transition">
             <header class="glass-panel rounded-2xl p-4 mb-6 flex items-center justify-between sticky top-0 z-40">
                 <div class="flex items-center gap-3">
-                    <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" alt="Logo" class="w-10 h-10 rounded-lg shadow-md">
+                    <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-10 h-10 rounded-lg shadow-md">
                     <div>
                         <h1 class="font-bold text-primary text-lg leading-tight">TIRTA KENCANA</h1>
                         <p id="user-role-display" class="text-xs text-secondary font-medium capitalize"></p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="sync-btn" onclick="syncData()" class="p-2 rounded-xl hover:bg-white/50 transition-colors" title="Sinkronisasi Data">
+                    <button id="sync-btn" onclick="forceSync()" class="p-2 rounded-xl hover:bg-white/50 transition-colors" title="Sinkronisasi Data">
                         <i data-lucide="refresh-cw" class="w-5 h-5 text-primary"></i>
                     </button>
                     <button onclick="handleLogout()" class="p-2 rounded-xl hover:bg-red-100 transition-colors text-red-500" title="Keluar">
@@ -135,9 +119,9 @@
                 </div>
             </header>
 
-            <!-- Dashboard Content -->
+            <!-- Dashboard -->
             <main id="dashboard-content" class="space-y-6">
-                <!-- Sales Summary -->
+                <!-- Summary Cards -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div class="glass-card p-4 rounded-2xl">
                         <div class="flex items-center gap-2 mb-2">
@@ -169,7 +153,7 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions Grid -->
+                <!-- Quick Actions -->
                 <div class="glass-panel p-4 rounded-2xl">
                     <h3 class="font-bold text-primary mb-3 flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5"></i> Aksi Cepat</h3>
                     <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
@@ -189,7 +173,7 @@
                             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white shadow-md"><i data-lucide="package" class="w-6 h-6"></i></div>
                             <span class="text-xs font-medium text-center">Produk</span>
                         </button>
-                        <button onclick="navigateTo('stock')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
+                         <button onclick="navigateTo('stock')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
                             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shadow-md"><i data-lucide="boxes" class="w-6 h-6"></i></div>
                             <span class="text-xs font-medium text-center">Stok</span>
                         </button>
@@ -208,7 +192,7 @@
                     </div>
                 </div>
 
-                <!-- Main Menu Grid -->
+                <!-- Menu Grid -->
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <div onclick="navigateTo('rekap-penjualan')" class="glass-card p-4 rounded-2xl cursor-pointer group">
                         <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors"><i data-lucide="bar-chart-3" class="w-6 h-6 text-primary"></i></div>
@@ -233,18 +217,14 @@
                 </div>
             </main>
 
-            <!-- Dynamic Page Content Container -->
-            <div id="page-content" class="hidden-page space-y-6">
+            <!-- Dynamic Page Content -->
+            <div id="page-content" class="hidden space-y-6">
                 <div class="glass-panel p-6 rounded-2xl">
-                    <div class="flex items-center gap-3 mb-6">
-                        <button onclick="navigateTo('dashboard')" class="p-2 hover:bg-white/50 rounded-lg transition-colors">
-                            <i data-lucide="arrow-left" class="w-6 h-6"></i>
-                        </button>
-                        <h2 id="page-title" class="text-2xl font-bold text-primary">Judul Halaman</h2>
+                    <div class="flex items-center gap-3 mb-4">
+                        <button onclick="navigateTo('dashboard')" class="p-2 hover:bg-white/50 rounded-lg transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                        <h2 id="page-title" class="text-xl font-bold text-primary">Judul Halaman</h2>
                     </div>
-                    
-                    <!-- Dynamic Form Area -->
-                    <div id="dynamic-form-area" class="min-h-[400px]">
+                    <div id="page-body" class="min-h-[400px]">
                         <!-- Content injected via JS -->
                     </div>
                 </div>
@@ -254,15 +234,14 @@
 
     <script>
         // --- KONFIGURASI ---
-        const DEFAULT_CONFIG = {
-            sheetsId: '1OrMEuqOo9JF9i29et8c5rhSyoKsrjzVnxxZEbOyIxfQ',
+        const CONFIG = {
             gasUrl: 'https://script.google.com/macros/s/AKfycbzWwDCMaFj_Gj_Wfs9ypU0xrwnUMi-AElRCFYC0yxuKMrXm2avvtQ12HfBAh6duzQPaew/exec'
         };
 
+        // --- STATE ---
         let appState = {
-            currentUser: null,
-            config: { ...DEFAULT_CONFIG },
-            data: { sales: [], products: [], customers: [], settings: {} }
+            user: null,
+            data: { products: [], sales: [], purchases: [], customers: [], stock: [], settings: {} }
         };
 
         const USERS = [
@@ -277,12 +256,9 @@
         // --- INIT ---
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            const savedConfig = localStorage.getItem('tirtaConfig');
-            if (savedConfig) appState.config = JSON.parse(savedConfig);
-
             setTimeout(() => {
                 document.getElementById('splash-screen').classList.add('hidden');
-                document.getElementById('login-page').classList.remove('hidden-page');
+                document.getElementById('login-page').classList.remove('hidden');
                 document.getElementById('login-page').classList.add('animate-fade-in');
             }, 2000);
 
@@ -292,243 +268,122 @@
         // --- AUTH ---
         function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const user = USERS.find(u => u.nama === username && u.password === password);
+            const btn = document.getElementById('login-btn');
+            const originalBtnContent = btn.innerHTML;
+            const userIn = document.getElementById('username').value.trim();
+            const passIn = document.getElementById('password').value.trim();
+            const errDiv = document.getElementById('login-error');
 
-            if (user) {
-                appState.currentUser = user;
-                document.getElementById('login-page').classList.add('hidden-page');
-                document.getElementById('main-app').classList.remove('hidden-page');
-                document.getElementById('user-role-display').textContent = `${user.nama} (${user.role})`;
-                syncData(); // Auto sync on login
-            } else {
-                const err = document.getElementById('login-error');
-                err.textContent = 'Username atau password salah!';
-                err.classList.remove('hidden');
-            }
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loading-spinner"></div>';
+
+            // Simulasi delay kecil untuk UX
+            setTimeout(() => {
+                const user = USERS.find(u => u.nama === userIn && u.password === passIn);
+                
+                if (user) {
+                    appState.user = user;
+                    errDiv.classList.add('hidden');
+                    
+                    // Transisi UI
+                    document.getElementById('login-page').classList.add('hidden');
+                    document.getElementById('main-app').classList.remove('hidden');
+                    document.getElementById('user-role-display').textContent = `${user.nama} (${user.role})`;
+                    
+                    // BARU SEKARANG LAKUKAN SYNC SETELAH LOGIN BERHASIL
+                    performSync(); 
+                } else {
+                    errDiv.textContent = 'Username atau password salah!';
+                    errDiv.classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnContent;
+                    lucide.createIcons();
+                }
+            }, 500);
         }
 
         function handleLogout() {
-            if(confirm('Keluar?')) {
-                appState.currentUser = null;
+            if(confirm('Keluar dari aplikasi?')) {
                 location.reload();
             }
         }
 
         // --- DATA SYNC ---
-        async function syncData() {
-            const btn = document.getElementById('sync-btn');
-            const originalContent = btn.innerHTML;
-            btn.innerHTML = '<div class="loading-spinner w-5 h-5"></div>';
+        async function performSync() {
+            const syncBtnIcon = document.querySelector('#sync-btn i');
+            syncBtnIcon.classList.add('animate-spin');
             
             try {
-                // Menggunakan 'no-cors' mode jika GAS belum diatur header CORS dengan benar, 
-                // tapi untuk membaca response JSON kita butuh CORS yang benar di sisi server.
-                // Asumsi code.gs sudah diupdate dengan header CORS.
-                const response = await fetch(`${appState.config.gasUrl}?action=getAllData`, {
+                // Menggunakan mode 'no-cors' akan membuat response opaque, jadi kita harus berhati-hati
+                // Namun GAS biasanya mengembalikan JSON yang bisa dibaca jika header diatur benar di server
+                const response = await fetch(`${CONFIG.gasUrl}?action=getAllData`, {
                     method: 'GET',
-                    // mode: 'cors' // Uncomment jika GAS sudah deploy dengan benar
+                    mode: 'cors' 
                 });
-                
+
                 if (!response.ok) throw new Error('Network response was not ok');
+                
                 const result = await response.json();
                 
                 if (result.status === 'success') {
                     appState.data = result.data;
-                    alert('Data berhasil disinkronisasi!');
-                    if(!document.getElementById('dashboard-content').classList.contains('hidden-page')) {
-                        loadDashboardData();
-                    } else {
-                        renderCurrentPage(); // Re-render current page if open
-                    }
+                    console.log('Data synced:', appState.data);
+                    loadDashboardData();
+                    
+                    // Notifikasi halus
+                    const Toast = Swal.mixin({
+                        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+                        didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); }
+                    });
+                    Toast.fire({ icon: 'success', title: 'Data tersinkronisasi' });
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Gagal mengambil data');
                 }
             } catch (error) {
-                console.error(error);
-                // Fallback untuk demo jika GAS error
-                alert(`Gagal sinkronisasi: ${error.message}. Pastikan Code.gs sudah di-deploy sebagai Web App (Anyone can access).`);
+                console.error('Sync failed:', error);
+                // Jangan blokir user, biarkan mereka pakai mode offline/local first
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sinkronisasi Gagal',
+                    text: 'Tidak dapat terhubung ke Google Sheets. Menggunakan data lokal/cache. Periksa koneksi internet atau konfigurasi GAS.',
+                    footer: `<small>Error: ${error.message}</small>`
+                });
+                loadDashboardData(); // Load apa adanya (kosong)
             } finally {
-                btn.innerHTML = originalContent;
-                lucide.createIcons();
+                syncBtnIcon.classList.remove('animate-spin');
             }
         }
 
-        // --- NAVIGATION & RENDERING ---
-        function navigateTo(pageId) {
-            const dashboard = document.getElementById('dashboard-content');
-            const pageContent = document.getElementById('page-content');
-            const formArea = document.getElementById('dynamic-form-area');
-            const title = document.getElementById('page-title');
-
-            if (pageId === 'dashboard') {
-                pageContent.classList.add('hidden-page');
-                dashboard.classList.remove('hidden-page');
-                loadDashboardData();
-                return;
-            }
-
-            dashboard.classList.add('hidden-page');
-            pageContent.classList.remove('hidden-page');
-            
-            const titles = {
-                'penjualan': 'Input Penjualan', 'transaksi': 'Riwayat Transaksi',
-                'pembelian': 'Input Pembelian', 'produk': 'Manajemen Produk',
-                'stock': 'Manajemen Stok', 'pelanggan': 'Data Pelanggan',
-                'piutang': 'Manajemen Piutang', 'rekap-penjualan': 'Rekap Penjualan',
-                'setoran': 'Setoran Kas', 'rekap-pembelian': 'Rekap Pembelian',
-                'laporan-bulanan': 'Laporan Bulanan', 'setting': 'Pengaturan'
-            };
-            
-            title.textContent = titles[pageId] || pageId;
-            renderPageContent(pageId, formArea);
-            lucide.createIcons();
-        }
-
-        function renderPageContent(pageId, container) {
-            let html = '';
-            
-            // Contoh Implementasi Halaman Penjualan
-            if (pageId === 'penjualan') {
-                html = `
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <div class="md:col-span-2 space-y-4">
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="text-xs font-bold text-gray-600">ID Transaksi</label>
-                                    <input type="text" value="TRX-${Date.now()}" class="input-field w-full p-2 rounded-lg bg-gray-100" readonly>
-                                </div>
-                                <div>
-                                    <label class="text-xs font-bold text-gray-600">Tanggal</label>
-                                    <input type="date" class="input-field w-full p-2 rounded-lg" value="${new Date().toISOString().split('T')[0]}">
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <label class="text-xs font-bold text-gray-600">Pelanggan</label>
-                                <select class="input-field w-full p-2 rounded-lg">
-                                    <option>Umum</option>
-                                    ${appState.data.customers?.map(c => `<option>${c.nama}</option>`).join('') || ''}
-                                </select>
-                            </div>
-
-                            <div class="glass-panel p-4 rounded-xl bg-white/50">
-                                <div class="flex gap-2 mb-2">
-                                    <input type="text" placeholder="Scan Barcode / SKU" class="input-field flex-1 p-2 rounded-lg">
-                                    <button class="btn-primary px-4 rounded-lg"><i data-lucide="scan-line" class="w-5 h-5"></i></button>
-                                </div>
-                                <table class="w-full text-sm">
-                                    <thead class="bg-primary/10 text-primary">
-                                        <tr><th class="p-2 rounded-l-lg">Item</th><th class="p-2">Qty</th><th class="p-2">Harga</th><th class="p-2 rounded-r-lg">Total</th></tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr class="border-b">
-                                            <td class="p-2">Contoh Barang A</td>
-                                            <td class="p-2"><input type="number" value="1" class="w-16 p-1 border rounded"></td>
-                                            <td class="p-2">10.000</td>
-                                            <td class="p-2 font-bold">10.000</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <button class="mt-2 text-sm text-primary font-bold flex items-center gap-1"><i data-lucide="plus-circle" class="w-4 h-4"></i> Tambah Item</button>
-                            </div>
-                        </div>
-
-                        <div class="space-y-4">
-                            <div class="glass-panel p-4 rounded-xl bg-white/80">
-                                <h3 class="font-bold text-primary mb-3">Pembayaran</h3>
-                                <div class="space-y-2">
-                                    <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-blue-50">
-                                        <input type="radio" name="status" value="cod" checked> <span>COD (Tunai)</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-blue-50">
-                                        <input type="radio" name="status" value="transfer"> <span>Transfer</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-blue-50">
-                                        <input type="radio" name="status" value="qris"> <span>QRIS</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 p-2 border rounded-lg cursor-pointer hover:bg-blue-50">
-                                        <input type="radio" name="status" value="belum bayar"> <span>Belum Bayar</span>
-                                    </label>
-                                </div>
-                                
-                                <div class="mt-4 pt-4 border-t">
-                                    <div class="flex justify-between mb-1"><span>Gross</span><span>Rp 10.000</span></div>
-                                    <div class="flex justify-between mb-1"><span>Diskon</span><span>Rp 0</span></div>
-                                    <div class="flex justify-between font-bold text-lg text-primary mt-2"><span>Total</span><span>Rp 10.000</span></div>
-                                </div>
-
-                                <button onclick="alert('Fitur simpan akan terhubung ke GAS')" class="btn-primary w-full mt-4 py-3 rounded-xl font-bold shadow-lg">
-                                    Simpan & Cetak
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } 
-            // Contoh Halaman Setting
-            else if (pageId === 'setting') {
-                html = `
-                    <div class="max-w-2xl mx-auto space-y-4">
-                        <div>
-                            <label class="block text-sm font-bold mb-1">Google Sheets ID</label>
-                            <input type="text" id="cfg-sheets-id" value="${appState.config.sheetsId}" class="input-field w-full p-2 rounded-lg font-mono text-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold mb-1">Google Apps Script URL</label>
-                            <textarea id="cfg-gas-url" class="input-field w-full p-2 rounded-lg font-mono text-xs h-20">${appState.config.gasUrl}</textarea>
-                        </div>
-                        <button onclick="saveConfig()" class="btn-primary px-6 py-2 rounded-lg">Simpan Konfigurasi</button>
-                        <div class="pt-4 border-t">
-                            <h4 class="font-bold text-red-500 mb-2">Zone Bahaya</h4>
-                            <button class="border border-red-500 text-red-500 px-4 py-2 rounded-lg hover:bg-red-50">Reset Semua Data</button>
-                        </div>
-                    </div>
-                `;
-            }
-            // Placeholder untuk halaman lain
-            else {
-                html = `
-                    <div class="text-center py-10">
-                        <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <i data-lucide="construction" class="w-10 h-10 text-primary"></i>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-700">Halaman ${titles[pageId]}</h3>
-                        <p class="text-gray-500 mt-2">Silakan lakukan Sinkronisasi Data terlebih dahulu untuk memuat konten lengkap.</p>
-                        <button onclick="syncData()" class="mt-4 btn-primary px-6 py-2 rounded-lg inline-flex items-center gap-2">
-                            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sinkronisasi Sekarang
-                        </button>
-                    </div>
-                `;
-            }
-            
-            container.innerHTML = html;
-        }
-
-        function renderCurrentPage() {
-            // Helper untuk re-render jika data berubah saat di halaman tertentu
-            const pageContent = document.getElementById('page-content');
-            if (!pageContent.classList.contains('hidden-page')) {
-                const title = document.getElementById('page-title').textContent;
-                // Simple mapping back to ID or just refresh logic could be added here
-                // For now, user needs to navigate back or we implement state tracking of current page ID
-            }
+        function forceSync() {
+            Swal.fire({
+                title: 'Sinkronisasi?',
+                text: "Mengambil data terbaru dari Google Sheets",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Sync',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    performSync();
+                }
+            });
         }
 
         function loadDashboardData() {
             const today = new Date().toISOString().split('T')[0];
-            // Mock calculation if data is empty
-            const totals = { cod: 0, transfer: 0, qris: 0, pending: 0 };
+            // Pastikan data.sales ada dan array
+            const salesToday = (appState.data.sales || []).filter(s => String(s.tanggal).startsWith(today));
             
-            if(appState.data.sales) {
-                appState.data.sales.forEach(s => {
-                    if(s.tanggal && s.tanggal.startsWith(today)) {
-                        const net = parseFloat(s.nett) || 0;
-                        if(totals[s.status] !== undefined) totals[s.status] += net;
-                    }
-                });
-            }
+            let totals = { cod: 0, transfer: 0, qris: 0, pending: 0 };
+            
+            salesToday.forEach(s => {
+                const net = parseFloat(s.nett) || 0;
+                const status = String(s.status).toLowerCase();
+                if (status.includes('cod')) totals.cod += net;
+                else if (status.includes('transfer')) totals.transfer += net;
+                else if (status.includes('qris')) totals.qris += net;
+                else totals.pending += net;
+            });
 
             animateValue("sales-cod", totals.cod);
             animateValue("sales-transfer", totals.transfer);
@@ -536,7 +391,7 @@
             animateValue("sales-pending", totals.pending);
         }
 
-        function animateValue(id, endValue) {
+        function animateValue(id, end) {
             const obj = document.getElementById(id);
             const start = 0;
             const duration = 1000;
@@ -544,27 +399,62 @@
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const val = Math.floor(progress * (endValue - start) + start);
+                const val = Math.floor(progress * (end - start) + start);
                 obj.textContent = "Rp " + val.toLocaleString('id-ID');
                 if (progress < 1) window.requestAnimationFrame(step);
             };
             window.requestAnimationFrame(step);
         }
 
-        function saveConfig() {
-            const sheetsId = document.getElementById('cfg-sheets-id').value;
-            const gasUrl = document.getElementById('cfg-gas-url').value;
-            appState.config = { sheetsId, gasUrl };
-            localStorage.setItem('tirtaConfig', JSON.stringify(appState.config));
-            alert('Konfigurasi disimpan! Silakan refresh halaman.');
-            location.reload();
+        // --- NAVIGATION ---
+        function navigateTo(page) {
+            const dash = document.getElementById('dashboard-content');
+            const content = document.getElementById('page-content');
+            const title = document.getElementById('page-title');
+            const body = document.getElementById('page-body');
+
+            if (page === 'dashboard') {
+                content.classList.add('hidden');
+                dash.classList.remove('hidden');
+                loadDashboardData();
+                return;
+            }
+
+            dash.classList.add('hidden');
+            content.classList.remove('hidden');
+            
+            const titles = {
+                'penjualan': 'Input Penjualan', 'transaksi': 'Riwayat Transaksi',
+                'pembelian': 'Input Pembelian', 'produk': 'Manajemen Produk',
+                'stock': 'Stok Barang', 'pelanggan': 'Data Pelanggan',
+                'piutang': 'Piutang', 'rekap-penjualan': 'Rekap Penjualan',
+                'setoran': 'Setoran Kas', 'rekap-pembelian': 'Rekap Pembelian',
+                'laporan-bulanan': 'Laporan Bulanan', 'setting': 'Pengaturan'
+            };
+
+            title.textContent = titles[page] || page;
+            
+            // Render Placeholder Konten (Nanti diisi logic spesifik per halaman)
+            body.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-64 text-center space-y-4">
+                    <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                        <i data-lucide="construction" class="w-10 h-10 text-primary"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-700">Halaman ${titles[page]}</h3>
+                    <p class="text-gray-500 max-w-sm">Fitur ini sedang dalam pengembangan. Data tersedia: ${Object.keys(appState.data).length} kategori.</p>
+                    <div class="grid grid-cols-2 gap-2 w-full max-w-md mt-4">
+                        <button onclick="alert('Fitur tambah data belum tersedia di demo ini')" class="btn-primary py-2 rounded-lg text-sm">Tambah Data</button>
+                        <button onclick="alert('Tabel data akan muncul di sini')" class="bg-white border border-gray-300 py-2 rounded-lg text-sm text-gray-700">Lihat Tabel</button>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
         }
 
-        // Expose globals
+        // Expose global functions
         window.navigateTo = navigateTo;
+        window.forceSync = forceSync;
         window.handleLogout = handleLogout;
-        window.syncData = syncData;
-        window.saveConfig = saveConfig;
     </script>
 </body>
 </html>

@@ -3,32 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tirta Kencana POS</title>
+    <title>Tirta Kencana POS - Full Version</title>
     
-    <!-- Tailwind CSS -->
+    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- SheetJS for Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- Html2Canvas for Struck Image -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#00509E',
-                        secondary: '#00A8E8',
-                        accent: '#00D1FF',
-                        background: '#F0F4F8',
+                        primary: '#00509E', secondary: '#00A8E8', accent: '#00D1FF', background: '#F0F4F8'
                     },
-                    borderRadius: { 'xl': '1rem', '2xl': '1.5rem', '3xl': '2rem' },
-                    animation: { 'float': 'float 6s ease-in-out infinite', 'fade-in': 'fadeIn 0.5s ease-out forwards' },
+                    animation: { 'float': 'float 6s ease-in-out infinite', 'fade-in': 'fadeIn 0.5s ease-out' },
                     keyframes: {
                         float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
                         fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
@@ -41,172 +32,114 @@
     <style>
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #F0F4F8 0%, #e0eafc 100%); min-height: 100vh; }
         .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); }
-        .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); transition: all 0.3s ease; }
-        .glass-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0, 80, 158, 0.15); }
-        .btn-primary { background: linear-gradient(135deg, #00509E 0%, #00A8E8 100%); color: white; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0, 80, 158, 0.3); }
+        .glass-card { background: rgba(255, 255, 255, 0.8); transition: all 0.3s ease; border: 1px solid rgba(255, 255, 255, 0.4); }
+        .glass-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0, 80, 158, 0.15); }
+        .btn-primary { background: linear-gradient(135deg, #00509E 0%, #00A8E8 100%); color: white; box-shadow: 0 4px 15px rgba(0, 80, 158, 0.3); transition: transform 0.2s; }
         .btn-primary:active { transform: scale(0.96); }
         .input-field { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 80, 158, 0.2); transition: all 0.3s; }
         .input-field:focus { outline: none; border-color: #00A8E8; box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.2); }
         .hidden-page { display: none; }
-        .loading-spinner { border: 3px solid rgba(0,0,0,0.1); border-left-color: #00509E; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 60; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
         
-        /* Struk Styles */
-        #struk-preview { font-family: 'Courier New', monospace; background: white; padding: 20px; width: 300px; margin: 0 auto; border: 1px dashed #ccc; }
+        /* Struk Style */
+        #receipt-preview { font-family: 'Courier New', monospace; width: 300px; background: white; padding: 20px; margin: 0 auto; }
     </style>
 </head>
-<body class="text-gray-800">
+<body class="text-gray-800 overflow-x-hidden">
 
-    <div id="app-container" class="max-w-7xl mx-auto p-4">
-        <!-- Splash Screen -->
-        <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary">
-            <div class="text-center animate-fade-in">
-                <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-32 h-32 mx-auto mb-6 rounded-2xl shadow-2xl border-4 border-white/30">
-                <h1 class="text-3xl font-bold text-white mb-2">TIRTA KENCANA</h1>
-                <p class="text-white/90 text-sm italic">DO GOOD AND GOD WILL COME TO YOU</p>
-            </div>
-        </div>
+    <!-- Loading Overlay -->
+    <div id="loading" class="hidden-page loading-overlay flex-col gap-3">
+        <div class="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        <p class="font-semibold text-primary animate-pulse">Memproses Data...</p>
+    </div>
 
-        <!-- Login Page -->
-        <div id="login-page" class="hidden min-h-screen flex items-center justify-center p-4">
-            <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-                <div class="absolute -top-20 -right-20 w-40 h-40 bg-secondary/20 rounded-full animate-float"></div>
-                <div class="relative z-10">
-                    <div class="text-center mb-8">
-                        <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-24 h-24 mx-auto mb-4 rounded-xl shadow-lg">
-                        <h2 class="text-2xl font-bold text-primary mb-1">Selamat Datang</h2>
-                        <p class="text-gray-500 text-sm">Silakan masuk untuk melanjutkan</p>
-                    </div>
-                    <form id="login-form" class="space-y-5">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                            <input type="text" id="username" class="input-field w-full px-4 py-3 rounded-xl" placeholder="Username" required>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <input type="password" id="password" class="input-field w-full px-4 py-3 rounded-xl" placeholder="Password" required>
-                        </div>
-                        <div id="login-error" class="text-red-500 text-sm text-center hidden"></div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2">
-                            <span>Masuk</span>
-                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                        </button>
-                    </form>
+    <!-- Splash Screen -->
+    <div id="splash" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary">
+        <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-32 h-32 rounded-2xl shadow-2xl border-4 border-white/30 mb-4 animate-fade-in">
+        <h1 class="text-3xl font-bold text-white tracking-wider">TIRTA KENCANA</h1>
+        <p class="text-white/90 text-xs mt-2 italic">DO GOOD AND GOD WILL COME TO YOU</p>
+    </div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="hidden-page min-h-screen flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+            <div class="absolute -top-20 -right-20 w-40 h-40 bg-secondary/20 rounded-full animate-float"></div>
+            <div class="relative z-10">
+                <div class="text-center mb-6">
+                    <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-20 h-20 mx-auto rounded-xl shadow-md mb-3">
+                    <h2 class="text-2xl font-bold text-primary">Masuk Aplikasi</h2>
                 </div>
-            </div>
-        </div>
-
-        <!-- Main App -->
-        <div id="main-app" class="hidden page-transition">
-            <!-- Header -->
-            <header class="glass-panel rounded-2xl p-4 mb-6 flex items-center justify-between sticky top-0 z-40">
-                <div class="flex items-center gap-3">
-                    <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-10 h-10 rounded-lg shadow-md">
+                <form id="login-form" class="space-y-4">
                     <div>
-                        <h1 class="font-bold text-primary text-lg leading-tight">TIRTA KENCANA</h1>
-                        <p id="user-role-display" class="text-xs text-secondary font-medium capitalize"></p>
+                        <label class="text-sm font-medium text-gray-600">Username</label>
+                        <input type="text" id="username" class="input-field w-full p-3 rounded-xl" placeholder="admin / sales / driver" required>
                     </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="syncData()" class="p-2 rounded-xl hover:bg-white/50 transition-colors" title="Sinkronisasi">
-                        <i data-lucide="refresh-cw" class="w-5 h-5 text-primary"></i>
-                    </button>
-                    <button onclick="handleLogout()" class="p-2 rounded-xl hover:bg-red-100 transition-colors text-red-500" title="Keluar">
-                        <i data-lucide="log-out" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </header>
-
-            <!-- Dashboard Content -->
-            <main id="dashboard-content" class="space-y-6">
-                <!-- Summary Cards -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="glass-card p-4 rounded-2xl">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="p-2 bg-green-100 rounded-lg"><i data-lucide="banknote" class="w-5 h-5 text-green-600"></i></div>
-                            <span class="text-xs text-gray-500 font-medium">COD Hari Ini</span>
-                        </div>
-                        <p id="dash-cod" class="text-xl font-bold text-gray-800">Rp 0</p>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Password</label>
+                        <input type="password" id="password" class="input-field w-full p-3 rounded-xl" placeholder="••••••" required>
                     </div>
-                    <div class="glass-card p-4 rounded-2xl">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="p-2 bg-blue-100 rounded-lg"><i data-lucide="credit-card" class="w-5 h-5 text-blue-600"></i></div>
-                            <span class="text-xs text-gray-500 font-medium">Transfer</span>
-                        </div>
-                        <p id="dash-transfer" class="text-xl font-bold text-gray-800">Rp 0</p>
-                    </div>
-                    <div class="glass-card p-4 rounded-2xl">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="p-2 bg-purple-100 rounded-lg"><i data-lucide="qr-code" class="w-5 h-5 text-purple-600"></i></div>
-                            <span class="text-xs text-gray-500 font-medium">QRIS</span>
-                        </div>
-                        <p id="dash-qris" class="text-xl font-bold text-gray-800">Rp 0</p>
-                    </div>
-                    <div class="glass-card p-4 rounded-2xl">
-                        <div class="flex items-center gap-2 mb-2">
-                            <div class="p-2 bg-orange-100 rounded-lg"><i data-lucide="clock" class="w-5 h-5 text-orange-600"></i></div>
-                            <span class="text-xs text-gray-500 font-medium">Belum Bayar</span>
-                        </div>
-                        <p id="dash-pending" class="text-xl font-bold text-gray-800">Rp 0</p>
-                    </div>
-                </div>
-
-                <!-- Quick Actions Grid -->
-                <div class="glass-panel p-4 rounded-2xl">
-                    <h3 class="font-bold text-primary mb-3 flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5"></i> Aksi Cepat</h3>
-                    <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
-                        <button onclick="nav('penjualan')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md"><i data-lucide="shopping-cart" class="w-6 h-6"></i></div><span class="text-xs font-medium">Jual</span></button>
-                        <button onclick="nav('transaksi')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-md"><i data-lucide="receipt" class="w-6 h-6"></i></div><span class="text-xs font-medium">Transaksi</span></button>
-                        <button onclick="nav('pembelian')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white shadow-md"><i data-lucide="truck" class="w-6 h-6"></i></div><span class="text-xs font-medium">Beli</span></button>
-                        <button onclick="nav('produk')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white shadow-md"><i data-lucide="package" class="w-6 h-6"></i></div><span class="text-xs font-medium">Produk</span></button>
-                        <button onclick="nav('stock')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shadow-md"><i data-lucide="boxes" class="w-6 h-6"></i></div><span class="text-xs font-medium">Stok</span></button>
-                        <button onclick="nav('pelanggan')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white shadow-md"><i data-lucide="users" class="w-6 h-6"></i></div><span class="text-xs font-medium">Pelanggan</span></button>
-                        <button onclick="nav('piutang')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white shadow-md"><i data-lucide="hand-coins" class="w-6 h-6"></i></div><span class="text-xs font-medium">Piutang</span></button>
-                        <button onclick="nav('setting')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white shadow-md"><i data-lucide="settings" class="w-6 h-6"></i></div><span class="text-xs font-medium">Setting</span></button>
-                    </div>
-                </div>
-                
-                <!-- Main Menu Grid (Laporan, Setoran, dll) -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div onclick="nav('rekap-penjualan')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3"><i data-lucide="bar-chart-3" class="w-6 h-6 text-primary"></i></div><h3 class="font-semibold">Rekap Penjualan</h3></div>
-                    <div onclick="nav('setoran')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-3"><i data-lucide="wallet" class="w-6 h-6 text-secondary"></i></div><h3 class="font-semibold">Setoran</h3></div>
-                    <div onclick="nav('rekap-pembelian')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-3"><i data-lucide="file-text" class="w-6 h-6 text-green-600"></i></div><h3 class="font-semibold">Rekap Pembelian</h3></div>
-                    <div onclick="nav('laporan-bulanan')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-3"><i data-lucide="calendar" class="w-6 h-6 text-purple-600"></i></div><h3 class="font-semibold">Laporan Bulanan</h3></div>
-                </div>
-            </main>
-
-            <!-- Dynamic Page Container -->
-            <div id="page-container" class="hidden space-y-6">
-                <div class="glass-panel p-4 md:p-6 rounded-2xl min-h-[80vh]">
-                    <div class="flex items-center justify-between mb-6 border-b pb-4 border-gray-200">
-                        <div class="flex items-center gap-3">
-                            <button onclick="nav('dashboard')" class="p-2 hover:bg-white/50 rounded-lg transition-colors"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
-                            <h2 id="page-title" class="text-xl md:text-2xl font-bold text-primary"></h2>
-                        </div>
-                        <div id="page-actions"></div>
-                    </div>
-                    
-                    <div id="page-body" class="space-y-6">
-                        <!-- Content injected via JS -->
-                    </div>
-                </div>
+                    <button type="submit" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg">MASUK</button>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Modal Preview Struk/Setoran -->
-    <div id="preview-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
-            <h3 class="text-lg font-bold text-center mb-4 text-gray-800">Preview Dokumen</h3>
-            <div id="struk-content"></div>
-            <div class="mt-6 grid grid-cols-2 gap-3">
-                <button onclick="downloadStrukPNG()" class="btn-primary py-2 rounded-xl text-sm flex items-center justify-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Download PNG</button>
-                <button onclick="sendViaWA()" class="bg-green-500 text-white py-2 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-green-600"><i data-lucide="message-circle" class="w-4 h-4"></i> Kirim WA</button>
+    <!-- Main App -->
+    <div id="main-app" class="hidden-page pb-24">
+        <!-- Header -->
+        <header class="glass-panel sticky top-0 z-40 px-4 py-3 flex justify-between items-center mb-4 rounded-b-2xl">
+            <div class="flex items-center gap-2">
+                <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-8 h-8 rounded-lg">
+                <div>
+                    <h1 class="font-bold text-primary text-sm leading-tight">TIRTA KENCANA</h1>
+                    <p id="user-display" class="text-[10px] text-secondary font-bold uppercase"></p>
+                </div>
             </div>
+            <div class="flex gap-2">
+                <button onclick="app.syncData()" class="p-2 bg-white/50 rounded-full hover:bg-white text-primary"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
+                <button onclick="app.logout()" class="p-2 bg-red-50 rounded-full hover:bg-red-100 text-red-500"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+            </div>
+        </header>
+
+        <!-- Dashboard View -->
+        <div id="view-dashboard" class="page-view space-y-6 px-4">
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="glass-card p-3 rounded-2xl bg-green-50/50">
+                    <p class="text-xs text-gray-500">Penjualan Hari Ini</p>
+                    <p id="dash-total-sales" class="text-lg font-bold text-gray-800">Rp 0</p>
+                </div>
+                <div class="glass-card p-3 rounded-2xl bg-orange-50/50">
+                    <p class="text-xs text-gray-500">Belum Bayar</p>
+                    <p id="dash-pending" class="text-lg font-bold text-orange-600">Rp 0</p>
+                </div>
+            </div>
+
+            <!-- Quick Actions Grid -->
+            <div class="grid grid-cols-4 gap-3" id="menu-grid">
+                <!-- Generated by JS based on Role -->
+            </div>
+
+            <!-- Recent Activity Placeholder -->
+            <div class="glass-panel p-4 rounded-2xl">
+                <h3 class="font-bold text-primary mb-2">Aktivitas Terakhir</h3>
+                <div id="recent-activity" class="space-y-2 text-sm text-gray-600">
+                    <p class="text-center italic">Memuat data...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Page Container -->
+        <div id="view-page" class="page-view hidden-page px-4 space-y-4">
+            <div class="flex items-center gap-3 mb-2">
+                <button onclick="app.nav('dashboard')" class="p-2 bg-white rounded-full shadow-sm"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                <h2 id="page-title" class="text-xl font-bold text-primary"></h2>
+            </div>
+            <div id="page-content" class="glass-panel p-4 rounded-2xl min-h-[60vh]"></div>
         </div>
     </div>
 
+    <!-- JAVASCRIPT LOGIC -->
     <script>
         // --- KONFIGURASI & STATE ---
         const CONFIG = {
@@ -214,464 +147,395 @@
             gasUrl: 'https://script.google.com/macros/s/AKfycbzWwDCMaFj_Gj_Wfs9ypU0xrwnUMi-AElRCFYC0yxuKMrXm2avvtQ12HfBAh6duzQPaew/exec'
         };
 
-        let state = {
-            user: null,
-            data: { sales: [], products: [], customers: [], purchases: [], stock: [], settings: {}, users: [] },
-            currentCart: [],
-            tempImage: null
-        };
-
-        const USERS_DB = [
-            { nama: 'admin', role: 'admin', password: '020730' },
-            { nama: 'hasan', role: 'sales', password: '1234' },
-            { nama: 'ujang', role: 'sales', password: '1234' },
-            { nama: 'oji', role: 'driver', password: '1234' },
-            { nama: 'padong', role: 'driver', password: '1234' },
-            { nama: 'tirta', role: 'admin', password: '888999' }
+        const USERS = [
+            { nama: 'admin', role: 'admin', pass: '020730' }, { nama: 'tirta', role: 'admin', pass: '888999' },
+            { nama: 'hasan', role: 'sales', pass: '1234' }, { nama: 'ujang', role: 'sales', pass: '1234' },
+            { nama: 'oji', role: 'driver', pass: '1234' }, { nama: 'padong', role: 'driver', pass: '1234' }
         ];
 
-        // --- INIT ---
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            setTimeout(() => {
-                document.getElementById('splash-screen').classList.add('hidden');
-                document.getElementById('login-page').classList.remove('hidden');
-            }, 2000);
+        const MENUS = {
+            admin: ['penjualan', 'transaksi', 'rekap-penjualan', 'pembelian', 'rekap-pembelian', 'produk', 'stock', 'pelanggan', 'piutang', 'setoran', 'rekap-setoran', 'laporan', 'setting'],
+            sales: ['penjualan', 'transaksi', 'rekap-penjualan', 'setoran', 'rekap-setoran', 'pelanggan', 'setting'],
+            driver: ['pembelian', 'rekap-pembelian', 'produk', 'stock', 'setting']
+        };
 
-            document.getElementById('login-form').addEventListener('submit', handleLogin);
-        });
+        let state = {
+            user: null,
+            data: { products: [], customers: [], sales: [], purchases: [], stock: [], debt: [], settings: {} },
+            cart: []
+        };
 
-        // --- AUTH ---
-        function handleLogin(e) {
-            e.preventDefault();
-            const u = document.getElementById('username').value;
-            const p = document.getElementById('password').value;
-            const user = USERS_DB.find(x => x.nama === u && x.password === p);
-            
-            if (user) {
-                state.user = user;
-                document.getElementById('login-page').classList.add('hidden');
-                document.getElementById('main-app').classList.remove('hidden');
-                document.getElementById('user-role-display').textContent = `${user.nama} (${user.role})`;
-                syncData(); // Load data after login
-            } else {
-                const err = document.getElementById('login-error');
-                err.textContent = "Username atau password salah!";
-                err.classList.remove('hidden');
-            }
-        }
+        // --- CORE APP LOGIC ---
+        const app = {
+            init: () => {
+                setTimeout(() => {
+                    document.getElementById('splash').classList.add('hidden');
+                    document.getElementById('login-page').classList.remove('hidden-page');
+                    lucide.createIcons();
+                }, 2000);
 
-        function handleLogout() {
-            if(confirm("Keluar aplikasi?")) {
-                location.reload();
-            }
-        }
+                document.getElementById('login-form').addEventListener('submit', app.handleLogin);
+            },
 
-        // --- DATA SYNC ---
-        async function syncData() {
-            const btn = document.querySelector('button[onclick="syncData()"] i');
-            if(btn) btn.classList.add('animate-spin');
-            
-            try {
-                const res = await fetch(`${CONFIG.gasUrl}?action=getAllData`);
-                const json = await res.json();
-                if(json.status === 'success') {
-                    state.data = json.data;
-                    updateDashboard();
-                    alert("Data berhasil disinkronisasi!");
-                }
-            } catch (err) {
-                console.error(err);
-                alert("Gagal sinkronisasi. Periksa koneksi atau deploy GAS.");
-            } finally {
-                if(btn) btn.classList.remove('animate-spin');
-            }
-        }
+            handleLogin: (e) => {
+                e.preventDefault();
+                const u = document.getElementById('username').value;
+                const p = document.getElementById('password').value;
+                const user = USERS.find(x => x.nama === u && x.pass === p);
 
-        function updateDashboard() {
-            const today = new Date().toISOString().split('T')[0];
-            const salesToday = state.data.sales?.filter(s => s.tanggal.startsWith(today)) || [];
-            
-            const totals = { cod: 0, transfer: 0, qris: 0, pending: 0 };
-            salesToday.forEach(s => {
-                const net = parseFloat(s.nett) || 0;
-                if(s.status === 'cod') totals.cod += net;
-                else if(s.status === 'transfer') totals.transfer += net;
-                else if(s.status === 'qris') totals.qris += net;
-                else totals.pending += net;
-            });
-
-            document.getElementById('dash-cod').textContent = 'Rp ' + totals.cod.toLocaleString('id-ID');
-            document.getElementById('dash-transfer').textContent = 'Rp ' + totals.transfer.toLocaleString('id-ID');
-            document.getElementById('dash-qris').textContent = 'Rp ' + totals.qris.toLocaleString('id-ID');
-            document.getElementById('dash-pending').textContent = 'Rp ' + totals.pending.toLocaleString('id-ID');
-        }
-
-        // --- NAVIGATION & PAGE RENDERING ---
-        function nav(page) {
-            document.getElementById('dashboard-content').classList.add('hidden');
-            document.getElementById('page-container').classList.remove('hidden');
-            const body = document.getElementById('page-body');
-            const title = document.getElementById('page-title');
-            const actions = document.getElementById('page-actions');
-            
-            body.innerHTML = ''; // Clear content
-            actions.innerHTML = '';
-
-            // Check Role Access
-            const role = state.user.role;
-            const allowedPages = {
-                'admin': ['dashboard', 'penjualan', 'transaksi', 'pembelian', 'produk', 'stock', 'pelanggan', 'piutang', 'rekap-penjualan', 'setoran', 'rekap-pembelian', 'laporan-bulanan', 'setting'],
-                'sales': ['dashboard', 'penjualan', 'transaksi', 'rekap-penjualan', 'setoran', 'setting'],
-                'driver': ['dashboard', 'pembelian', 'rekap-pembelian', 'setting']
-            };
-
-            if (!allowedPages[role].includes(page)) {
-                body.innerHTML = `<div class="text-center text-red-500 p-10"><h3 class="text-xl font-bold">Akses Ditolak</h3><p>Role ${role} tidak memiliki akses ke menu ini.</p><button onclick="nav('dashboard')" class="mt-4 btn-primary px-4 py-2 rounded-lg">Kembali</button></div>`;
-                return;
-            }
-
-            switch(page) {
-                case 'penjualan': renderPenjualan(body, title); break;
-                case 'pembelian': renderPembelian(body, title); break;
-                case 'produk': renderProduk(body, title, actions); break;
-                case 'transaksi': renderTransaksi(body, title); break;
-                case 'setting': renderSetting(body, title); break;
-                case 'dashboard': 
-                    document.getElementById('page-container').classList.add('hidden');
-                    document.getElementById('dashboard-content').classList.remove('hidden');
-                    updateDashboard();
-                    return;
-                default:
-                    title.textContent = page.replace('-', ' ').toUpperCase();
-                    body.innerHTML = `<div class="text-center text-gray-500 py-20">Fitur ${page} sedang dalam pengembangan lanjutan.</div>`;
-            }
-            lucide.createIcons();
-        }
-
-        // --- RENDER FUNCTIONS (EXAMPLES FOR KEY PAGES) ---
-
-        function renderPenjualan(container, titleEl) {
-            titleEl.textContent = "Input Penjualan";
-            container.innerHTML = `
-                <div class="grid md:grid-cols-3 gap-6">
-                    <!-- Form Input -->
-                    <div class="md:col-span-2 space-y-4">
-                        <div class="glass-card p-4 rounded-xl">
-                            <label class="text-xs font-bold text-gray-500 uppercase">Scan Barcode / Input SKU</label>
-                            <div class="flex gap-2 mt-1">
-                                <input type="text" id="scan-input" class="input-field w-full px-4 py-2 rounded-lg" placeholder="Scan atau ketik SKU..." onkeypress="if(event.key==='Enter') addItemFromScan()">
-                                <button onclick="addItemFromScan()" class="btn-primary px-4 py-2 rounded-lg"><i data-lucide="plus" class="w-5 h-5"></i></button>
-                            </div>
-                        </div>
-
-                        <div class="glass-card p-4 rounded-xl overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead><tr class="border-b text-left"><th class="pb-2">Item</th><th class="pb-2 text-center">Qty</th><th class="pb-2 text-right">Harga</th><th class="pb-2 text-right">Subtotal</th><th class="pb-2"></th></tr></thead>
-                                <tbody id="cart-items"></tbody>
-                            </table>
-                            <div id="empty-cart-msg" class="text-center text-gray-400 py-4">Belum ada item</div>
-                        </div>
-                    </div>
-
-                    <!-- Checkout Panel -->
-                    <div class="space-y-4">
-                        <div class="glass-card p-4 rounded-xl space-y-3">
-                            <div>
-                                <label class="text-xs text-gray-500">Pelanggan</label>
-                                <select id="cust-select" class="input-field w-full px-3 py-2 rounded-lg mt-1 text-sm"></select>
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-500">Sales</label>
-                                <select id="sales-select" class="input-field w-full px-3 py-2 rounded-lg mt-1 text-sm"></select>
-                            </div>
-                            <div>
-                                <label class="text-xs text-gray-500">Status Bayar</label>
-                                <select id="pay-status" class="input-field w-full px-3 py-2 rounded-lg mt-1 text-sm">
-                                    <option value="cod">COD (Tunai)</option>
-                                    <option value="transfer">Transfer</option>
-                                    <option value="qris">QRIS</option>
-                                    <option value="belum bayar">Belum Bayar</option>
-                                </select>
-                            </div>
-                            
-                            <div class="border-t pt-3 space-y-2">
-                                <div class="flex justify-between text-sm"><span>Gross</span><span id="calc-gross">Rp 0</span></div>
-                                <div class="flex justify-between text-sm"><span>Diskon</span><input type="number" id="input-disc" value="0" class="w-20 text-right px-2 py-1 rounded border" onchange="calcTotal()"></div>
-                                <div class="flex justify-between text-sm"><span>Ongkir/Tips</span><input type="number" id="input-extra" value="0" class="w-20 text-right px-2 py-1 rounded border" onchange="calcTotal()"></div>
-                                <div class="flex justify-between text-lg font-bold text-primary pt-2"><span>Total</span><span id="calc-total">Rp 0</span></div>
-                            </div>
-
-                            <div class="pt-2">
-                                <label class="text-xs text-gray-500 block mb-1">Foto Bukti (Opsional)</label>
-                                <input type="file" id="foto-input" accept="image/*" class="w-full text-xs" onchange="handleFileSelect(this)">
-                            </div>
-
-                            <button onclick="saveSale()" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg mt-4">SIMPAN & CETAK</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            // Populate Dropdowns
-            const custSelect = document.getElementById('cust-select');
-            const salesSelect = document.getElementById('sales-select');
-            
-            // Default General Customer
-            let opts = '<option value="Umum">Pelanggan Umum</option>';
-            (state.data.customers || []).forEach(c => opts += `<option value="${c.nama}">${c.nama}</option>`);
-            custSelect.innerHTML = opts;
-
-            // Sales from Users or specific Sales list
-            let sOpts = `<option value="${state.user.nama}">${state.user.nama} (Saya)</option>`;
-            // Add other sales if admin
-            if(state.user.role === 'admin') {
-                 USERS_DB.filter(u => u.role === 'sales').forEach(u => sOpts += `<option value="${u.nama}">${u.nama}</option>`);
-            }
-            salesSelect.innerHTML = sOpts;
-
-            state.currentCart = [];
-            renderCart();
-            lucide.createIcons();
-        }
-
-        function addItemFromScan() {
-            const input = document.getElementById('scan-input');
-            const sku = input.value.trim();
-            if(!sku) return;
-
-            const product = state.data.products?.find(p => p.sku == sku || p.barcode == sku);
-            if(product) {
-                const existing = state.currentCart.find(i => i.sku == sku);
-                if(existing) {
-                    existing.qty++;
+                if (user) {
+                    state.user = user;
+                    document.getElementById('login-page').classList.add('hidden-page');
+                    document.getElementById('main-app').classList.remove('hidden-page');
+                    document.getElementById('user-display').innerText = `${user.nama} (${user.role})`;
+                    app.renderMenu();
+                    app.syncData(); // Auto sync on login
                 } else {
-                    state.currentCart.push({ ...product, qty: 1, disc_item: 0 });
+                    Swal.fire('Error', 'Username atau Password salah!', 'error');
                 }
-                input.value = '';
-                renderCart();
-            } else {
-                alert('Produk tidak ditemukan!');
-            }
-        }
+            },
 
-        function renderCart() {
-            const tbody = document.getElementById('cart-items');
-            const emptyMsg = document.getElementById('empty-cart-msg');
-            
-            if(state.currentCart.length === 0) {
-                tbody.innerHTML = '';
-                emptyMsg.style.display = 'block';
-                calcTotal();
-                return;
-            }
-            
-            emptyMsg.style.display = 'none';
-            tbody.innerHTML = state.currentCart.map((item, idx) => `
-                <tr class="border-b last:border-0">
-                    <td class="py-2">
-                        <div class="font-medium">${item.nama_barang}</div>
-                        <div class="text-xs text-gray-500">${item.sku}</div>
-                    </td>
-                    <td class="text-center">
-                        <input type="number" value="${item.qty}" min="1" class="w-16 text-center border rounded" onchange="updateQty(${idx}, this.value)">
-                    </td>
-                    <td class="text-right">${parseInt(item.harga_jual).toLocaleString()}</td>
-                    <td class="text-right font-medium">${(item.qty * item.harga_jual).toLocaleString()}</td>
-                    <td class="text-right">
-                        <button onclick="removeItem(${idx})" class="text-red-500 hover:bg-red-100 p-1 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                    </td>
-                </tr>
-            `).join('');
-            lucide.createIcons();
-            calcTotal();
-        }
+            logout: () => {
+                if(confirm('Keluar aplikasi?')) location.reload();
+            },
 
-        function updateQty(idx, val) {
-            state.currentCart[idx].qty = parseInt(val);
-            renderCart();
-        }
-
-        function removeItem(idx) {
-            state.currentCart.splice(idx, 1);
-            renderCart();
-        }
-
-        function calcTotal() {
-            const gross = state.currentCart.reduce((sum, item) => sum + (item.qty * item.harga_jual), 0);
-            const disc = parseFloat(document.getElementById('input-disc')?.value) || 0;
-            const extra = parseFloat(document.getElementById('input-extra')?.value) || 0;
-            const total = gross - disc + extra;
-
-            document.getElementById('calc-gross').textContent = 'Rp ' + gross.toLocaleString();
-            document.getElementById('calc-total').textContent = 'Rp ' + total.toLocaleString();
-            return { gross, disc, extra, total };
-        }
-
-        function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    state.tempImage = e.target.result; // Base64
+            renderMenu: () => {
+                const grid = document.getElementById('menu-grid');
+                grid.innerHTML = '';
+                const allowed = MENUS[state.user.role] || [];
+                
+                const icons = {
+                    'penjualan': 'shopping-cart', 'transaksi': 'receipt', 'rekap-penjualan': 'bar-chart',
+                    'pembelian': 'truck', 'rekap-pembelian': 'file-text', 'produk': 'package',
+                    'stock': 'boxes', 'pelanggan': 'users', 'piutang': 'hand-coins',
+                    'setoran': 'wallet', 'rekap-setoran': 'clipboard-list', 'laporan': 'pie-chart', 'setting': 'settings'
                 };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
 
-        async function saveSale() {
-            if(state.currentCart.length === 0) return alert('Keranjang kosong!');
-            
-            const totals = calcTotal();
-            const saleData = {
-                action: 'saveSale',
-                id_transaksi: 'TRX-' + Date.now(),
-                tanggal: new Date().toISOString(),
-                pelanggan: document.getElementById('cust-select').value,
-                sales: document.getElementById('sales-select').value,
-                status: document.getElementById('pay-status').value,
-                items: state.currentCart,
-                gross: totals.gross,
-                disc: totals.disc,
-                biaya_tambahan: totals.extra,
-                nett: totals.total,
-                foto_url: state.tempImage ? 'base64_image_data' : '' // In real app, upload to Drive first
-            };
+                const labels = {
+                    'penjualan': 'Jual', 'transaksi': 'Transaksi', 'rekap-penjualan': 'Laporan Jual',
+                    'pembelian': 'Beli', 'rekap-pembelian': 'Laporan Beli', 'produk': 'Produk',
+                    'stock': 'Stok', 'pelanggan': 'Pelanggan', 'piutang': 'Piutang',
+                    'setoran': 'Setor', 'rekap-setoran': 'Rekap Setor', 'laporan': 'Grafik', 'setting': 'Setting'
+                };
 
-            // Optimistic UI Update (Simpan Lokal dulu)
-            if(!state.data.sales) state.data.sales = [];
-            state.data.sales.push(saleData);
-            
-            // Show Preview
-            showPreviewStruk(saleData);
-
-            // Send to Backend (Async, don't block UI)
-            try {
-                await fetch(CONFIG.gasUrl, {
-                    method: 'POST',
-                    mode: 'no-cors', // Important for simple GAS deployment
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(saleData)
+                allowed.forEach(key => {
+                    const div = document.createElement('div');
+                    div.className = 'glass-card p-3 rounded-2xl flex flex-col items-center justify-center gap-2 cursor-pointer active:scale-95 transition-transform';
+                    div.onclick = () => app.nav(key);
+                    div.innerHTML = `
+                        <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <i data-lucide="${icons[key] || 'circle'}" class="w-5 h-5"></i>
+                        </div>
+                        <span class="text-[10px] font-bold text-center leading-tight">${labels[key]}</span>
+                    `;
+                    grid.appendChild(div);
                 });
-                // Reset form
-                state.currentCart = [];
-                state.tempImage = null;
-                document.getElementById('scan-input').value = '';
-                renderCart();
-                updateDashboard();
-            } catch(e) {
-                console.error("Gagal simpan ke server", e);
+                lucide.createIcons();
+            },
+
+            nav: (page) => {
+                document.getElementById('view-dashboard').classList.add('hidden-page');
+                document.getElementById('view-page').classList.remove('hidden-page');
+                document.getElementById('page-title').innerText = page.replace('-', ' ').toUpperCase();
+                
+                const content = document.getElementById('page-content');
+                content.innerHTML = '<div class="text-center py-10"><div class="spinner"></div><p>Memuat...</p></div>';
+                
+                app.loadPageContent(page, content);
+            },
+
+            loadPageContent: async (page, container) => {
+                // Render Forms based on Page
+                let html = '';
+                
+                if (page === 'penjualan') {
+                    html = app.forms.penjualan();
+                } else if (page === 'produk') {
+                    html = app.forms.produk();
+                    await app.renderTable('products', container, ['sku', 'nama_barang', 'harga_jual'], 'Produk');
+                    return; 
+                } else if (page === 'pelanggan') {
+                    html = app.forms.pelanggan();
+                    await app.renderTable('customers', container, ['nama', 'alamat', 'no_tel'], 'Pelanggan');
+                    return;
+                } else if (page === 'transaksi') {
+                     await app.renderTable('sales', container, ['id_transaksi', 'tanggal', 'pelanggan', 'nett', 'status'], 'Riwayat Penjualan');
+                     return;
+                } else if (page === 'pembelian') {
+                    html = app.forms.pembelian();
+                } else if (page === 'setting') {
+                    html = app.forms.setting();
+                } else {
+                    html = `<div class="p-4 text-center text-gray-500">Fitur ${page} sedang dalam pengembangan mode lite.</div>`;
+                }
+                
+                container.innerHTML = html;
+                lucide.createIcons();
+                app.attachFormListeners(page);
+            },
+
+            // --- FORMS GENERATORS ---
+            forms: {
+                penjualan: () => `
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-2">
+                            <input type="text" id="p-scan" placeholder="Scan Barcode / SKU" class="input-field p-2 rounded-lg col-span-2">
+                            <select id="p-customer" class="input-field p-2 rounded-lg col-span-2"><option>Pilih Pelanggan</option></select>
+                            <select id="p-status" class="input-field p-2 rounded-lg"><option value="cod">COD</option><option value="transfer">Transfer</option><option value="qris">QRIS</option><option value="belum bayar">Belum Bayar</option></select>
+                            <select id="p-sales" class="input-field p-2 rounded-lg"><option value="${state.user.nama}">${state.user.nama}</option></select>
+                        </div>
+                        <div id="cart-items" class="space-y-2 bg-white/50 p-2 rounded-lg min-h-[100px]"></div>
+                        <div class="border-t pt-2 space-y-1 text-sm">
+                            <div class="flex justify-between"><span>Total:</span><span id="cart-total" class="font-bold">Rp 0</span></div>
+                        </div>
+                        <button onclick="app.submitSale()" class="btn-primary w-full py-3 rounded-xl font-bold">SIMPAN & CETAK</button>
+                    </div>
+                `,
+                produk: () => `
+                    <div class="space-y-3">
+                        <input type="text" id="prod-sku" placeholder="SKU" class="input-field w-full p-2 rounded-lg">
+                        <input type="text" id="prod-nama" placeholder="Nama Barang" class="input-field w-full p-2 rounded-lg">
+                        <input type="number" id="prod-modal" placeholder="Harga Modal" class="input-field w-full p-2 rounded-lg">
+                        <input type="number" id="prod-jual" placeholder="Harga Jual" class="input-field w-full p-2 rounded-lg">
+                        <button onclick="app.saveProduct()" class="btn-primary w-full py-2 rounded-lg">SIMPAN PRODUK</button>
+                    </div>
+                `,
+                pelanggan: () => `
+                    <div class="space-y-3">
+                        <input type="text" id="cust-nama" placeholder="Nama Pelanggan" class="input-field w-full p-2 rounded-lg">
+                        <input type="text" id="cust-alamat" placeholder="Alamat" class="input-field w-full p-2 rounded-lg">
+                        <input type="text" id="cust-tel" placeholder="No Telepon" class="input-field w-full p-2 rounded-lg">
+                        <button onclick="app.saveCustomer()" class="btn-primary w-full py-2 rounded-lg">SIMPAN PELANGGAN</button>
+                    </div>
+                `,
+                pembelian: () => `
+                    <div class="space-y-3">
+                         <p class="text-sm text-gray-500">Fitur Pembelian (Driver Only)</p>
+                         <input type="text" id="buy-sku" placeholder="Scan/Input SKU" class="input-field w-full p-2 rounded-lg">
+                         <input type="number" id="buy-qty" placeholder="Qty" class="input-field w-full p-2 rounded-lg">
+                         <input type="number" id="buy-harga" placeholder="Harga Beli" class="input-field w-full p-2 rounded-lg">
+                         <button onclick="app.submitPurchase()" class="btn-primary w-full py-2 rounded-lg">SIMPAN PEMBELIAN</button>
+                    </div>
+                `,
+                setting: () => `
+                    <div class="space-y-3">
+                        <label class="block text-sm font-bold">Google Sheets ID</label>
+                        <input type="text" id="set-sheet-id" value="${CONFIG.sheetsId}" class="input-field w-full p-2 rounded-lg">
+                        <label class="block text-sm font-bold">GAS URL</label>
+                        <input type="text" id="set-gas-url" value="${CONFIG.gasUrl}" class="input-field w-full p-2 rounded-lg">
+                        <button onclick="app.saveSettings()" class="btn-primary w-full py-2 rounded-lg">SIMPAN KONFIGURASI</button>
+                        <button onclick="window.open('${CONFIG.gasUrl}', '_blank')" class="w-full py-2 border border-primary text-primary rounded-lg mt-2">Buka Google Sheets</button>
+                    </div>
+                `
+            },
+
+            // --- DATA HANDLING ---
+            syncData: async () => {
+                const loader = document.getElementById('loading');
+                loader.classList.remove('hidden-page');
+                
+                try {
+                    // Fetch Data from GAS
+                    const res = await fetch(`${CONFIG.gasUrl}?action=getAllData`);
+                    const json = await res.json();
+                    
+                    if (json.status === 'success') {
+                        state.data = json.data;
+                        app.updateDashboard();
+                        app.populateDropdowns();
+                        Swal.fire({ icon: 'success', title: 'Sinkronisasi Berhasil', timer: 1500, showConfirmButton: false });
+                    } else {
+                        throw new Error('Gagal ambil data');
+                    }
+                } catch (e) {
+                    console.error(e);
+                    // Fallback dummy data if offline/error for demo purposes so UI doesn't break
+                    if(state.data.products.length === 0) {
+                         state.data.products = [{sku:'BRG001', nama_barang:'Air Mineral', harga_jual:5000, harga_modal:4000}];
+                    }
+                    Swal.fire({ icon: 'warning', title: 'Mode Offline / Gagal Sync', text: 'Menggunakan data lokal sementara.' });
+                } finally {
+                    loader.classList.add('hidden-page');
+                }
+            },
+
+            updateDashboard: () => {
+                const today = new Date().toISOString().split('T')[0];
+                const todaySales = state.data.sales.filter(s => s.tanggal.startsWith(today));
+                const total = todaySales.reduce((acc, curr) => acc + parseFloat(curr.nett||0), 0);
+                const pending = todaySales.filter(s => s.status === 'belum bayar').reduce((acc, curr) => acc + parseFloat(curr.nett||0), 0);
+                
+                document.getElementById('dash-total-sales').innerText = `Rp ${total.toLocaleString()}`;
+                document.getElementById('dash-pending').innerText = `Rp ${pending.toLocaleString()}`;
+            },
+
+            populateDropdowns: () => {
+                const custSelect = document.getElementById('p-customer');
+                if(custSelect) {
+                    custSelect.innerHTML = '<option value="Umum">Umum</option>';
+                    state.data.customers.forEach(c => {
+                        custSelect.innerHTML += `<option value="${c.nama}">${c.nama}</option>`;
+                    });
+                }
+            },
+
+            // --- SPECIFIC ACTIONS ---
+            submitSale: async () => {
+                if (state.cart.length === 0) return Swal.fire('Error', 'Keranjang kosong', 'warning');
+                
+                const customer = document.getElementById('p-customer').value;
+                const status = document.getElementById('p-status').value;
+                const total = state.cart.reduce((acc, item) => acc + (item.qty * item.harga), 0);
+                
+                const payload = {
+                    action: 'saveSale',
+                    id_transaksi: 'TRX-' + Date.now(),
+                    tanggal: new Date().toISOString(),
+                    pelanggan: customer,
+                    sales: state.user.nama,
+                    status: status,
+                    items: state.cart,
+                    gross: total,
+                    disc: 0,
+                    nett: total
+                };
+
+                await app.pushData(payload);
+                state.cart = [];
+                document.getElementById('cart-items').innerHTML = '';
+                document.getElementById('cart-total').innerText = 'Rp 0';
+                app.nav('dashboard');
+            },
+
+            saveProduct: async () => {
+                const payload = {
+                    action: 'saveProduct',
+                    sku: document.getElementById('prod-sku').value,
+                    nama_barang: document.getElementById('prod-nama').value,
+                    harga_modal: document.getElementById('prod-modal').value,
+                    harga_jual: document.getElementById('prod-jual').value
+                };
+                if(!payload.sku) return Swal.fire('Error', 'SKU Wajib diisi', 'warning');
+                await app.pushData(payload);
+                app.nav('produk'); // Refresh
+            },
+
+            saveCustomer: async () => {
+                const payload = {
+                    action: 'saveCustomer',
+                    nama: document.getElementById('cust-nama').value,
+                    alamat: document.getElementById('cust-alamat').value,
+                    no_tel: document.getElementById('cust-tel').value
+                };
+                await app.pushData(payload);
+                app.nav('pelanggan');
+            },
+            
+            submitPurchase: async () => {
+                 const payload = {
+                    action: 'savePurchase',
+                    id_pembelian: 'PUR-' + Date.now(),
+                    tanggal: new Date().toISOString(),
+                    driver: state.user.nama,
+                    items: [{sku: document.getElementById('buy-sku').value, qty: parseInt(document.getElementById('buy-qty').value), harga: parseInt(document.getElementById('buy-harga').value)}],
+                    total_modal_bersih: parseInt(document.getElementById('buy-qty').value) * parseInt(document.getElementById('buy-harga').value)
+                };
+                await app.pushData(payload);
+                app.nav('dashboard');
+            },
+
+            pushData: async (payload) => {
+                document.getElementById('loading').classList.remove('hidden-page');
+                try {
+                    // Use no-cors or standard depending on GAS setup. Standard POST with JSON usually works if GAS handles it.
+                    const res = await fetch(CONFIG.gasUrl, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await res.json();
+                    if(result.status === 'success') {
+                        Swal.fire('Berhasil', 'Data tersimpan ke Google Sheets', 'success');
+                        app.syncData(); // Refresh local state
+                    } else {
+                        throw new Error(result.message);
+                    }
+                } catch (e) {
+                    Swal.fire('Gagal', 'Gagal menyimpan: ' + e.message, 'error');
+                } finally {
+                    document.getElementById('loading').classList.add('hidden-page');
+                }
+            },
+
+            renderTable: async (sheetName, container, columns, title) => {
+                const data = state.data[sheetName] || [];
+                let html = `<div class="overflow-x-auto"><table class="w-full text-sm text-left"><thead class="bg-primary/10 text-primary"><tr>`;
+                columns.forEach(col => html += `<th class="p-2">${col}</th>`);
+                html += `</tr></thead><tbody>`;
+                
+                data.slice().reverse().forEach(row => {
+                    html += `<tr class="border-b">`;
+                    columns.forEach(col => html += `<td class="p-2">${row[col] || '-'}</td>`);
+                    html += `</tr>`;
+                });
+                html += `</tbody></table></div>`;
+                
+                // Add Export Button
+                html += `<button onclick="app.exportToExcel('${sheetName}')" class="mt-4 w-full py-2 bg-green-600 text-white rounded-lg flex items-center justify-center gap-2"><i data-lucide="download"></i> Export Excel</button>`;
+                
+                container.innerHTML = html;
+                lucide.createIcons();
+            },
+
+            exportToExcel: (sheetName) => {
+                const ws = XLSX.utils.json_to_sheet(state.data[sheetName]);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                XLSX.writeFile(wb, `TirtaKencana_${sheetName}_${new Date().toISOString().split('T')[0]}.xlsx`);
+            },
+            
+            attachFormListeners: (page) => {
+                if(page === 'penjualan') {
+                    const scanInput = document.getElementById('p-scan');
+                    scanInput.addEventListener('keypress', (e) => {
+                        if(e.key === 'Enter') {
+                            const sku = e.target.value;
+                            const product = state.data.products.find(p => p.sku === sku);
+                            if(product) {
+                                state.cart.push({...product, qty: 1});
+                                app.renderCart();
+                                e.target.value = '';
+                            } else {
+                                Swal.fire('Tidak Ditemukan', 'Produk tidak ada', 'error');
+                            }
+                        }
+                    });
+                }
+            },
+            
+            renderCart: () => {
+                const container = document.getElementById('cart-items');
+                container.innerHTML = '';
+                let total = 0;
+                state.cart.forEach((item, idx) => {
+                    const subtotal = item.qty * item.harga_jual;
+                    total += subtotal;
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm">
+                            <div>
+                                <div class="font-bold text-sm">${item.nama_barang}</div>
+                                <div class="text-xs text-gray-500">${item.qty} x Rp ${item.harga_jual}</div>
+                            </div>
+                            <button onclick="state.cart.splice(${idx},1); app.renderCart()" class="text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    `;
+                });
+                document.getElementById('cart-total').innerText = `Rp ${total.toLocaleString()}`;
+                lucide.createIcons();
             }
-        }
+        };
 
-        function showPreviewStruk(data) {
-            const modal = document.getElementById('preview-modal');
-            const content = document.getElementById('struk-content');
-            
-            const settings = state.data.settings || {};
-            const tokoName = settings.nama_toko || 'TIRTA KENCANA';
-            const address = settings.alamat || 'WTC MANGGA DUA';
-            
-            let itemsHtml = data.items.map(i => 
-                `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
-                    <span>${i.qty}x ${i.nama_barang}</span>
-                    <span>${(i.qty * i.harga_jual).toLocaleString()}</span>
-                </div>`
-            ).join('');
-
-            content.innerHTML = `
-                <div id="struk-preview">
-                    <div style="text-align:center; margin-bottom:10px;">
-                        <h3 style="margin:0; font-size:16px; font-weight:bold;">${tokoName}</h3>
-                        <p style="margin:2px; font-size:10px;">${address}</p>
-                        <p style="margin:2px; font-size:10px;">${new Date(data.tanggal).toLocaleString()}</p>
-                        <p style="margin:2px; font-size:10px;">No: ${data.id_transaksi}</p>
-                        <p style="margin:2px; font-size:10px;">Sales: ${data.sales}</p>
-                    </div>
-                    <div style="border-bottom:1px dashed #000; margin:5px 0;"></div>
-                    ${itemsHtml}
-                    <div style="border-bottom:1px dashed #000; margin:5px 0;"></div>
-                    <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Total</span><span style="font-weight:bold;">Rp ${data.nett.toLocaleString()}</span></div>
-                    <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Bayar (${data.status.toUpperCase()})</span><span>Rp ${data.nett.toLocaleString()}</span></div>
-                    <div style="text-align:center; margin-top:15px; font-size:10px;">
-                        ${settings.tagline || 'TERIMA KASIH'}
-                    </div>
-                </div>
-            `;
-            modal.classList.remove('hidden');
-            lucide.createIcons();
-        }
-
-        function closeModal() {
-            document.getElementById('preview-modal').classList.add('hidden');
-        }
-
-        async function downloadStrukPNG() {
-            const element = document.getElementById('struk-preview');
-            const canvas = await html2canvas(element);
-            const link = document.createElement('a');
-            link.download = 'struk-' + Date.now() + '.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
-
-        function sendViaWA() {
-            // Simple WA share logic
-            const text = `Terima kasih atas pembelian Anda di Tirta Kencana.\nTotal: ${document.getElementById('calc-total').textContent}`;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
-        }
-
-        // --- Placeholder Renders for other pages to prevent errors ---
-        function renderPembelian(container, titleEl) {
-            titleEl.textContent = "Input Pembelian";
-            container.innerHTML = `<div class="text-center p-10">Form Pembelian (Driver) akan dimuat di sini. Struktur mirip Penjualan tapi untuk Stock Masuk.</div>`;
-        }
-        function renderProduk(container, titleEl, actionsEl) {
-            titleEl.textContent = "Manajemen Produk";
-            actionsEl.innerHTML = `<button class="btn-primary px-4 py-2 rounded-lg text-sm" onclick="alert('Fitur tambah produk')">+ Tambah Produk</button>`;
-            container.innerHTML = `
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left">
-                        <thead class="bg-gray-100"><tr><th class="p-3">SKU</th><th class="p-3">Nama</th><th class="p-3">Modal</th><th class="p-3">Jual</th><th class="p-3">Aksi</th></tr></thead>
-                        <tbody>
-                            ${(state.data.products || []).map(p => `
-                                <tr class="border-b">
-                                    <td class="p-3">${p.sku}</td>
-                                    <td class="p-3">${p.nama_barang}</td>
-                                    <td class="p-3">${p.harga_modal}</td>
-                                    <td class="p-3">${p.harga_jual}</td>
-                                    <td class="p-3"><button class="text-blue-500">Edit</button></td>
-                                </tr>
-                            `).join('')}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-        }
-        function renderTransaksi(container, titleEl) {
-            titleEl.textContent = "Riwayat Transaksi";
-            container.innerHTML = `<div class="text-center text-gray-500">Daftar transaksi akan muncul di sini dengan fitur filter dan export Excel.</div>`;
-        }
-        function renderSetting(container, titleEl) {
-            titleEl.textContent = "Pengaturan";
-            container.innerHTML = `
-                <div class="max-w-2xl mx-auto space-y-4">
-                    <div class="glass-card p-4 rounded-xl">
-                        <h3 class="font-bold mb-2">Konfigurasi Google Sheets</h3>
-                        <label class="block text-xs text-gray-500">Google Sheets ID</label>
-                        <input type="text" value="${CONFIG.sheetsId}" class="input-field w-full p-2 rounded mb-2" readonly>
-                        <label class="block text-xs text-gray-500">GAS URL</label>
-                        <input type="text" value="${CONFIG.gasUrl}" class="input-field w-full p-2 rounded mb-2" readonly>
-                        <p class="text-xs text-green-600 mt-2">*Untuk mengubah, edit langsung di code HTML sebelum deploy.</p>
-                    </div>
-                    <div class="glass-card p-4 rounded-xl">
-                         <h3 class="font-bold mb-2">Info Toko</h3>
-                         <p>Nama: ${state.data.settings?.nama_toko || 'Tirta Kencana'}</p>
-                         <p>Alamat: ${state.data.settings?.alamat || '-'}</p>
-                    </div>
-                </div>
-            `;
-        }
-
+        // Start App
+        app.init();
     </script>
 </body>
 </html>

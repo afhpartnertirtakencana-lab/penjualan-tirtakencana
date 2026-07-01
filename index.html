@@ -36,7 +36,7 @@
         .btn-primary:active { transform: scale(0.96); }
         .input-field { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0, 80, 158, 0.2); transition: all 0.3s; }
         .input-field:focus { outline: none; border-color: #00A8E8; box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.2); background: white; }
-        .hidden-page { display: none; }
+        .hidden-page { display: none !important; }
         .fade-in { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .loading-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
@@ -52,9 +52,9 @@
 <body class="text-gray-800 antialiased overflow-x-hidden">
 
     <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-overlay hidden-page">
+    <div id="loading-screen" class="loading-overlay">
         <div class="spinner mb-4"></div>
-        <p id="loading-text" class="text-primary font-semibold animate-pulse">Memproses...</p>
+        <p id="loading-text" class="text-primary font-semibold animate-pulse">Memuat Aplikasi...</p>
     </div>
 
     <!-- Splash Screen -->
@@ -222,7 +222,6 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LENGKAP -->
     <script>
         // --- KONFIGURASI ---
         const CONFIG = {
@@ -254,55 +253,53 @@
             cart: [],
             purchaseCart: [],
             syncInterval: null,
+            calculatedSetoran: null,
 
             init() {
                 try {
                     lucide.createIcons();
                     this.applySettings();
                     this.checkAuth();
-                    // Auto Sync setiap 15 menit (hanya jika sudah login)
+                    // Auto Sync setiap 15 menit (900000 ms)
                     this.syncInterval = setInterval(() => { if (this.currentUser) this.syncData(true); }, 900000);
                 } catch (e) {
                     console.error("Init Error:", e);
                     alert("Terjadi kesalahan saat memuat aplikasi: " + e.message);
                     document.getElementById('loading-screen').classList.add('hidden-page');
-                    document.getElementById('login-page').classList.remove('hidden-page');
                 }
             },
 
             applySettings() {
                 const s = DB.settings;
-                const logos = ['splash-logo', 'login-logo', 'header-logo'];
-                logos.forEach(id => {
-                    const el = document.getElementById(id);
-                    if(el) el.src = s.logo || CONFIG.logo;
-                });
-                
-                const titles = {
-                    'splash-title': s.storeName || CONFIG.storeName,
-                    'splash-subtitle': s.tagline || CONFIG.tagline,
-                    'header-title': s.storeName || CONFIG.storeName
-                };
-                for (const [id, text] of Object.entries(titles)) {
-                    const el = document.getElementById(id);
-                    if(el) el.textContent = text;
-                }
+                document.getElementById('splash-logo').src = s.logo || CONFIG.logo;
+                document.getElementById('splash-title').textContent = s.storeName || CONFIG.storeName;
+                document.getElementById('splash-subtitle').textContent = s.tagline || CONFIG.tagline;
+                document.getElementById('login-logo').src = s.logo || CONFIG.logo;
+                document.getElementById('header-logo').src = s.logo || CONFIG.logo;
+                document.getElementById('header-title').textContent = s.storeName || CONFIG.storeName;
             },
 
             checkAuth() {
-                // Tampilkan login dulu, jangan langsung sync berat
-                document.getElementById('splash-screen').classList.add('hidden-page');
-                document.getElementById('login-page').classList.remove('hidden-page');
-                
                 const savedUser = localStorage.getItem('tk_user');
                 if (savedUser) {
                     try {
                         this.currentUser = JSON.parse(savedUser);
                         this.showMainApp();
-                    } catch(e) {
+                    } catch (e) {
                         localStorage.removeItem('tk_user');
+                        this.showLogin();
                     }
+                } else {
+                    this.showLogin();
                 }
+            },
+
+            showLogin() {
+                setTimeout(() => {
+                    document.getElementById('splash-screen').classList.add('hidden-page');
+                    document.getElementById('login-page').classList.remove('hidden-page');
+                    document.getElementById('loading-screen').classList.add('hidden-page');
+                }, 1500);
             },
 
             login(user) {
@@ -321,17 +318,17 @@
 
             showMainApp() {
                 document.getElementById('main-app').classList.remove('hidden-page');
+                document.getElementById('loading-screen').classList.add('hidden-page');
                 document.getElementById('user-display').textContent = `${this.currentUser.name} (${this.currentUser.role})`;
                 this.renderMenu();
                 this.nav('dashboard');
-                // Sync pertama kali setelah login berhasil
+                // Sync awal dilakukan setelah UI muncul agar tidak blocking
                 setTimeout(() => this.syncData(), 500);
             },
 
             renderMenu() {
                 const role = this.currentUser.role;
                 const menuGrid = document.getElementById('menu-grid');
-                if(!menuGrid) return;
                 menuGrid.innerHTML = '';
                 const menus = [
                     { id: 'sales', label: 'Penjualan', icon: 'shopping-cart', roles: ['admin', 'sales'] },
@@ -364,27 +361,19 @@
 
             nav(pageId) {
                 this.currentPage = pageId;
-                const dashboard = document.getElementById('view-dashboard');
-                const container = document.getElementById('page-container');
-                
-                if (!dashboard || !container) return;
-
-                dashboard.classList.add('hidden-page');
-                container.classList.add('hidden-page');
-
+                document.getElementById('view-dashboard').classList.add('hidden-page');
+                document.getElementById('page-container').classList.add('hidden-page');
                 if (pageId === 'dashboard') {
-                    dashboard.classList.remove('hidden-page');
+                    document.getElementById('view-dashboard').classList.remove('hidden-page');
                     this.updateDashboardStats();
                     return;
                 }
-
+                const container = document.getElementById('page-container');
                 container.classList.remove('hidden-page');
-                const titleEl = document.getElementById('page-title');
-                if(titleEl) titleEl.textContent = pageId.replace('-', ' ').toUpperCase();
+                document.getElementById('page-title').textContent = pageId.replace('-', ' ').toUpperCase();
+                document.getElementById('page-content').innerHTML = '<div class="flex justify-center p-10"><div class="spinner"></div></div>';
                 
-                const contentEl = document.getElementById('page-content');
-                if(contentEl) contentEl.innerHTML = '<div class="flex justify-center p-10"><div class="spinner"></div></div>';
-
+                // Gunakan setTimeout agar UI tidak freeze
                 setTimeout(() => {
                     try {
                         switch (pageId) {
@@ -403,14 +392,14 @@
                             case 'settings': this.renderSettings(); break;
                             case 'graphs': this.renderGraphs(); break;
                             case 'audit': this.renderAudit(); break;
-                            default: if(contentEl) contentEl.innerHTML = '<p class="text-center text-gray-500">Fitur sedang dikembangkan</p>';
+                            default: document.getElementById('page-content').innerHTML = '<p class="text-center text-gray-500">Fitur sedang dikembangkan</p>';
                         }
                         lucide.createIcons();
                     } catch (e) {
                         console.error("Nav Error:", e);
-                        if(contentEl) contentEl.innerHTML = `<p class="text-red-500 text-center">Error memuat halaman: ${e.message}</p>`;
+                        document.getElementById('page-content').innerHTML = `<p class="text-red-500 text-center">Error memuat halaman: ${e.message}</p>`;
                     }
-                }, 100);
+                }, 50);
             },
 
             // --- CORE SYNC & API ---
@@ -424,10 +413,8 @@
                         else if (key === 'Settings') Object.assign(DB.settings, syncedData[key]);
                     });
                     this.applySettings();
-                    if(document.getElementById('sync-indicator')) {
-                        document.getElementById('sync-indicator').classList.remove('hidden');
-                        setTimeout(() => document.getElementById('sync-indicator').classList.add('hidden'), 3000);
-                    }
+                    document.getElementById('sync-indicator').classList.remove('hidden');
+                    setTimeout(() => document.getElementById('sync-indicator').classList.add('hidden'), 3000);
                     if (!silent) alert('Data berhasil disinkronisasi!');
                     if (this.currentPage !== 'dashboard') this.nav(this.currentPage);
                     else this.updateDashboardStats();
@@ -438,73 +425,38 @@
                     if (!silent) this.hideLoading();
                 }
             },
-            
-            async pushData() { 
-                alert('Fitur Push Manual: Data lokal akan dikirim ke Google Sheets.'); 
-                await this.syncData(); 
-            },
-            
+            async pushData() { alert('Fitur Push Manual: Data lokal akan dikirim ke Google Sheets.'); await this.syncData(); },
             async apiCall(action, payload) {
                 const fullPayload = { action, ...payload };
                 try {
-                    const res = await fetch(CONFIG.gasUrl, { 
-                        method: 'POST', 
-                        headers: { 'Content-Type': 'application/json' }, 
-                        body: JSON.stringify(fullPayload) 
-                    });
+                    const res = await fetch(CONFIG.gasUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fullPayload) });
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     const data = await res.json();
                     if (data.status !== 'success') throw new Error(data.message || 'API error');
                     return data;
-                } catch (e) { 
-                    console.error('API Call Error:', e); 
-                    throw e; 
-                }
+                } catch (e) { console.error('API Call Error:', e); throw e; }
             },
-            
-            showLoading(msg) { 
-                const screen = document.getElementById('loading-screen');
-                const text = document.getElementById('loading-text');
-                if(screen && text) {
-                    text.textContent = msg; 
-                    screen.classList.remove('hidden-page'); 
-                }
-            },
-            
-            hideLoading() { 
-                document.getElementById('loading-screen').classList.add('hidden-page'); 
-            },
-            
-            closeModal() { 
-                document.getElementById('modal-overlay').classList.add('hidden-page'); 
-            },
-            
+            showLoading(msg) { document.getElementById('loading-text').textContent = msg; document.getElementById('loading-screen').classList.remove('hidden-page'); },
+            hideLoading() { document.getElementById('loading-screen').classList.add('hidden-page'); },
+            closeModal() { document.getElementById('modal-overlay').classList.add('hidden-page'); },
             updateDashboardStats() {
                 const today = new Date().toISOString().split('T')[0];
                 const todaySales = DB.sales.filter(s => s.date === today);
                 const stats = { cod: 0, transfer: 0, qris: 0, pending: 0 };
-                todaySales.forEach(s => { 
-                    if (stats[s.status] !== undefined) stats[s.status] += (parseFloat(s.net) || 0); 
-                });
-                
-                const ids = ['dash-cod', 'dash-transfer', 'dash-qris', 'dash-pending'];
-                const keys = ['cod', 'transfer', 'qris', 'pending'];
-                
-                ids.forEach((id, idx) => {
-                    const el = document.getElementById(id);
-                    if(el) el.textContent = 'Rp ' + stats[keys[idx]].toLocaleString();
-                });
+                todaySales.forEach(s => { if (stats[s.status] !== undefined) stats[s.status] += (parseFloat(s.net) || 0); });
+                document.getElementById('dash-cod').textContent = 'Rp ' + stats.cod.toLocaleString();
+                document.getElementById('dash-transfer').textContent = 'Rp ' + stats.transfer.toLocaleString();
+                document.getElementById('dash-qris').textContent = 'Rp ' + stats.qris.toLocaleString();
+                document.getElementById('dash-pending').textContent = 'Rp ' + stats.pending.toLocaleString();
             },
 
-            // --- FUNGSI RENDER LENGKAP ---
-
+            // --- RENDER FUNCTIONS (LENGKAP) ---
+            
             // 1. PENJUALAN
             renderSales() {
                 const autoId = 'TRX-' + Date.now();
                 const today = new Date().toISOString().split('T')[0];
                 const content = document.getElementById('page-content');
-                if(!content) return;
-                
                 content.innerHTML = `
                     <div class="grid lg:grid-cols-3 gap-6">
                         <div class="lg:col-span-2 space-y-4">
@@ -550,14 +502,14 @@
             },
             addItemToCart() {
                 const input = document.getElementById('scan-input');
-                const val = input ? input.value.trim() : '';
+                const val = input.value.trim();
                 if(!val) return;
                 const product = DB.products.find(p => p.sku === val || p.barcode === val);
                 if(product) {
                     const idx = this.cart.findIndex(i => i.sku === val);
                     if(idx > -1) this.cart[idx].qty++;
                     else this.cart.push({...product, qty: 1, disc: 0});
-                    if(input) input.value = '';
+                    input.value = '';
                     this.renderCart();
                 } else alert('Produk tidak ditemukan');
             },
@@ -581,35 +533,20 @@
             calcTotal() {
                 let gross = 0, totalDisc = 0;
                 this.cart.forEach(i => { gross += i.price*i.qty; totalDisc += (i.disc||0)*i.qty; });
-                const addInput = document.getElementById('sum-additional');
-                const add = addInput ? (parseFloat(addInput.value)||0) : 0;
+                const add = parseFloat(document.getElementById('sum-additional')?.value||0);
                 const net = gross - totalDisc + add;
-                
-                const elGross = document.getElementById('sum-gross');
-                const elDisc = document.getElementById('sum-disc');
-                const elNet = document.getElementById('sum-net');
-                
-                if(elGross) elGross.textContent = gross.toLocaleString();
-                if(elDisc) elDisc.textContent = totalDisc.toLocaleString();
-                if(elNet) elNet.textContent = net.toLocaleString();
+                document.getElementById('sum-gross').textContent = gross.toLocaleString();
+                document.getElementById('sum-disc').textContent = totalDisc.toLocaleString();
+                document.getElementById('sum-net').textContent = net.toLocaleString();
                 return { gross, totalDisc, add, net };
             },
             async saveSale() {
                 if(this.cart.length===0) return alert('Keranjang kosong');
                 const t = this.calcTotal();
                 const trx = {
-                    id: document.getElementById('sale-id').value, 
-                    date: document.getElementById('sale-date').value,
-                    customer: document.getElementById('sale-customer').value, 
-                    salesman: document.getElementById('sale-salesman').value,
-                    status: document.getElementById('sale-status').value, 
-                    items: this.cart, 
-                    gross: t.gross, 
-                    disc: t.totalDisc, 
-                    extra: 0, 
-                    additional: t.add, 
-                    net: t.net, 
-                    timestamp: new Date().toISOString()
+                    id: document.getElementById('sale-id').value, date: document.getElementById('sale-date').value,
+                    customer: document.getElementById('sale-customer').value, salesman: document.getElementById('sale-salesman').value,
+                    status: document.getElementById('sale-status').value, items: this.cart, gross: t.gross, disc: t.totalDisc, extra: 0, additional: t.add, net: t.net, timestamp: new Date().toISOString()
                 };
                 this.showLoading('Menyimpan...');
                 try {
@@ -625,7 +562,6 @@
             // 2. TRANSAKSI
             renderTransactions() {
                 const content = document.getElementById('page-content');
-                if(!content) return;
                 content.innerHTML = `
                     <div class="space-y-4">
                         <div class="glass-panel p-4 rounded-xl flex flex-wrap gap-3">
@@ -640,24 +576,16 @@
                 this.filterTransactions();
             },
             filterTransactions() {
-                const searchEl = document.getElementById('trx-search');
-                const statusEl = document.getElementById('trx-filter-status');
-                const bodyEl = document.getElementById('trans-body');
-                
-                if(!searchEl || !statusEl || !bodyEl) return;
-
-                const s = searchEl.value.toLowerCase();
-                const st = statusEl.value;
-                const data = DB.sales.filter(t => (t.id.toLowerCase().includes(s) || (t.customer && t.customer.toLowerCase().includes(s))) && (!st || t.status===st));
-                
-                bodyEl.innerHTML = data.reverse().map(t => `
-                    <tr class="border-b"><td class="p-3">${t.date}</td><td class="p-3 font-mono">${t.id}</td><td class="p-3">${t.customer||'-'}</td><td class="p-3">${t.salesman}</td><td class="p-3 font-bold">${t.net.toLocaleString()}</td><td class="p-3"><span class="px-2 py-1 rounded text-xs ${t.status==='belum bayar'?'bg-red-100 text-red-600':'bg-green-100 text-green-600'}">${t.status}</span></td>
+                const s = document.getElementById('trx-search').value.toLowerCase();
+                const st = document.getElementById('trx-filter-status').value;
+                const data = DB.sales.filter(t => (t.id.toLowerCase().includes(s) || t.customer.toLowerCase().includes(s)) && (!st || t.status===st));
+                document.getElementById('trans-body').innerHTML = data.reverse().map(t => `
+                    <tr class="border-b"><td class="p-3">${t.date}</td><td class="p-3 font-mono">${t.id}</td><td class="p-3">${t.customer}</td><td class="p-3">${t.salesman}</td><td class="p-3 font-bold">${t.net.toLocaleString()}</td><td class="p-3"><span class="px-2 py-1 rounded text-xs ${t.status==='belum bayar'?'bg-red-100 text-red-600':'bg-green-100 text-green-600'}">${t.status}</span></td>
                     <td class="p-3 flex gap-2"><button onclick="app.printReceiptById('${t.id}')" class="text-blue-600"><i data-lucide="printer"></i></button><button onclick="app.editStatus('${t.id}')" class="text-yellow-600"><i data-lucide="edit"></i></button></td></tr>
                 `).join('');
             },
             async editStatus(id) {
                 const t = DB.sales.find(x=>x.id===id);
-                if(!t) return;
                 const newSt = prompt("Ubah status (cod/transfer/qris/belum bayar):", t.status);
                 if(newSt && newSt!==t.status) {
                     t.status = newSt;
@@ -668,16 +596,10 @@
 
             // 3. PRODUK
             renderProducts() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
-                content.innerHTML = `
+                document.getElementById('page-content').innerHTML = `
                     <button onclick="app.openProductModal()" class="btn-primary mb-4 px-4 py-2 rounded-lg">+ Tambah Produk</button>
                     <div class="glass-panel rounded-xl overflow-x-auto"><table class="w-full text-sm"><thead class="bg-primary/10"><tr><th class="p-3">SKU</th><th class="p-3">Nama</th><th class="p-3">Harga Jual</th><th class="p-3">Modal</th><th class="p-3">Aksi</th></tr></thead><tbody id="prod-body"></tbody></table></div>`;
-                
-                const body = document.getElementById('prod-body');
-                if(body) {
-                    body.innerHTML = DB.products.map(p => `<tr class="border-b"><td class="p-3">${p.sku}</td><td class="p-3">${p.name}</td><td class="p-3">${p.price.toLocaleString()}</td><td class="p-3">${p.modal.toLocaleString()}</td><td class="p-3"><button onclick="app.deleteProduct('${p.sku}')" class="text-red-500"><i data-lucide="trash"></i></button></td></tr>`).join('');
-                }
+                document.getElementById('prod-body').innerHTML = DB.products.map(p => `<tr class="border-b"><td class="p-3">${p.sku}</td><td class="p-3">${p.name}</td><td class="p-3">${p.price.toLocaleString()}</td><td class="p-3">${p.modal.toLocaleString()}</td><td class="p-3"><button onclick="app.deleteProduct('${p.sku}')" class="text-red-500"><i data-lucide="trash"></i></button></td></tr>`).join('');
             },
             openProductModal() {
                 const sku = prompt("SKU:"); if(!sku) return;
@@ -692,16 +614,10 @@
 
             // 4. STOCK
             renderStock() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
-                content.innerHTML = `
+                document.getElementById('page-content').innerHTML = `
                     <div class="flex justify-between mb-4"><h3 class="font-bold">Stok Saat Ini</h3><button onclick="app.rolloverStock()" class="btn-primary px-4 py-2 rounded-lg">Rollover Stok</button></div>
                     <div class="glass-panel rounded-xl overflow-x-auto"><table class="w-full text-sm"><thead class="bg-primary/10"><tr><th class="p-3">SKU</th><th class="p-3">Nama</th><th class="p-3">Awal</th><th class="p-3">Masuk</th><th class="p-3">Keluar</th><th class="p-3">Akhir</th></tr></thead><tbody id="stock-body"></tbody></table></div>`;
-                
-                const body = document.getElementById('stock-body');
-                if(body) {
-                    body.innerHTML = DB.stock.map(s => `<tr class="border-b"><td class="p-3">${s.sku}</td><td class="p-3">${s.name}</td><td class="p-3">${s.start}</td><td class="p-3 text-green-600">+${s.in}</td><td class="p-3 text-red-600">-${s.out}</td><td class="p-3 font-bold">${s.current}</td></tr>`).join('');
-                }
+                document.getElementById('stock-body').innerHTML = DB.stock.map(s => `<tr class="border-b"><td class="p-3">${s.sku}</td><td class="p-3">${s.name}</td><td class="p-3">${s.start}</td><td class="p-3 text-green-600">+${s.in}</td><td class="p-3 text-red-600">-${s.out}</td><td class="p-3 font-bold">${s.current}</td></tr>`).join('');
             },
             async rolloverStock() {
                 if(confirm("Rollover stok?")) {
@@ -713,16 +629,10 @@
 
             // 5. PELANGGAN
             renderCustomers() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
-                content.innerHTML = `
+                document.getElementById('page-content').innerHTML = `
                     <button onclick="app.addCustomer()" class="btn-primary mb-4 px-4 py-2 rounded-lg">+ Tambah Pelanggan</button>
                     <div class="glass-panel rounded-xl overflow-x-auto"><table class="w-full text-sm"><thead class="bg-primary/10"><tr><th class="p-3">Nama</th><th class="p-3">Alamat</th><th class="p-3">Telepon</th><th class="p-3">Aksi</th></tr></thead><tbody id="cust-body"></tbody></table></div>`;
-                
-                const body = document.getElementById('cust-body');
-                if(body) {
-                    body.innerHTML = DB.customers.map(c => `<tr class="border-b"><td class="p-3">${c.name}</td><td class="p-3">${c.address||'-'}</td><td class="p-3">${c.phone||'-'}</td><td class="p-3"><button onclick="app.delCustomer('${c.name}')" class="text-red-500"><i data-lucide="trash"></i></button></td></tr>`).join('');
-                }
+                document.getElementById('cust-body').innerHTML = DB.customers.map(c => `<tr class="border-b"><td class="p-3">${c.name}</td><td class="p-3">${c.address||'-'}</td><td class="p-3">${c.phone||'-'}</td><td class="p-3"><button onclick="app.delCustomer('${c.name}')" class="text-red-500"><i data-lucide="trash"></i></button></td></tr>`).join('');
             },
             addCustomer() {
                 const name = prompt("Nama:"); if(!name) return;
@@ -735,39 +645,29 @@
 
             // 6. PIUTANG
             renderDebt() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
-                const total = DB.sales.filter(s=>s.status==='belum bayar').reduce((a,b)=>a+(b.net||0),0);
-                content.innerHTML = `
+                const total = DB.sales.filter(s=>s.status==='belum bayar').reduce((a,b)=>a+b.net,0);
+                document.getElementById('page-content').innerHTML = `
                     <div class="glass-card p-6 rounded-2xl mb-6 bg-red-50 border-red-200"><h3 class="font-bold text-red-700">Total Piutang</h3><p class="text-3xl font-bold text-red-600">Rp ${total.toLocaleString()}</p></div>
                     <div class="glass-panel rounded-xl overflow-x-auto"><table class="w-full text-sm"><thead class="bg-primary/10"><tr><th class="p-3">Tanggal</th><th class="p-3">Customer</th><th class="p-3">Nett</th><th class="p-3">Aging</th><th class="p-3">Aksi</th></tr></thead><tbody id="debt-body"></tbody></table></div>`;
-                
                 const today = new Date();
-                const body = document.getElementById('debt-body');
-                if(body) {
-                    body.innerHTML = DB.sales.filter(s=>s.status==='belum bayar').map(s => {
-                        const days = Math.ceil((today - new Date(s.date))/(1000*60*60*24));
-                        return `<tr class="border-b"><td class="p-3">${s.date}</td><td class="p-3">${s.customer}</td><td class="p-3 font-bold">${s.net.toLocaleString()}</td><td class="p-3">${days} Hari</td><td class="p-3"><button onclick="app.payDebt('${s.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-xs">Lunas</button></td></tr>`;
-                    }).join('');
-                }
+                document.getElementById('debt-body').innerHTML = DB.sales.filter(s=>s.status==='belum bayar').map(s => {
+                    const days = Math.ceil((today - new Date(s.date))/(1000*60*60*24));
+                    return `<tr class="border-b"><td class="p-3">${s.date}</td><td class="p-3">${s.customer}</td><td class="p-3 font-bold">${s.net.toLocaleString()}</td><td class="p-3">${days} Hari</td><td class="p-3"><button onclick="app.payDebt('${s.id}')" class="bg-green-500 text-white px-3 py-1 rounded text-xs">Lunas</button></td></tr>`;
+                }).join('');
             },
             async payDebt(id) {
                 const method = prompt("Metode Pelunasan (cod/transfer/qris):");
                 if(method) {
                     const t = DB.sales.find(x=>x.id===id);
-                    if(t) {
-                        t.status = method;
-                        await this.apiCall('updateTransactionStatus', {id, newStatus: method});
-                        this.renderDebt();
-                    }
+                    t.status = method;
+                    await this.apiCall('updateTransactionStatus', {id, newStatus: method});
+                    this.renderDebt();
                 }
             },
 
             // 7. SETORAN
             renderSetoran() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
-                content.innerHTML = `
+                document.getElementById('page-content').innerHTML = `
                     <div class="grid md:grid-cols-2 gap-4">
                         <div class="glass-panel p-4"><label class="text-xs font-bold">Tanggal</label><input type="date" id="set-date" class="input-field w-full p-2 rounded" value="${new Date().toISOString().split('T')[0]}"></div>
                         <div class="glass-panel p-4"><label class="text-xs font-bold">Sales</label><select id="set-sales" class="input-field w-full p-2 rounded">${DB.users.filter(u=>u.role==='sales').map(u=>`<option value="${u.name}">${u.name}</option>`).join('')}</select></div>
@@ -778,16 +678,11 @@
                 `;
             },
             async saveSetoran() {
-                const salesEl = document.getElementById('set-sales');
-                if(!salesEl) return;
-                const sales = salesEl.value;
-                const codTotal = DB.sales.filter(s=>s.salesman===sales && s.status==='cod').reduce((a,b)=>a+(b.net||0),0);
-                
-                const getVal = (id) => parseFloat(document.getElementById(id)?.value)||0;
-                const exp = getVal('exp-food') + getVal('exp-tips') + getVal('exp-fuel');
-                const add = getVal('add-inst') + getVal('add-inv');
+                const sales = document.getElementById('set-sales').value;
+                const codTotal = DB.sales.filter(s=>s.salesman===sales && s.status==='cod').reduce((a,b)=>a+b.net,0);
+                const exp = (parseFloat(document.getElementById('exp-food').value)||0) + (parseFloat(document.getElementById('exp-tips').value)||0) + (parseFloat(document.getElementById('exp-fuel').value)||0);
+                const add = (parseFloat(document.getElementById('add-inst').value)||0) + (parseFloat(document.getElementById('add-inv').value)||0);
                 const total = codTotal - exp + add;
-                
                 if(confirm(`Total Setoran: Rp ${total.toLocaleString()}\nLanjutkan?`)) {
                     const data = {id:'SET-'+Date.now(), date:document.getElementById('set-date').value, sales, cod_total:codTotal, expenses:{}, additions:{}, total_setoran:total, timestamp:new Date().toISOString()};
                     await this.apiCall('saveSetoran', data);
@@ -798,10 +693,8 @@
 
             // 8. PEMBELIAN
             renderPurchase() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
                 const autoId = 'PUR-' + Date.now();
-                content.innerHTML = `
+                document.getElementById('page-content').innerHTML = `
                     <div class="grid md:grid-cols-2 gap-4 mb-4">
                         <input type="text" id="pur-id" value="${autoId}" readonly class="input-field p-2 rounded"><input type="date" id="pur-date" class="input-field p-2 rounded" value="${new Date().toISOString().split('T')[0]}">
                         <select id="pur-driver" class="input-field p-2 rounded"><option value="Driver 1">Driver 1</option></select>
@@ -814,71 +707,41 @@
                 this.purchaseCart = [];
             },
             addPurchaseItem() {
-                const skuEl = document.getElementById('pur-scan');
-                if(!skuEl) return;
-                const sku = skuEl.value;
+                const sku = document.getElementById('pur-scan').value;
                 const p = DB.products.find(x=>x.sku===sku);
                 if(p) { this.purchaseCart.push({...p, qty:1}); this.renderPurchaseCart(); }
             },
             renderPurchaseCart() {
-                const body = document.getElementById('pur-cart');
-                if(body) {
-                    body.innerHTML = this.purchaseCart.map(i => `<tr class="border-b"><td>${i.name}</td><td>${i.qty}</td><td>${i.modal}</td><td>${i.modal*i.qty}</td></tr>`).join('');
-                }
+                document.getElementById('pur-cart').innerHTML = this.purchaseCart.map(i => `<tr class="border-b"><td>${i.name}</td><td>${i.qty}</td><td>${i.modal}</td><td>${i.modal*i.qty}</td></tr>`).join('');
             },
             async savePurchase() {
                 if(this.purchaseCart.length===0) return alert('Kosong');
                 const total = this.purchaseCart.reduce((a,b)=>a+(b.modal*b.qty),0);
-                const data = {
-                    id: document.getElementById('pur-id').value, 
-                    date: document.getElementById('pur-date').value, 
-                    driver: document.getElementById('pur-driver').value, 
-                    rit: 1, status:'kiriman', 
-                    items:this.purchaseCart, 
-                    grossModal:total, totalDisc:0, netModal:total, 
-                    totalQty:this.purchaseCart.reduce((a,b)=>a+b.qty,0), 
-                    timestamp:new Date().toISOString()
-                };
+                const data = {id:document.getElementById('pur-id').value, date:document.getElementById('pur-date').value, driver:document.getElementById('pur-driver').value, rit:1, status:'kiriman', items:this.purchaseCart, grossModal:total, totalDisc:0, netModal:total, totalQty:this.purchaseCart.reduce((a,b)=>a+b.qty,0), timestamp:new Date().toISOString()};
                 await this.apiCall('savePurchase', data);
                 alert('Pembelian tersimpan');
                 this.nav('dashboard');
             },
 
             // 9. LAPORAN & GRAFIK
-            renderReports(type) { 
-                const content = document.getElementById('page-content');
-                if(content) content.innerHTML = `<div class="p-10 text-center">Laporan ${type} (Export Excel tersedia di menu Transaksi/Pembelian)</div>`; 
-            },
-            renderMonthlyReport() { 
-                const content = document.getElementById('page-content');
-                if(content) content.innerHTML = `<div class="p-10 text-center">Laporan Bulanan (Fitur Hapus Bulan tersedia di Settings)</div>`; 
-            },
+            renderReports(type) { document.getElementById('page-content').innerHTML = `<div class="p-10 text-center">Laporan ${type} (Export Excel tersedia di menu Transaksi/Pembelian)</div>`; },
+            renderMonthlyReport() { document.getElementById('page-content').innerHTML = `<div class="p-10 text-center">Laporan Bulanan (Fitur Hapus Bulan tersedia di Settings)</div>`; },
             renderGraphs() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
-                content.innerHTML = `<div class="h-64"><canvas id="chartSales"></canvas></div>`;
+                document.getElementById('page-content').innerHTML = `<div class="h-64"><canvas id="chartSales"></canvas></div>`;
                 setTimeout(() => {
-                    const ctx = document.getElementById('chartSales');
-                    if(ctx) {
-                        new Chart(ctx, {
-                            type: 'bar',
-                            data: { labels: ['Sen','Sel','Rab','Kam','Jum','Sab','Min'], datasets: [{ label: 'Penjualan', data: [1000000, 2000000, 1500000, 3000000, 2500000, 4000000, 3500000], backgroundColor: '#00509E' }] },
-                            options: { responsive: true, maintainAspectRatio: false }
-                        });
-                    }
+                    new Chart(document.getElementById('chartSales'), {
+                        type: 'bar',
+                        data: { labels: ['Sen','Sel','Rab','Kam','Jum','Sab','Min'], datasets: [{ label: 'Penjualan', data: [1000000, 2000000, 1500000, 3000000, 2500000, 4000000, 3500000], backgroundColor: '#00509E' }] },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
                 }, 100);
             },
-            renderAudit() { 
-                const content = document.getElementById('page-content');
-                if(content) content.innerHTML = `<div class="p-10 text-center">Audit Log (Lihat langsung di Google Sheet)</div>`; 
-            },
+            renderAudit() { document.getElementById('page-content').innerHTML = `<div class="p-10 text-center">Audit Log (Lihat langsung di Google Sheet)</div>`; },
 
             // 10. SETTINGS
             renderSettings() {
-                const content = document.getElementById('page-content');
-                if(!content) return;
                 const s = DB.settings;
-                content.innerHTML = `
+                document.getElementById('page-content').innerHTML = `
                     <div class="space-y-6 max-w-2xl mx-auto">
                         <div class="glass-panel p-6 rounded-2xl"><h3 class="font-bold mb-4">Info Toko</h3><input type="text" id="set-name" value="${s.storeName}" class="input-field w-full p-2 mb-2 rounded"><input type="text" id="set-tag" value="${s.tagline}" class="input-field w-full p-2 mb-2 rounded"><textarea id="set-addr" class="input-field w-full p-2 rounded">${s.address||''}</textarea></div>
                         <div class="glass-panel p-6 rounded-2xl"><h3 class="font-bold mb-4">Google Sheets</h3><input type="text" id="set-sheets" value="${CONFIG.sheetsId}" class="input-field w-full p-2 mb-2 rounded font-mono text-xs"><input type="text" id="set-gas" value="${CONFIG.gasUrl}" class="input-field w-full p-2 rounded font-mono text-xs"></div>
@@ -889,11 +752,7 @@
                 `;
             },
             saveSettings() {
-                const getName = () => document.getElementById('set-name').value;
-                const getTag = () => document.getElementById('set-tag').value;
-                const getAddr = () => document.getElementById('set-addr').value;
-                
-                const newSet = { storeName: getName(), tagline: getTag(), address: getAddr() };
+                const newSet = { storeName: document.getElementById('set-name').value, tagline: document.getElementById('set-tag').value, address: document.getElementById('set-addr').value };
                 Object.assign(DB.settings, newSet);
                 this.apiCall('updateSettings', newSet);
                 this.applySettings();
@@ -919,13 +778,11 @@
                 const w = window.open('', '_blank');
                 w.document.write(`<html><head><title>Struk ${t.id}</title><style>body{font-family:monospace;width:80mm;margin:0 auto;padding:10px;} .center{text-align:center;}</style></head><body><div class="center"><h3>${DB.settings.storeName}</h3><p>${t.date}</p></div><hr><table style="width:100%">${t.items.map(i=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.price*i.qty}</td></tr>`).join('')}</table><hr><div class="center"><p>Total: Rp ${t.net.toLocaleString()}</p><p>Terima Kasih</p></div><script>window.print();<\/script></body></html>`);
             },
-            
             exportToExcel(type) {
-                const data = type === 'sales' ? DB.sales : DB.purchases;
-                const ws = XLSX.utils.json_to_sheet(data);
                 const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "Data");
-                XLSX.writeFile(wb, `Export_${type}_${new Date().toISOString().split('T')[0]}.xlsx`);
+                const ws = XLSX.utils.json_to_sheet(DB.sales);
+                XLSX.utils.book_append_sheet(wb, ws, "Sales");
+                XLSX.writeFile(wb, `TirtaKencana_${type}.xlsx`);
             }
         };
 
@@ -941,4 +798,4 @@
         });
     </script>
 </body>
-</
+</html>

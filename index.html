@@ -4,10 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Tirta Kencana POS</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- SheetJS for Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Untuk alert yang lebih bagus -->
+    
+    <!-- Html2Canvas for Struck Image -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -19,32 +27,32 @@
                         accent: '#00D1FF',
                         background: '#F0F4F8',
                     },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'fade-in': 'fadeIn 0.5s ease-out forwards',
-                        'scale-in': 'scaleIn 0.5s ease-out forwards',
-                    },
+                    borderRadius: { 'xl': '1rem', '2xl': '1.5rem', '3xl': '2rem' },
+                    animation: { 'float': 'float 6s ease-in-out infinite', 'fade-in': 'fadeIn 0.5s ease-out forwards' },
                     keyframes: {
                         float: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
-                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-                        scaleIn: { '0%': { transform: 'scale(0.8)', opacity: '0' }, '100%': { transform: 'scale(1)', opacity: '1' } }
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } }
                     }
                 }
             }
         }
     </script>
+
     <style>
         body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #F0F4F8 0%, #e0eafc 100%); min-height: 100vh; }
         .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15); }
         .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.4); transition: all 0.3s ease; }
-        .glass-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px rgba(0, 80, 158, 0.2); }
-        .btn-primary { background: linear-gradient(135deg, #00509E 0%, #00A8E8 100%); color: white; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0, 80, 158, 0.3); }
-        .btn-primary:active { transform: scale(0.95); }
-        .input-field { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0, 80, 158, 0.2); transition: all 0.3s ease; }
+        .glass-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px rgba(0, 80, 158, 0.15); }
+        .btn-primary { background: linear-gradient(135deg, #00509E 0%, #00A8E8 100%); color: white; transition: all 0.2s; box-shadow: 0 4px 15px rgba(0, 80, 158, 0.3); }
+        .btn-primary:active { transform: scale(0.96); }
+        .input-field { background: rgba(255, 255, 255, 0.9); border: 1px solid rgba(0, 80, 158, 0.2); transition: all 0.3s; }
         .input-field:focus { outline: none; border-color: #00A8E8; box-shadow: 0 0 0 3px rgba(0, 168, 232, 0.2); }
-        .loading-spinner { border: 4px solid rgba(0, 80, 158, 0.1); border-left-color: #00509E; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        .hidden-page { display: none; }
+        .loading-spinner { border: 3px solid rgba(0,0,0,0.1); border-left-color: #00509E; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .hidden { display: none !important; }
+        
+        /* Struk Styles */
+        #struk-preview { font-family: 'Courier New', monospace; background: white; padding: 20px; width: 300px; margin: 0 auto; border: 1px dashed #ccc; }
     </style>
 </head>
 <body class="text-gray-800">
@@ -52,8 +60,8 @@
     <div id="app-container" class="max-w-7xl mx-auto p-4">
         <!-- Splash Screen -->
         <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-primary to-secondary">
-            <div class="text-center animate-scale-in">
-                <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" alt="Logo" class="w-32 h-32 mx-auto mb-6 rounded-2xl shadow-2xl border-4 border-white/30">
+            <div class="text-center animate-fade-in">
+                <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-32 h-32 mx-auto mb-6 rounded-2xl shadow-2xl border-4 border-white/30">
                 <h1 class="text-3xl font-bold text-white mb-2">TIRTA KENCANA</h1>
                 <p class="text-white/90 text-sm italic">DO GOOD AND GOD WILL COME TO YOU</p>
             </div>
@@ -63,34 +71,23 @@
         <div id="login-page" class="hidden min-h-screen flex items-center justify-center p-4">
             <div class="glass-panel w-full max-w-md p-8 rounded-3xl shadow-2xl relative overflow-hidden">
                 <div class="absolute -top-20 -right-20 w-40 h-40 bg-secondary/20 rounded-full animate-float"></div>
-                <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-accent/20 rounded-full animate-float" style="animation-delay: 2s;"></div>
-                
                 <div class="relative z-10">
                     <div class="text-center mb-8">
-                        <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" alt="Logo" class="w-24 h-24 mx-auto mb-4 rounded-xl shadow-lg">
+                        <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-24 h-24 mx-auto mb-4 rounded-xl shadow-lg">
                         <h2 class="text-2xl font-bold text-primary mb-1">Selamat Datang</h2>
                         <p class="text-gray-500 text-sm">Silakan masuk untuk melanjutkan</p>
                     </div>
-
                     <form id="login-form" class="space-y-5">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                            <div class="relative">
-                                <i data-lucide="user" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
-                                <input type="text" id="username" class="input-field w-full pl-10 pr-4 py-3 rounded-xl" placeholder="Masukkan username" required>
-                            </div>
+                            <input type="text" id="username" class="input-field w-full px-4 py-3 rounded-xl" placeholder="Username" required>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                            <div class="relative">
-                                <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5"></i>
-                                <input type="password" id="password" class="input-field w-full pl-10 pr-4 py-3 rounded-xl" placeholder="Masukkan password" required>
-                            </div>
+                            <input type="password" id="password" class="input-field w-full px-4 py-3 rounded-xl" placeholder="Password" required>
                         </div>
-                        
                         <div id="login-error" class="text-red-500 text-sm text-center hidden"></div>
-                        
-                        <button type="submit" id="login-btn" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2">
+                        <button type="submit" class="btn-primary w-full py-3 rounded-xl font-semibold text-lg flex items-center justify-center gap-2">
                             <span>Masuk</span>
                             <i data-lucide="arrow-right" class="w-5 h-5"></i>
                         </button>
@@ -101,6 +98,7 @@
 
         <!-- Main App -->
         <div id="main-app" class="hidden page-transition">
+            <!-- Header -->
             <header class="glass-panel rounded-2xl p-4 mb-6 flex items-center justify-between sticky top-0 z-40">
                 <div class="flex items-center gap-3">
                     <img src="https://www.image2url.com/r2/default/images/1781919958885-4a0fd859-0e6f-4e9f-9370-702fbf72864f.jpg" class="w-10 h-10 rounded-lg shadow-md">
@@ -110,7 +108,7 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="sync-btn" onclick="forceSync()" class="p-2 rounded-xl hover:bg-white/50 transition-colors" title="Sinkronisasi Data">
+                    <button onclick="syncData()" class="p-2 rounded-xl hover:bg-white/50 transition-colors" title="Sinkronisasi">
                         <i data-lucide="refresh-cw" class="w-5 h-5 text-primary"></i>
                     </button>
                     <button onclick="handleLogout()" class="p-2 rounded-xl hover:bg-red-100 transition-colors text-red-500" title="Keluar">
@@ -119,7 +117,7 @@
                 </div>
             </header>
 
-            <!-- Dashboard -->
+            <!-- Dashboard Content -->
             <main id="dashboard-content" class="space-y-6">
                 <!-- Summary Cards -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -128,103 +126,67 @@
                             <div class="p-2 bg-green-100 rounded-lg"><i data-lucide="banknote" class="w-5 h-5 text-green-600"></i></div>
                             <span class="text-xs text-gray-500 font-medium">COD Hari Ini</span>
                         </div>
-                        <p id="sales-cod" class="text-xl font-bold text-gray-800">Rp 0</p>
+                        <p id="dash-cod" class="text-xl font-bold text-gray-800">Rp 0</p>
                     </div>
                     <div class="glass-card p-4 rounded-2xl">
                         <div class="flex items-center gap-2 mb-2">
                             <div class="p-2 bg-blue-100 rounded-lg"><i data-lucide="credit-card" class="w-5 h-5 text-blue-600"></i></div>
                             <span class="text-xs text-gray-500 font-medium">Transfer</span>
                         </div>
-                        <p id="sales-transfer" class="text-xl font-bold text-gray-800">Rp 0</p>
+                        <p id="dash-transfer" class="text-xl font-bold text-gray-800">Rp 0</p>
                     </div>
                     <div class="glass-card p-4 rounded-2xl">
                         <div class="flex items-center gap-2 mb-2">
                             <div class="p-2 bg-purple-100 rounded-lg"><i data-lucide="qr-code" class="w-5 h-5 text-purple-600"></i></div>
                             <span class="text-xs text-gray-500 font-medium">QRIS</span>
                         </div>
-                        <p id="sales-qris" class="text-xl font-bold text-gray-800">Rp 0</p>
+                        <p id="dash-qris" class="text-xl font-bold text-gray-800">Rp 0</p>
                     </div>
                     <div class="glass-card p-4 rounded-2xl">
                         <div class="flex items-center gap-2 mb-2">
                             <div class="p-2 bg-orange-100 rounded-lg"><i data-lucide="clock" class="w-5 h-5 text-orange-600"></i></div>
                             <span class="text-xs text-gray-500 font-medium">Belum Bayar</span>
                         </div>
-                        <p id="sales-pending" class="text-xl font-bold text-gray-800">Rp 0</p>
+                        <p id="dash-pending" class="text-xl font-bold text-gray-800">Rp 0</p>
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Quick Actions Grid -->
                 <div class="glass-panel p-4 rounded-2xl">
                     <h3 class="font-bold text-primary mb-3 flex items-center gap-2"><i data-lucide="zap" class="w-5 h-5"></i> Aksi Cepat</h3>
                     <div class="grid grid-cols-4 md:grid-cols-8 gap-2">
-                        <button onclick="navigateTo('penjualan')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md"><i data-lucide="shopping-cart" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Jual</span>
-                        </button>
-                        <button onclick="navigateTo('transaksi')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-md"><i data-lucide="receipt" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Transaksi</span>
-                        </button>
-                        <button onclick="navigateTo('pembelian')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white shadow-md"><i data-lucide="truck" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Beli</span>
-                        </button>
-                        <button onclick="navigateTo('produk')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white shadow-md"><i data-lucide="package" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Produk</span>
-                        </button>
-                         <button onclick="navigateTo('stock')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shadow-md"><i data-lucide="boxes" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Stok</span>
-                        </button>
-                        <button onclick="navigateTo('pelanggan')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white shadow-md"><i data-lucide="users" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Pelanggan</span>
-                        </button>
-                        <button onclick="navigateTo('piutang')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white shadow-md"><i data-lucide="hand-coins" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Piutang</span>
-                        </button>
-                        <button onclick="navigateTo('setting')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60 transition-colors">
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white shadow-md"><i data-lucide="settings" class="w-6 h-6"></i></div>
-                            <span class="text-xs font-medium text-center">Setting</span>
-                        </button>
+                        <button onclick="nav('penjualan')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white shadow-md"><i data-lucide="shopping-cart" class="w-6 h-6"></i></div><span class="text-xs font-medium">Jual</span></button>
+                        <button onclick="nav('transaksi')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white shadow-md"><i data-lucide="receipt" class="w-6 h-6"></i></div><span class="text-xs font-medium">Transaksi</span></button>
+                        <button onclick="nav('pembelian')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white shadow-md"><i data-lucide="truck" class="w-6 h-6"></i></div><span class="text-xs font-medium">Beli</span></button>
+                        <button onclick="nav('produk')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white shadow-md"><i data-lucide="package" class="w-6 h-6"></i></div><span class="text-xs font-medium">Produk</span></button>
+                        <button onclick="nav('stock')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shadow-md"><i data-lucide="boxes" class="w-6 h-6"></i></div><span class="text-xs font-medium">Stok</span></button>
+                        <button onclick="nav('pelanggan')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-pink-400 to-pink-600 flex items-center justify-center text-white shadow-md"><i data-lucide="users" class="w-6 h-6"></i></div><span class="text-xs font-medium">Pelanggan</span></button>
+                        <button onclick="nav('piutang')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-400 to-red-600 flex items-center justify-center text-white shadow-md"><i data-lucide="hand-coins" class="w-6 h-6"></i></div><span class="text-xs font-medium">Piutang</span></button>
+                        <button onclick="nav('setting')" class="flex flex-col items-center gap-1 p-2 rounded-xl hover:bg-white/60"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-white shadow-md"><i data-lucide="settings" class="w-6 h-6"></i></div><span class="text-xs font-medium">Setting</span></button>
                     </div>
                 </div>
-
-                <!-- Menu Grid -->
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <div onclick="navigateTo('rekap-penjualan')" class="glass-card p-4 rounded-2xl cursor-pointer group">
-                        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors"><i data-lucide="bar-chart-3" class="w-6 h-6 text-primary"></i></div>
-                        <h3 class="font-semibold text-gray-800">Rekap Penjualan</h3>
-                        <p class="text-xs text-gray-500 mt-1">Laporan & Analisis</p>
-                    </div>
-                    <div onclick="navigateTo('setoran')" class="glass-card p-4 rounded-2xl cursor-pointer group">
-                        <div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-3 group-hover:bg-secondary/20 transition-colors"><i data-lucide="wallet" class="w-6 h-6 text-secondary"></i></div>
-                        <h3 class="font-semibold text-gray-800">Setoran</h3>
-                        <p class="text-xs text-gray-500 mt-1">Manajemen Kas</p>
-                    </div>
-                    <div onclick="navigateTo('rekap-pembelian')" class="glass-card p-4 rounded-2xl cursor-pointer group">
-                        <div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-3 group-hover:bg-green-200 transition-colors"><i data-lucide="file-text" class="w-6 h-6 text-green-600"></i></div>
-                        <h3 class="font-semibold text-gray-800">Rekap Pembelian</h3>
-                        <p class="text-xs text-gray-500 mt-1">Riwayat Beli</p>
-                    </div>
-                    <div onclick="navigateTo('laporan-bulanan')" class="glass-card p-4 rounded-2xl cursor-pointer group">
-                        <div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-3 group-hover:bg-purple-200 transition-colors"><i data-lucide="calendar" class="w-6 h-6 text-purple-600"></i></div>
-                        <h3 class="font-semibold text-gray-800">Laporan Bulanan</h3>
-                        <p class="text-xs text-gray-500 mt-1">Arsip Data</p>
-                    </div>
+                
+                <!-- Main Menu Grid (Laporan, Setoran, dll) -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div onclick="nav('rekap-penjualan')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3"><i data-lucide="bar-chart-3" class="w-6 h-6 text-primary"></i></div><h3 class="font-semibold">Rekap Penjualan</h3></div>
+                    <div onclick="nav('setoran')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-secondary/10 flex items-center justify-center mb-3"><i data-lucide="wallet" class="w-6 h-6 text-secondary"></i></div><h3 class="font-semibold">Setoran</h3></div>
+                    <div onclick="nav('rekap-pembelian')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center mb-3"><i data-lucide="file-text" class="w-6 h-6 text-green-600"></i></div><h3 class="font-semibold">Rekap Pembelian</h3></div>
+                    <div onclick="nav('laporan-bulanan')" class="glass-card p-4 rounded-2xl cursor-pointer"><div class="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center mb-3"><i data-lucide="calendar" class="w-6 h-6 text-purple-600"></i></div><h3 class="font-semibold">Laporan Bulanan</h3></div>
                 </div>
             </main>
 
-            <!-- Dynamic Page Content -->
-            <div id="page-content" class="hidden space-y-6">
-                <div class="glass-panel p-6 rounded-2xl">
-                    <div class="flex items-center gap-3 mb-4">
-                        <button onclick="navigateTo('dashboard')" class="p-2 hover:bg-white/50 rounded-lg transition-colors"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-                        <h2 id="page-title" class="text-xl font-bold text-primary">Judul Halaman</h2>
+            <!-- Dynamic Page Container -->
+            <div id="page-container" class="hidden space-y-6">
+                <div class="glass-panel p-4 md:p-6 rounded-2xl min-h-[80vh]">
+                    <div class="flex items-center justify-between mb-6 border-b pb-4 border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <button onclick="nav('dashboard')" class="p-2 hover:bg-white/50 rounded-lg transition-colors"><i data-lucide="arrow-left" class="w-6 h-6"></i></button>
+                            <h2 id="page-title" class="text-xl md:text-2xl font-bold text-primary"></h2>
+                        </div>
+                        <div id="page-actions"></div>
                     </div>
-                    <div id="page-body" class="min-h-[400px]">
+                    
+                    <div id="page-body" class="space-y-6">
                         <!-- Content injected via JS -->
                     </div>
                 </div>
@@ -232,19 +194,34 @@
         </div>
     </div>
 
+    <!-- Modal Preview Struk/Setoran -->
+    <div id="preview-modal" class="fixed inset-0 z-50 bg-black/50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 relative">
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-500 hover:text-red-500"><i data-lucide="x" class="w-6 h-6"></i></button>
+            <h3 class="text-lg font-bold text-center mb-4 text-gray-800">Preview Dokumen</h3>
+            <div id="struk-content"></div>
+            <div class="mt-6 grid grid-cols-2 gap-3">
+                <button onclick="downloadStrukPNG()" class="btn-primary py-2 rounded-xl text-sm flex items-center justify-center gap-2"><i data-lucide="download" class="w-4 h-4"></i> Download PNG</button>
+                <button onclick="sendViaWA()" class="bg-green-500 text-white py-2 rounded-xl text-sm flex items-center justify-center gap-2 hover:bg-green-600"><i data-lucide="message-circle" class="w-4 h-4"></i> Kirim WA</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- KONFIGURASI ---
+        // --- KONFIGURASI & STATE ---
         const CONFIG = {
+            sheetsId: '1OrMEuqOo9JF9i29et8c5rhSyoKsrjzVnxxZEbOyIxfQ',
             gasUrl: 'https://script.google.com/macros/s/AKfycbzWwDCMaFj_Gj_Wfs9ypU0xrwnUMi-AElRCFYC0yxuKMrXm2avvtQ12HfBAh6duzQPaew/exec'
         };
 
-        // --- STATE ---
-        let appState = {
+        let state = {
             user: null,
-            data: { products: [], sales: [], purchases: [], customers: [], stock: [], settings: {} }
+            data: { sales: [], products: [], customers: [], purchases: [], stock: [], settings: {}, users: [] },
+            currentCart: [],
+            tempImage: null
         };
 
-        const USERS = [
+        const USERS_DB = [
             { nama: 'admin', role: 'admin', password: '020730' },
             { nama: 'hasan', role: 'sales', password: '1234' },
             { nama: 'ujang', role: 'sales', password: '1234' },
@@ -259,7 +236,6 @@
             setTimeout(() => {
                 document.getElementById('splash-screen').classList.add('hidden');
                 document.getElementById('login-page').classList.remove('hidden');
-                document.getElementById('login-page').classList.add('animate-fade-in');
             }, 2000);
 
             document.getElementById('login-form').addEventListener('submit', handleLogin);
@@ -268,193 +244,434 @@
         // --- AUTH ---
         function handleLogin(e) {
             e.preventDefault();
-            const btn = document.getElementById('login-btn');
-            const originalBtnContent = btn.innerHTML;
-            const userIn = document.getElementById('username').value.trim();
-            const passIn = document.getElementById('password').value.trim();
-            const errDiv = document.getElementById('login-error');
-
-            btn.disabled = true;
-            btn.innerHTML = '<div class="loading-spinner"></div>';
-
-            // Simulasi delay kecil untuk UX
-            setTimeout(() => {
-                const user = USERS.find(u => u.nama === userIn && u.password === passIn);
-                
-                if (user) {
-                    appState.user = user;
-                    errDiv.classList.add('hidden');
-                    
-                    // Transisi UI
-                    document.getElementById('login-page').classList.add('hidden');
-                    document.getElementById('main-app').classList.remove('hidden');
-                    document.getElementById('user-role-display').textContent = `${user.nama} (${user.role})`;
-                    
-                    // BARU SEKARANG LAKUKAN SYNC SETELAH LOGIN BERHASIL
-                    performSync(); 
-                } else {
-                    errDiv.textContent = 'Username atau password salah!';
-                    errDiv.classList.remove('hidden');
-                    btn.disabled = false;
-                    btn.innerHTML = originalBtnContent;
-                    lucide.createIcons();
-                }
-            }, 500);
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const user = USERS_DB.find(x => x.nama === u && x.password === p);
+            
+            if (user) {
+                state.user = user;
+                document.getElementById('login-page').classList.add('hidden');
+                document.getElementById('main-app').classList.remove('hidden');
+                document.getElementById('user-role-display').textContent = `${user.nama} (${user.role})`;
+                syncData(); // Load data after login
+            } else {
+                const err = document.getElementById('login-error');
+                err.textContent = "Username atau password salah!";
+                err.classList.remove('hidden');
+            }
         }
 
         function handleLogout() {
-            if(confirm('Keluar dari aplikasi?')) {
+            if(confirm("Keluar aplikasi?")) {
                 location.reload();
             }
         }
 
         // --- DATA SYNC ---
-        async function performSync() {
-            const syncBtnIcon = document.querySelector('#sync-btn i');
-            syncBtnIcon.classList.add('animate-spin');
+        async function syncData() {
+            const btn = document.querySelector('button[onclick="syncData()"] i');
+            if(btn) btn.classList.add('animate-spin');
             
             try {
-                // Menggunakan mode 'no-cors' akan membuat response opaque, jadi kita harus berhati-hati
-                // Namun GAS biasanya mengembalikan JSON yang bisa dibaca jika header diatur benar di server
-                const response = await fetch(`${CONFIG.gasUrl}?action=getAllData`, {
-                    method: 'GET',
-                    mode: 'cors' 
-                });
-
-                if (!response.ok) throw new Error('Network response was not ok');
-                
-                const result = await response.json();
-                
-                if (result.status === 'success') {
-                    appState.data = result.data;
-                    console.log('Data synced:', appState.data);
-                    loadDashboardData();
-                    
-                    // Notifikasi halus
-                    const Toast = Swal.mixin({
-                        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
-                        didOpen: (toast) => { toast.addEventListener('mouseenter', Swal.stopTimer); toast.addEventListener('mouseleave', Swal.resumeTimer); }
-                    });
-                    Toast.fire({ icon: 'success', title: 'Data tersinkronisasi' });
-                } else {
-                    throw new Error(result.message || 'Gagal mengambil data');
+                const res = await fetch(`${CONFIG.gasUrl}?action=getAllData`);
+                const json = await res.json();
+                if(json.status === 'success') {
+                    state.data = json.data;
+                    updateDashboard();
+                    alert("Data berhasil disinkronisasi!");
                 }
-            } catch (error) {
-                console.error('Sync failed:', error);
-                // Jangan blokir user, biarkan mereka pakai mode offline/local first
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Sinkronisasi Gagal',
-                    text: 'Tidak dapat terhubung ke Google Sheets. Menggunakan data lokal/cache. Periksa koneksi internet atau konfigurasi GAS.',
-                    footer: `<small>Error: ${error.message}</small>`
-                });
-                loadDashboardData(); // Load apa adanya (kosong)
+            } catch (err) {
+                console.error(err);
+                alert("Gagal sinkronisasi. Periksa koneksi atau deploy GAS.");
             } finally {
-                syncBtnIcon.classList.remove('animate-spin');
+                if(btn) btn.classList.remove('animate-spin');
             }
         }
 
-        function forceSync() {
-            Swal.fire({
-                title: 'Sinkronisasi?',
-                text: "Mengambil data terbaru dari Google Sheets",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Ya, Sync',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    performSync();
-                }
-            });
-        }
-
-        function loadDashboardData() {
+        function updateDashboard() {
             const today = new Date().toISOString().split('T')[0];
-            // Pastikan data.sales ada dan array
-            const salesToday = (appState.data.sales || []).filter(s => String(s.tanggal).startsWith(today));
+            const salesToday = state.data.sales?.filter(s => s.tanggal.startsWith(today)) || [];
             
-            let totals = { cod: 0, transfer: 0, qris: 0, pending: 0 };
-            
+            const totals = { cod: 0, transfer: 0, qris: 0, pending: 0 };
             salesToday.forEach(s => {
                 const net = parseFloat(s.nett) || 0;
-                const status = String(s.status).toLowerCase();
-                if (status.includes('cod')) totals.cod += net;
-                else if (status.includes('transfer')) totals.transfer += net;
-                else if (status.includes('qris')) totals.qris += net;
+                if(s.status === 'cod') totals.cod += net;
+                else if(s.status === 'transfer') totals.transfer += net;
+                else if(s.status === 'qris') totals.qris += net;
                 else totals.pending += net;
             });
 
-            animateValue("sales-cod", totals.cod);
-            animateValue("sales-transfer", totals.transfer);
-            animateValue("sales-qris", totals.qris);
-            animateValue("sales-pending", totals.pending);
+            document.getElementById('dash-cod').textContent = 'Rp ' + totals.cod.toLocaleString('id-ID');
+            document.getElementById('dash-transfer').textContent = 'Rp ' + totals.transfer.toLocaleString('id-ID');
+            document.getElementById('dash-qris').textContent = 'Rp ' + totals.qris.toLocaleString('id-ID');
+            document.getElementById('dash-pending').textContent = 'Rp ' + totals.pending.toLocaleString('id-ID');
         }
 
-        function animateValue(id, end) {
-            const obj = document.getElementById(id);
-            const start = 0;
-            const duration = 1000;
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                const val = Math.floor(progress * (end - start) + start);
-                obj.textContent = "Rp " + val.toLocaleString('id-ID');
-                if (progress < 1) window.requestAnimationFrame(step);
-            };
-            window.requestAnimationFrame(step);
-        }
-
-        // --- NAVIGATION ---
-        function navigateTo(page) {
-            const dash = document.getElementById('dashboard-content');
-            const content = document.getElementById('page-content');
-            const title = document.getElementById('page-title');
+        // --- NAVIGATION & PAGE RENDERING ---
+        function nav(page) {
+            document.getElementById('dashboard-content').classList.add('hidden');
+            document.getElementById('page-container').classList.remove('hidden');
             const body = document.getElementById('page-body');
+            const title = document.getElementById('page-title');
+            const actions = document.getElementById('page-actions');
+            
+            body.innerHTML = ''; // Clear content
+            actions.innerHTML = '';
 
-            if (page === 'dashboard') {
-                content.classList.add('hidden');
-                dash.classList.remove('hidden');
-                loadDashboardData();
+            // Check Role Access
+            const role = state.user.role;
+            const allowedPages = {
+                'admin': ['dashboard', 'penjualan', 'transaksi', 'pembelian', 'produk', 'stock', 'pelanggan', 'piutang', 'rekap-penjualan', 'setoran', 'rekap-pembelian', 'laporan-bulanan', 'setting'],
+                'sales': ['dashboard', 'penjualan', 'transaksi', 'rekap-penjualan', 'setoran', 'setting'],
+                'driver': ['dashboard', 'pembelian', 'rekap-pembelian', 'setting']
+            };
+
+            if (!allowedPages[role].includes(page)) {
+                body.innerHTML = `<div class="text-center text-red-500 p-10"><h3 class="text-xl font-bold">Akses Ditolak</h3><p>Role ${role} tidak memiliki akses ke menu ini.</p><button onclick="nav('dashboard')" class="mt-4 btn-primary px-4 py-2 rounded-lg">Kembali</button></div>`;
                 return;
             }
 
-            dash.classList.add('hidden');
-            content.classList.remove('hidden');
-            
-            const titles = {
-                'penjualan': 'Input Penjualan', 'transaksi': 'Riwayat Transaksi',
-                'pembelian': 'Input Pembelian', 'produk': 'Manajemen Produk',
-                'stock': 'Stok Barang', 'pelanggan': 'Data Pelanggan',
-                'piutang': 'Piutang', 'rekap-penjualan': 'Rekap Penjualan',
-                'setoran': 'Setoran Kas', 'rekap-pembelian': 'Rekap Pembelian',
-                'laporan-bulanan': 'Laporan Bulanan', 'setting': 'Pengaturan'
-            };
-
-            title.textContent = titles[page] || page;
-            
-            // Render Placeholder Konten (Nanti diisi logic spesifik per halaman)
-            body.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-64 text-center space-y-4">
-                    <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                        <i data-lucide="construction" class="w-10 h-10 text-primary"></i>
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-700">Halaman ${titles[page]}</h3>
-                    <p class="text-gray-500 max-w-sm">Fitur ini sedang dalam pengembangan. Data tersedia: ${Object.keys(appState.data).length} kategori.</p>
-                    <div class="grid grid-cols-2 gap-2 w-full max-w-md mt-4">
-                        <button onclick="alert('Fitur tambah data belum tersedia di demo ini')" class="btn-primary py-2 rounded-lg text-sm">Tambah Data</button>
-                        <button onclick="alert('Tabel data akan muncul di sini')" class="bg-white border border-gray-300 py-2 rounded-lg text-sm text-gray-700">Lihat Tabel</button>
-                    </div>
-                </div>
-            `;
+            switch(page) {
+                case 'penjualan': renderPenjualan(body, title); break;
+                case 'pembelian': renderPembelian(body, title); break;
+                case 'produk': renderProduk(body, title, actions); break;
+                case 'transaksi': renderTransaksi(body, title); break;
+                case 'setting': renderSetting(body, title); break;
+                case 'dashboard': 
+                    document.getElementById('page-container').classList.add('hidden');
+                    document.getElementById('dashboard-content').classList.remove('hidden');
+                    updateDashboard();
+                    return;
+                default:
+                    title.textContent = page.replace('-', ' ').toUpperCase();
+                    body.innerHTML = `<div class="text-center text-gray-500 py-20">Fitur ${page} sedang dalam pengembangan lanjutan.</div>`;
+            }
             lucide.createIcons();
         }
 
-        // Expose global functions
-        window.navigateTo = navigateTo;
-        window.forceSync = forceSync;
-        window.handleLogout = handleLogout;
+        // --- RENDER FUNCTIONS (EXAMPLES FOR KEY PAGES) ---
+
+        function renderPenjualan(container, titleEl) {
+            titleEl.textContent = "Input Penjualan";
+            container.innerHTML = `
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Form Input -->
+                    <div class="md:col-span-2 space-y-4">
+                        <div class="glass-card p-4 rounded-xl">
+                            <label class="text-xs font-bold text-gray-500 uppercase">Scan Barcode / Input SKU</label>
+                            <div class="flex gap-2 mt-1">
+                                <input type="text" id="scan-input" class="input-field w-full px-4 py-2 rounded-lg" placeholder="Scan atau ketik SKU..." onkeypress="if(event.key==='Enter') addItemFromScan()">
+                                <button onclick="addItemFromScan()" class="btn-primary px-4 py-2 rounded-lg"><i data-lucide="plus" class="w-5 h-5"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="glass-card p-4 rounded-xl overflow-x-auto">
+                            <table class="w-full text-sm">
+                                <thead><tr class="border-b text-left"><th class="pb-2">Item</th><th class="pb-2 text-center">Qty</th><th class="pb-2 text-right">Harga</th><th class="pb-2 text-right">Subtotal</th><th class="pb-2"></th></tr></thead>
+                                <tbody id="cart-items"></tbody>
+                            </table>
+                            <div id="empty-cart-msg" class="text-center text-gray-400 py-4">Belum ada item</div>
+                        </div>
+                    </div>
+
+                    <!-- Checkout Panel -->
+                    <div class="space-y-4">
+                        <div class="glass-card p-4 rounded-xl space-y-3">
+                            <div>
+                                <label class="text-xs text-gray-500">Pelanggan</label>
+                                <select id="cust-select" class="input-field w-full px-3 py-2 rounded-lg mt-1 text-sm"></select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Sales</label>
+                                <select id="sales-select" class="input-field w-full px-3 py-2 rounded-lg mt-1 text-sm"></select>
+                            </div>
+                            <div>
+                                <label class="text-xs text-gray-500">Status Bayar</label>
+                                <select id="pay-status" class="input-field w-full px-3 py-2 rounded-lg mt-1 text-sm">
+                                    <option value="cod">COD (Tunai)</option>
+                                    <option value="transfer">Transfer</option>
+                                    <option value="qris">QRIS</option>
+                                    <option value="belum bayar">Belum Bayar</option>
+                                </select>
+                            </div>
+                            
+                            <div class="border-t pt-3 space-y-2">
+                                <div class="flex justify-between text-sm"><span>Gross</span><span id="calc-gross">Rp 0</span></div>
+                                <div class="flex justify-between text-sm"><span>Diskon</span><input type="number" id="input-disc" value="0" class="w-20 text-right px-2 py-1 rounded border" onchange="calcTotal()"></div>
+                                <div class="flex justify-between text-sm"><span>Ongkir/Tips</span><input type="number" id="input-extra" value="0" class="w-20 text-right px-2 py-1 rounded border" onchange="calcTotal()"></div>
+                                <div class="flex justify-between text-lg font-bold text-primary pt-2"><span>Total</span><span id="calc-total">Rp 0</span></div>
+                            </div>
+
+                            <div class="pt-2">
+                                <label class="text-xs text-gray-500 block mb-1">Foto Bukti (Opsional)</label>
+                                <input type="file" id="foto-input" accept="image/*" class="w-full text-xs" onchange="handleFileSelect(this)">
+                            </div>
+
+                            <button onclick="saveSale()" class="btn-primary w-full py-3 rounded-xl font-bold shadow-lg mt-4">SIMPAN & CETAK</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Populate Dropdowns
+            const custSelect = document.getElementById('cust-select');
+            const salesSelect = document.getElementById('sales-select');
+            
+            // Default General Customer
+            let opts = '<option value="Umum">Pelanggan Umum</option>';
+            (state.data.customers || []).forEach(c => opts += `<option value="${c.nama}">${c.nama}</option>`);
+            custSelect.innerHTML = opts;
+
+            // Sales from Users or specific Sales list
+            let sOpts = `<option value="${state.user.nama}">${state.user.nama} (Saya)</option>`;
+            // Add other sales if admin
+            if(state.user.role === 'admin') {
+                 USERS_DB.filter(u => u.role === 'sales').forEach(u => sOpts += `<option value="${u.nama}">${u.nama}</option>`);
+            }
+            salesSelect.innerHTML = sOpts;
+
+            state.currentCart = [];
+            renderCart();
+            lucide.createIcons();
+        }
+
+        function addItemFromScan() {
+            const input = document.getElementById('scan-input');
+            const sku = input.value.trim();
+            if(!sku) return;
+
+            const product = state.data.products?.find(p => p.sku == sku || p.barcode == sku);
+            if(product) {
+                const existing = state.currentCart.find(i => i.sku == sku);
+                if(existing) {
+                    existing.qty++;
+                } else {
+                    state.currentCart.push({ ...product, qty: 1, disc_item: 0 });
+                }
+                input.value = '';
+                renderCart();
+            } else {
+                alert('Produk tidak ditemukan!');
+            }
+        }
+
+        function renderCart() {
+            const tbody = document.getElementById('cart-items');
+            const emptyMsg = document.getElementById('empty-cart-msg');
+            
+            if(state.currentCart.length === 0) {
+                tbody.innerHTML = '';
+                emptyMsg.style.display = 'block';
+                calcTotal();
+                return;
+            }
+            
+            emptyMsg.style.display = 'none';
+            tbody.innerHTML = state.currentCart.map((item, idx) => `
+                <tr class="border-b last:border-0">
+                    <td class="py-2">
+                        <div class="font-medium">${item.nama_barang}</div>
+                        <div class="text-xs text-gray-500">${item.sku}</div>
+                    </td>
+                    <td class="text-center">
+                        <input type="number" value="${item.qty}" min="1" class="w-16 text-center border rounded" onchange="updateQty(${idx}, this.value)">
+                    </td>
+                    <td class="text-right">${parseInt(item.harga_jual).toLocaleString()}</td>
+                    <td class="text-right font-medium">${(item.qty * item.harga_jual).toLocaleString()}</td>
+                    <td class="text-right">
+                        <button onclick="removeItem(${idx})" class="text-red-500 hover:bg-red-100 p-1 rounded"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+            calcTotal();
+        }
+
+        function updateQty(idx, val) {
+            state.currentCart[idx].qty = parseInt(val);
+            renderCart();
+        }
+
+        function removeItem(idx) {
+            state.currentCart.splice(idx, 1);
+            renderCart();
+        }
+
+        function calcTotal() {
+            const gross = state.currentCart.reduce((sum, item) => sum + (item.qty * item.harga_jual), 0);
+            const disc = parseFloat(document.getElementById('input-disc')?.value) || 0;
+            const extra = parseFloat(document.getElementById('input-extra')?.value) || 0;
+            const total = gross - disc + extra;
+
+            document.getElementById('calc-gross').textContent = 'Rp ' + gross.toLocaleString();
+            document.getElementById('calc-total').textContent = 'Rp ' + total.toLocaleString();
+            return { gross, disc, extra, total };
+        }
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    state.tempImage = e.target.result; // Base64
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        async function saveSale() {
+            if(state.currentCart.length === 0) return alert('Keranjang kosong!');
+            
+            const totals = calcTotal();
+            const saleData = {
+                action: 'saveSale',
+                id_transaksi: 'TRX-' + Date.now(),
+                tanggal: new Date().toISOString(),
+                pelanggan: document.getElementById('cust-select').value,
+                sales: document.getElementById('sales-select').value,
+                status: document.getElementById('pay-status').value,
+                items: state.currentCart,
+                gross: totals.gross,
+                disc: totals.disc,
+                biaya_tambahan: totals.extra,
+                nett: totals.total,
+                foto_url: state.tempImage ? 'base64_image_data' : '' // In real app, upload to Drive first
+            };
+
+            // Optimistic UI Update (Simpan Lokal dulu)
+            if(!state.data.sales) state.data.sales = [];
+            state.data.sales.push(saleData);
+            
+            // Show Preview
+            showPreviewStruk(saleData);
+
+            // Send to Backend (Async, don't block UI)
+            try {
+                await fetch(CONFIG.gasUrl, {
+                    method: 'POST',
+                    mode: 'no-cors', // Important for simple GAS deployment
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(saleData)
+                });
+                // Reset form
+                state.currentCart = [];
+                state.tempImage = null;
+                document.getElementById('scan-input').value = '';
+                renderCart();
+                updateDashboard();
+            } catch(e) {
+                console.error("Gagal simpan ke server", e);
+            }
+        }
+
+        function showPreviewStruk(data) {
+            const modal = document.getElementById('preview-modal');
+            const content = document.getElementById('struk-content');
+            
+            const settings = state.data.settings || {};
+            const tokoName = settings.nama_toko || 'TIRTA KENCANA';
+            const address = settings.alamat || 'WTC MANGGA DUA';
+            
+            let itemsHtml = data.items.map(i => 
+                `<div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:4px;">
+                    <span>${i.qty}x ${i.nama_barang}</span>
+                    <span>${(i.qty * i.harga_jual).toLocaleString()}</span>
+                </div>`
+            ).join('');
+
+            content.innerHTML = `
+                <div id="struk-preview">
+                    <div style="text-align:center; margin-bottom:10px;">
+                        <h3 style="margin:0; font-size:16px; font-weight:bold;">${tokoName}</h3>
+                        <p style="margin:2px; font-size:10px;">${address}</p>
+                        <p style="margin:2px; font-size:10px;">${new Date(data.tanggal).toLocaleString()}</p>
+                        <p style="margin:2px; font-size:10px;">No: ${data.id_transaksi}</p>
+                        <p style="margin:2px; font-size:10px;">Sales: ${data.sales}</p>
+                    </div>
+                    <div style="border-bottom:1px dashed #000; margin:5px 0;"></div>
+                    ${itemsHtml}
+                    <div style="border-bottom:1px dashed #000; margin:5px 0;"></div>
+                    <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Total</span><span style="font-weight:bold;">Rp ${data.nett.toLocaleString()}</span></div>
+                    <div style="display:flex; justify-content:space-between; font-size:12px;"><span>Bayar (${data.status.toUpperCase()})</span><span>Rp ${data.nett.toLocaleString()}</span></div>
+                    <div style="text-align:center; margin-top:15px; font-size:10px;">
+                        ${settings.tagline || 'TERIMA KASIH'}
+                    </div>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeModal() {
+            document.getElementById('preview-modal').classList.add('hidden');
+        }
+
+        async function downloadStrukPNG() {
+            const element = document.getElementById('struk-preview');
+            const canvas = await html2canvas(element);
+            const link = document.createElement('a');
+            link.download = 'struk-' + Date.now() + '.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function sendViaWA() {
+            // Simple WA share logic
+            const text = `Terima kasih atas pembelian Anda di Tirta Kencana.\nTotal: ${document.getElementById('calc-total').textContent}`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        // --- Placeholder Renders for other pages to prevent errors ---
+        function renderPembelian(container, titleEl) {
+            titleEl.textContent = "Input Pembelian";
+            container.innerHTML = `<div class="text-center p-10">Form Pembelian (Driver) akan dimuat di sini. Struktur mirip Penjualan tapi untuk Stock Masuk.</div>`;
+        }
+        function renderProduk(container, titleEl, actionsEl) {
+            titleEl.textContent = "Manajemen Produk";
+            actionsEl.innerHTML = `<button class="btn-primary px-4 py-2 rounded-lg text-sm" onclick="alert('Fitur tambah produk')">+ Tambah Produk</button>`;
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100"><tr><th class="p-3">SKU</th><th class="p-3">Nama</th><th class="p-3">Modal</th><th class="p-3">Jual</th><th class="p-3">Aksi</th></tr></thead>
+                        <tbody>
+                            ${(state.data.products || []).map(p => `
+                                <tr class="border-b">
+                                    <td class="p-3">${p.sku}</td>
+                                    <td class="p-3">${p.nama_barang}</td>
+                                    <td class="p-3">${p.harga_modal}</td>
+                                    <td class="p-3">${p.harga_jual}</td>
+                                    <td class="p-3"><button class="text-blue-500">Edit</button></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+        function renderTransaksi(container, titleEl) {
+            titleEl.textContent = "Riwayat Transaksi";
+            container.innerHTML = `<div class="text-center text-gray-500">Daftar transaksi akan muncul di sini dengan fitur filter dan export Excel.</div>`;
+        }
+        function renderSetting(container, titleEl) {
+            titleEl.textContent = "Pengaturan";
+            container.innerHTML = `
+                <div class="max-w-2xl mx-auto space-y-4">
+                    <div class="glass-card p-4 rounded-xl">
+                        <h3 class="font-bold mb-2">Konfigurasi Google Sheets</h3>
+                        <label class="block text-xs text-gray-500">Google Sheets ID</label>
+                        <input type="text" value="${CONFIG.sheetsId}" class="input-field w-full p-2 rounded mb-2" readonly>
+                        <label class="block text-xs text-gray-500">GAS URL</label>
+                        <input type="text" value="${CONFIG.gasUrl}" class="input-field w-full p-2 rounded mb-2" readonly>
+                        <p class="text-xs text-green-600 mt-2">*Untuk mengubah, edit langsung di code HTML sebelum deploy.</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl">
+                         <h3 class="font-bold mb-2">Info Toko</h3>
+                         <p>Nama: ${state.data.settings?.nama_toko || 'Tirta Kencana'}</p>
+                         <p>Alamat: ${state.data.settings?.alamat || '-'}</p>
+                    </div>
+                </div>
+            `;
+        }
+
     </script>
 </body>
 </html>

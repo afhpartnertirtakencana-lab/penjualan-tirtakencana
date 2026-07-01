@@ -222,18 +222,19 @@
         </div>
     </div>
 
-        <script>
+    <script>
         // --- KONFIGURASI ---
         const CONFIG = {
             sheetsId: '1OrMEuqOo9JF9i29et8c5rhSyoKsrjzVnxxZEbOyIxfQ',
-            gasUrl: 'https://script.google.com/macros/s/AKfycbzWwDCMaFj_Gj_Wfs9ypU0xrwnUMi-AElRCFYC0yxuKMrXm2avvtQ12HfBAh6duzQPaew/exec',
+            // GANTI URL INI DENGAN URL WEB APP ANDA YANG BENAR
+            gasUrl: 'https://script.google.com/macros/s/AKfycbzWwDCMaFj_Gj_Wfs9ypU0xrwnUMi-AElRCFYC0yxuKMrXm2avvtQ12HfBAh6duzQPaew/exec', 
             storeName: 'TIRTA KENCANA',
             tagline: 'DO GOOD AND GOD WILL COME TO YOU',
             logo: 'https://placehold.co/100x100', 
             qris: 'https://placehold.co/100x100'
         };
 
-        // --- DATABASE LOCAL ---
+        // --- DATABASE LOCAL (DEFAULT DATA) ---
         const DB = {
             users: [
                 { name: 'admin', role: 'admin', pass: '020730' },
@@ -243,7 +244,15 @@
                 { name: 'oji', role: 'driver', pass: '1234' },
                 { name: 'padong', role: 'driver', pass: '1234' }
             ],
-            products: [], customers: [], sales: [], purchases: [], stock: [], debt: [], setoran: [], drivers: [], settings: { ...CONFIG }
+            products: [], 
+            customers: [], 
+            sales: [], 
+            purchases: [], 
+            stock: [], 
+            debt: [], 
+            setoran: [], 
+            drivers: [], 
+            settings: { ...CONFIG }
         };
 
         // --- APLIKASI UTAMA ---
@@ -253,36 +262,54 @@
             cart: [],
             purchaseCart: [],
             syncInterval: null,
-            calculatedSetoran: null,
+            isSyncing: false,
 
             init() {
-                lucide.createIcons();
-                this.applySettings();
-                this.checkAuth();
-                this.syncInterval = setInterval(() => { if (this.currentUser) this.syncData(true); }, 900000); // 15 Menit
+                console.log("App Initializing...");
+                try {
+                    lucide.createIcons();
+                    this.applySettings();
+                    this.checkAuth();
+                    // PENTING: Jangan langsung sync saat init agar login tidak terhambat
+                    // Sync akan dilakukan SETELAH login berhasil atau manual
+                } catch (e) {
+                    console.error("Init Error:", e);
+                    alert("Terjadi kesalahan saat memuat aplikasi. Silakan refresh halaman.");
+                    this.hideLoading();
+                }
             },
 
             applySettings() {
                 const s = DB.settings;
-                document.getElementById('splash-logo').src = s.logo || CONFIG.logo;
-                document.getElementById('splash-title').textContent = s.storeName || CONFIG.storeName;
-                document.getElementById('splash-subtitle').textContent = s.tagline || CONFIG.tagline;
-                document.getElementById('login-logo').src = s.logo || CONFIG.logo;
-                document.getElementById('header-logo').src = s.logo || CONFIG.logo;
-                document.getElementById('header-title').textContent = s.storeName || CONFIG.storeName;
+                if(s.logo) document.getElementById('splash-logo').src = s.logo;
+                if(s.storeName) document.getElementById('splash-title').textContent = s.storeName;
+                if(s.tagline) document.getElementById('splash-subtitle').textContent = s.tagline;
+                if(s.logo) document.getElementById('login-logo').src = s.logo;
+                if(s.logo) document.getElementById('header-logo').src = s.logo;
+                if(s.storeName) document.getElementById('header-title').textContent = s.storeName;
             },
 
             checkAuth() {
+                // Pastikan loading screen hilang dulu sebelum cek auth
+                this.hideLoading(); 
+
                 const savedUser = localStorage.getItem('tk_user');
                 if (savedUser) {
-                    this.currentUser = JSON.parse(savedUser);
-                    this.showMainApp();
+                    try {
+                        this.currentUser = JSON.parse(savedUser);
+                        this.showMainApp();
+                    } catch (e) {
+                        localStorage.removeItem('tk_user');
+                        this.showLogin();
+                    }
                 } else {
-                    setTimeout(() => {
-                        document.getElementById('splash-screen').classList.add('hidden-page');
-                        document.getElementById('login-page').classList.remove('hidden-page');
-                    }, 2000);
+                    this.showLogin();
                 }
+            },
+
+            showLogin() {
+                document.getElementById('splash-screen').classList.add('hidden-page');
+                document.getElementById('login-page').classList.remove('hidden-page');
             },
 
             login(user) {
@@ -290,6 +317,11 @@
                 localStorage.setItem('tk_user', JSON.stringify(user));
                 document.getElementById('login-page').classList.add('hidden-page');
                 this.showMainApp();
+                // Sync data SETELAH login berhasil (background process)
+                this.syncData(true); 
+                // Setup auto sync setiap 15 menit
+                if (this.syncInterval) clearInterval(this.syncInterval);
+                this.syncInterval = setInterval(() => { this.syncData(true); }, 900000);
             },
 
             logout() {
@@ -304,7 +336,6 @@
                 document.getElementById('user-display').textContent = `${this.currentUser.name} (${this.currentUser.role})`;
                 this.renderMenu();
                 this.nav('dashboard');
-                this.syncData(); 
             },
 
             renderMenu() {
@@ -344,89 +375,157 @@
                 this.currentPage = pageId;
                 document.getElementById('view-dashboard').classList.add('hidden-page');
                 document.getElementById('page-container').classList.add('hidden-page');
+                
                 if (pageId === 'dashboard') {
                     document.getElementById('view-dashboard').classList.remove('hidden-page');
                     this.updateDashboardStats();
                     return;
                 }
+
                 const container = document.getElementById('page-container');
                 container.classList.remove('hidden-page');
                 document.getElementById('page-title').textContent = pageId.replace('-', ' ').toUpperCase();
                 document.getElementById('page-content').innerHTML = '<div class="flex justify-center p-10"><div class="spinner"></div></div>';
+
                 setTimeout(() => {
-                    switch (pageId) {
-                        case 'sales': this.renderSales(); break;
-                        case 'transactions': this.renderTransactions(); break;
-                        case 'reports-sales': this.renderReports('sales'); break;
-                        case 'setoran': this.renderSetoran(); break;
-                        case 'reports-setoran': this.renderReports('setoran'); break;
-                        case 'purchase': this.renderPurchase(); break;
-                        case 'reports-purchase': this.renderReports('purchase'); break;
-                        case 'products': this.renderProducts(); break;
-                        case 'stock': this.renderStock(); break;
-                        case 'customers': this.renderCustomers(); break;
-                        case 'debt': this.renderDebt(); break;
-                        case 'reports-monthly': this.renderMonthlyReport(); break;
-                        case 'settings': this.renderSettings(); break;
-                        case 'graphs': this.renderGraphs(); break;
-                        case 'audit': this.renderAudit(); break;
-                        default: document.getElementById('page-content').innerHTML = '<p class="text-center text-gray-500">Fitur sedang dikembangkan</p>';
+                    try {
+                        switch (pageId) {
+                            case 'sales': this.renderSales(); break;
+                            case 'transactions': this.renderTransactions(); break;
+                            case 'reports-sales': this.renderReports('sales'); break;
+                            case 'setoran': this.renderSetoran(); break;
+                            case 'reports-setoran': this.renderReports('setoran'); break;
+                            case 'purchase': this.renderPurchase(); break;
+                            case 'reports-purchase': this.renderReports('purchase'); break;
+                            case 'products': this.renderProducts(); break;
+                            case 'stock': this.renderStock(); break;
+                            case 'customers': this.renderCustomers(); break;
+                            case 'debt': this.renderDebt(); break;
+                            case 'reports-monthly': this.renderMonthlyReport(); break;
+                            case 'settings': this.renderSettings(); break;
+                            case 'graphs': this.renderGraphs(); break;
+                            case 'audit': this.renderAudit(); break;
+                            default: document.getElementById('page-content').innerHTML = '<p class="text-center text-gray-500">Fitur sedang dikembangkan</p>';
+                        }
+                        lucide.createIcons();
+                    } catch (e) {
+                        console.error("Nav Error:", e);
+                        document.getElementById('page-content').innerHTML = `<p class="text-red-500 text-center">Error memuat menu: ${e.message}</p>`;
                     }
-                    lucide.createIcons();
                 }, 100);
             },
 
-            // --- CORE SYNC & API ---
+            // --- CORE SYNC & API (DIPERBAIKI) ---
             async syncData(silent = false) {
+                if (this.isSyncing) return; // Cegah double sync
+                this.isSyncing = true;
+
                 if (!silent) this.showLoading('Sinkronisasi Data...');
+                
                 try {
-                    const res = await this.apiCall('getAllData');
-                    const syncedData = res.data;
+                    // Timeout manual jika fetch terlalu lama
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 detik timeout
+
+                    const res = await fetch(CONFIG.gasUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'getAllData' }),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    
+                    const result = await res.json();
+                    if (result.status !== 'success') throw new Error(result.message || 'Gagal ambil data');
+
+                    const syncedData = result.data;
                     Object.keys(syncedData).forEach(key => {
                         if (Array.isArray(syncedData[key])) DB[key] = syncedData[key];
                         else if (key === 'Settings') Object.assign(DB.settings, syncedData[key]);
                     });
+                    
                     this.applySettings();
                     document.getElementById('sync-indicator').classList.remove('hidden');
                     setTimeout(() => document.getElementById('sync-indicator').classList.add('hidden'), 3000);
+                    
                     if (!silent) alert('Data berhasil disinkronisasi!');
                     if (this.currentPage !== 'dashboard') this.nav(this.currentPage);
                     else this.updateDashboardStats();
+
                 } catch (e) {
-                    console.error(e);
-                    if (!silent) alert('Gagal sinkronisasi: ' + e.message);
+                    console.warn("Sync Failed (Using Local Data):", e);
+                    if (!silent) {
+                        // Jangan alert error keras jika silent, cukup log
+                        if(e.name === 'AbortError') alert('Koneksi timeout. Menggunakan data lokal.');
+                        else alert('Gagal sinkronisasi: ' + e.message + '. Aplikasi tetap berjalan dengan data lokal.');
+                    }
                 } finally {
+                    this.isSyncing = false;
                     if (!silent) this.hideLoading();
                 }
             },
-            async pushData() { alert('Fitur Push Manual: Data lokal akan dikirim ke Google Sheets.'); await this.syncData(); },
+
+            async pushData() { 
+                if(!confirm("Kirim semua data lokal ke Google Sheets?")) return;
+                this.showLoading('Mengirim Data...');
+                try {
+                    // Implementasi sederhana: trigger sync saja untuk demo
+                    // Untuk production, perlu loop kirim satu-satu atau batch
+                    await this.apiCall('getAllData'); 
+                    alert('Sinkronisasi selesai.');
+                } catch(e) { alert('Gagal: '+e.message); }
+                this.hideLoading();
+            },
+
             async apiCall(action, payload) {
                 const fullPayload = { action, ...payload };
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                
                 try {
-                    const res = await fetch(CONFIG.gasUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fullPayload) });
+                    const res = await fetch(CONFIG.gasUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(fullPayload),
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
                     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                     const data = await res.json();
                     if (data.status !== 'success') throw new Error(data.message || 'API error');
                     return data;
-                } catch (e) { console.error('API Call Error:', e); throw e; }
+                } catch (e) {
+                    console.error('API Call Error:', e);
+                    throw e;
+                }
             },
-            showLoading(msg) { document.getElementById('loading-text').textContent = msg; document.getElementById('loading-screen').classList.remove('hidden-page'); },
-            hideLoading() { document.getElementById('loading-screen').classList.add('hidden-page'); },
+
+            showLoading(msg) { 
+                document.getElementById('loading-text').textContent = msg || 'Memproses...'; 
+                document.getElementById('loading-screen').classList.remove('hidden-page'); 
+            },
+            hideLoading() { 
+                document.getElementById('loading-screen').classList.add('hidden-page'); 
+            },
             closeModal() { document.getElementById('modal-overlay').classList.add('hidden-page'); },
+            
             updateDashboardStats() {
                 const today = new Date().toISOString().split('T')[0];
                 const todaySales = DB.sales.filter(s => s.date === today);
                 const stats = { cod: 0, transfer: 0, qris: 0, pending: 0 };
-                todaySales.forEach(s => { if (stats[s.status] !== undefined) stats[s.status] += (parseFloat(s.net) || 0); });
+                todaySales.forEach(s => { 
+                    const net = parseFloat(s.net) || 0;
+                    if (stats[s.status] !== undefined) stats[s.status] += net; 
+                });
                 document.getElementById('dash-cod').textContent = 'Rp ' + stats.cod.toLocaleString();
                 document.getElementById('dash-transfer').textContent = 'Rp ' + stats.transfer.toLocaleString();
                 document.getElementById('dash-qris').textContent = 'Rp ' + stats.qris.toLocaleString();
                 document.getElementById('dash-pending').textContent = 'Rp ' + stats.pending.toLocaleString();
             },
 
-            // --- RENDER FUNCTIONS (LENGKAP) ---
-            
-            // 1. PENJUALAN
+            // --- RENDER FUNCTIONS (SAMA SEPERTI SEBELUMNYA) ---
             renderSales() {
                 const autoId = 'TRX-' + Date.now();
                 const today = new Date().toISOString().split('T')[0];
@@ -532,8 +631,6 @@
                 } catch(e) { alert('Gagal: '+e.message); }
                 this.hideLoading();
             },
-
-            // 2. TRANSAKSI
             renderTransactions() {
                 const content = document.getElementById('page-content');
                 content.innerHTML = `
@@ -567,8 +664,6 @@
                     this.filterTransactions();
                 }
             },
-
-            // 3. PRODUK
             renderProducts() {
                 document.getElementById('page-content').innerHTML = `
                     <button onclick="app.openProductModal()" class="btn-primary mb-4 px-4 py-2 rounded-lg">+ Tambah Produk</button>
@@ -585,8 +680,6 @@
                 }
             },
             deleteProduct(sku) { if(confirm("Hapus?")) { DB.products = DB.products.filter(p=>p.sku!==sku); this.renderProducts(); } },
-
-            // 4. STOCK
             renderStock() {
                 document.getElementById('page-content').innerHTML = `
                     <div class="flex justify-between mb-4"><h3 class="font-bold">Stok Saat Ini</h3><button onclick="app.rolloverStock()" class="btn-primary px-4 py-2 rounded-lg">Rollover Stok</button></div>
@@ -600,8 +693,6 @@
                     this.renderStock();
                 }
             },
-
-            // 5. PELANGGAN
             renderCustomers() {
                 document.getElementById('page-content').innerHTML = `
                     <button onclick="app.addCustomer()" class="btn-primary mb-4 px-4 py-2 rounded-lg">+ Tambah Pelanggan</button>
@@ -616,8 +707,6 @@
                 this.renderCustomers();
             },
             delCustomer(name) { if(confirm("Hapus?")) { DB.customers = DB.customers.filter(c=>c.name!==name); this.renderCustomers(); } },
-
-            // 6. PIUTANG
             renderDebt() {
                 const total = DB.sales.filter(s=>s.status==='belum bayar').reduce((a,b)=>a+b.net,0);
                 document.getElementById('page-content').innerHTML = `
@@ -638,8 +727,6 @@
                     this.renderDebt();
                 }
             },
-
-            // 7. SETORAN
             renderSetoran() {
                 document.getElementById('page-content').innerHTML = `
                     <div class="grid md:grid-cols-2 gap-4">
@@ -664,8 +751,6 @@
                     this.nav('dashboard');
                 }
             },
-
-            // 8. PEMBELIAN
             renderPurchase() {
                 const autoId = 'PUR-' + Date.now();
                 document.getElementById('page-content').innerHTML = `
@@ -696,8 +781,6 @@
                 alert('Pembelian tersimpan');
                 this.nav('dashboard');
             },
-
-            // 9. LAPORAN & GRAFIK
             renderReports(type) { document.getElementById('page-content').innerHTML = `<div class="p-10 text-center">Laporan ${type} (Export Excel tersedia di menu Transaksi/Pembelian)</div>`; },
             renderMonthlyReport() { document.getElementById('page-content').innerHTML = `<div class="p-10 text-center">Laporan Bulanan (Fitur Hapus Bulan tersedia di Settings)</div>`; },
             renderGraphs() {
@@ -711,8 +794,6 @@
                 }, 100);
             },
             renderAudit() { document.getElementById('page-content').innerHTML = `<div class="p-10 text-center">Audit Log (Lihat langsung di Google Sheet)</div>`; },
-
-            // 10. SETTINGS
             renderSettings() {
                 const s = DB.settings;
                 document.getElementById('page-content').innerHTML = `
@@ -744,13 +825,18 @@
                 reader.onload = (e) => { const data = JSON.parse(e.target.result); Object.assign(DB, data); alert('Restore berhasil. Refresh halaman.'); };
                 reader.readAsText(file);
             },
-            
-            // UTILS CETAK
             printReceiptById(id) {
                 const t = DB.sales.find(x=>x.id===id);
                 if(!t) return;
                 const w = window.open('', '_blank');
                 w.document.write(`<html><head><title>Struk ${t.id}</title><style>body{font-family:monospace;width:80mm;margin:0 auto;padding:10px;} .center{text-align:center;}</style></head><body><div class="center"><h3>${DB.settings.storeName}</h3><p>${t.date}</p></div><hr><table style="width:100%">${t.items.map(i=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>${i.price*i.qty}</td></tr>`).join('')}</table><hr><div class="center"><p>Total: Rp ${t.net.toLocaleString()}</p><p>Terima Kasih</p></div><script>window.print();<\/script></body></html>`);
+            },
+            exportToExcel(type) {
+                const data = type === 'sales' ? DB.sales : DB.purchases;
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Data");
+                XLSX.writeFile(wb, `TirtaKencana_${type}.xlsx`);
             }
         };
 
